@@ -3,6 +3,7 @@
 import { type ReactNode } from "react";
 import { ThemeProvider } from "next-themes";
 import { BlinkConnectProvider } from "@goblink/connect/react";
+import { ToastProvider } from "@/contexts/ToastContext";
 
 const blinkConnectConfig = {
   projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || "",
@@ -25,7 +26,9 @@ export function Providers({ children }: ProvidersProps) {
       disableTransitionOnChange
     >
       <BlinkConnectProvider config={blinkConnectConfig}>
-        {children}
+        <ToastProvider>
+          {children}
+        </ToastProvider>
       </BlinkConnectProvider>
     </ThemeProvider>
   );

@@ -10,6 +10,7 @@ import {
   CreditCard,
   Store,
   BookOpen,
+  Clock,
 } from "lucide-react";
 import type { ReactNode } from "react";
 
@@ -23,6 +24,7 @@ const navItems: NavItem[] = [
   { href: "/swap", label: "Swap", icon: <ArrowLeftRight size={16} /> },
   { href: "/portfolio", label: "Portfolio", icon: <PieChart size={16} /> },
   { href: "/pay", label: "Pay", icon: <CreditCard size={16} /> },
+  { href: "/history", label: "History", icon: <Clock size={16} /> },
   { href: "/merchant", label: "Merchant", icon: <Store size={16} /> },
   { href: "/book", label: "Book", icon: <BookOpen size={16} /> },
 ];

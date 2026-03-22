@@ -48,6 +48,28 @@
   /* Safe areas */
   --safe-area-top: env(safe-area-inset-top);
   --safe-area-bottom: env(safe-area-inset-bottom);
+
+  /* ─── goblink.io CSS variable aliases ─── */
+  /* These map the source component variables to the Hub's design system */
+  --bg-primary: var(--color-bg-primary);
+  --surface: var(--color-bg-secondary);
+  --elevated: var(--color-bg-tertiary);
+  --border: var(--color-border);
+  --brand: var(--color-primary);
+  --text-primary: var(--color-text-primary);
+  --text-secondary: var(--color-text-secondary);
+  --text-muted: var(--color-text-muted);
+  --text-faint: var(--color-text-tertiary);
+  --success: var(--color-success);
+  --success-bg: rgba(16, 185, 129, 0.08);
+  --error: var(--color-danger);
+  --error-bg: rgba(239, 68, 68, 0.08);
+  --error-text: #fca5a5;
+  --warning: var(--color-warning);
+  --warning-bg: rgba(245, 158, 11, 0.08);
+  --warning-text: #fbbf24;
+  --info-bg: rgba(59, 130, 246, 0.08);
+  --info-text: #93c5fd;
 }
 
 /* ─── Tailwind theme integration ─── */
@@ -196,4 +218,94 @@ select {
 ::selection {
   background: var(--color-accent-glow);
   color: var(--color-text-primary);
+}
+
+/* ─── goblink.io Component Classes ─── */
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+}
+
+.input {
+  background: var(--elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  padding: 0 12px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.input:focus {
+  border-color: var(--brand);
+}
+
+.input::placeholder {
+  color: var(--text-muted);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  border-radius: var(--radius-lg);
+  transition: all 0.15s;
+  cursor: pointer;
+  border: none;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background: var(--brand);
+  color: #fff;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--color-primary-hover);
+}
+
+.btn-secondary {
+  background: var(--elevated);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+}
+
+.btn-ghost {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+/* Typography classes used by source */
+.text-h3 { font-size: 1.125rem; font-weight: 700; line-height: 1.3; color: var(--text-primary); }
+.text-h4 { font-size: 1rem; font-weight: 700; line-height: 1.3; color: var(--text-primary); }
+.text-h5 { font-size: 0.875rem; font-weight: 700; line-height: 1.3; color: var(--text-primary); }
+.text-body-sm { font-size: 0.875rem; line-height: 1.5; }
+.text-caption { font-size: 0.8125rem; line-height: 1.4; }
+.text-tiny { font-size: 0.75rem; line-height: 1.4; }
+
+/* Animations */
+@keyframes slide-up {
+  from { transform: translateY(16px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes fade-up {
+  from { transform: translateY(8px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.3s ease-out;
+}
+
+.animate-fade-up {
+  animation: fade-up 0.3s ease-out;
 }

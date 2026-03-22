@@ -11,6 +11,7 @@ import {
   Store,
   BookOpen,
   Settings,
+  Clock,
   X,
 } from "lucide-react";
 import type { ReactNode } from "react";
@@ -28,6 +29,7 @@ const mainItems: NavItem[] = [
 ];
 
 const moreItems: NavItem[] = [
+  { href: "/history", label: "History", icon: <Clock size={20} /> },
   { href: "/merchant", label: "Merchant", icon: <Store size={20} /> },
   { href: "/book", label: "BlinkBook", icon: <BookOpen size={20} /> },
   { href: "/settings", label: "Settings", icon: <Settings size={20} /> },
