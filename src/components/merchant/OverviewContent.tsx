@@ -187,9 +187,9 @@ export function OverviewContent({ data }: { data: OverviewData }) {
     <div className="space-y-8">
       <div>
         <div className="flex items-center gap-3">
-          <h1 className="text-2xl font-bold" style={{ color: "var(--color-text-primary)" }}>
+          <h2 className="text-2xl font-bold" style={{ color: "var(--color-text-primary)" }}>
             Welcome back, {filtered.businessName}
-          </h1>
+          </h2>
           <ConnectionIndicator status={connectionStatus} />
         </div>
         <p className="mt-1" style={{ color: "var(--color-text-secondary)" }}>

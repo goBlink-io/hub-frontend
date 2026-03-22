@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { tiptapToMarkdown } from "@/lib/book/tiptap-to-markdown";
 import type { TiptapDoc, BBPage, BBSpace } from "@/types/book";
+import { useToast } from "@/contexts/ToastContext";
 
 /*
  * TODO: Install Tiptap packages to enable the block editor.
@@ -41,6 +42,7 @@ type SaveStatus = "saved" | "saving" | "unsaved";
 export default function EditorPage() {
   const params = useParams<{ siteId: string; pageId: string }>();
   const router = useRouter();
+  const { toast } = useToast();
   const { siteId, pageId } = params;
 
   const [page, setPage] = useState<BBPage | null>(null);
@@ -126,11 +128,12 @@ export default function EditorPage() {
     [save],
   );
 
-  const handleTogglePublish = useCallback(() => {
+  const handleTogglePublish = useCallback(async () => {
     const newValue = !isPublished;
     setIsPublished(newValue);
-    save({ is_published: newValue });
-  }, [isPublished, save]);
+    await save({ is_published: newValue });
+    toast(newValue ? 'Published!' : 'Unpublished', 'success');
+  }, [isPublished, save, toast]);
 
   const handleContentChange = useCallback(
     (rawJson: string) => {
@@ -240,6 +243,7 @@ export default function EditorPage() {
             className="rounded p-1.5 transition"
             style={{ color: "var(--color-text-tertiary)" }}
             title="Download as Markdown"
+            aria-label="Download as Markdown"
           >
             <Download size={16} />
           </button>

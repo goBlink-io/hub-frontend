@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { useWallet } from '@goblink/connect/react';
+import { useToast } from '@/contexts/ToastContext';
 import { generatePaymentUrl, type PaymentRequestData } from '@/lib/payment-requests';
 import { CreditCard, Copy, Check, ExternalLink, QrCode, Share2, Plus, Trash2 } from 'lucide-react';
 import { ProductSuggestion } from '@/components/shared/ProductSuggestion';
@@ -41,6 +42,7 @@ function saveLinks(links: SavedLink[]) {
 
 export default function PayPage() {
   const { address } = useWallet();
+  const { toast } = useToast();
   const [recipient, setRecipient] = useState('');
   const [toChain, setToChain] = useState('near');
   const [toToken, setToToken] = useState('USDC');
@@ -50,6 +52,12 @@ export default function PayPage() {
   const [generatedUrl, setGeneratedUrl] = useState('');
   const [copied, setCopied] = useState(false);
   const [savedLinks, setSavedLinks] = useState<SavedLink[]>(() => loadLinks());
+  const [recipientError, setRecipientError] = useState<string | null>(null);
+  const [amountError, setAmountError] = useState<string | null>(null);
+
+  // Undo deletion state
+  const [pendingDelete, setPendingDelete] = useState<SavedLink | null>(null);
+  const deleteTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Auto-fill recipient from wallet
   const handleAutoFill = useCallback(() => {
@@ -82,7 +90,8 @@ export default function PayPage() {
     const updated = [link, ...savedLinks].slice(0, 20);
     setSavedLinks(updated);
     saveLinks(updated);
-  }, [recipient, toChain, toToken, amount, memo, name, savedLinks]);
+    toast('Payment link created!', 'success');
+  }, [recipient, toChain, toToken, amount, memo, name, savedLinks, toast]);
 
   const handleCopy = useCallback((url: string) => {
     navigator.clipboard.writeText(url);
@@ -91,10 +100,38 @@ export default function PayPage() {
   }, []);
 
   const handleDelete = useCallback((id: string) => {
+    const linkToDelete = savedLinks.find(l => l.id === id);
+    if (!linkToDelete) return;
+
+    // Immediately remove from view
     const updated = savedLinks.filter(l => l.id !== id);
     setSavedLinks(updated);
     saveLinks(updated);
-  }, [savedLinks]);
+    setPendingDelete(linkToDelete);
+
+    // Clear any existing timer
+    if (deleteTimerRef.current) clearTimeout(deleteTimerRef.current);
+
+    // Set timer to finalize
+    deleteTimerRef.current = setTimeout(() => {
+      setPendingDelete(null);
+      deleteTimerRef.current = null;
+    }, 5000);
+
+    toast('Link deleted. Tap Undo to restore.', 'info');
+  }, [savedLinks, toast]);
+
+  const handleUndoDelete = useCallback(() => {
+    if (!pendingDelete) return;
+    if (deleteTimerRef.current) clearTimeout(deleteTimerRef.current);
+    deleteTimerRef.current = null;
+
+    const restored = [pendingDelete, ...savedLinks].sort((a, b) => b.createdAt - a.createdAt).slice(0, 20);
+    setSavedLinks(restored);
+    saveLinks(restored);
+    setPendingDelete(null);
+    toast('Link restored!', 'success');
+  }, [pendingDelete, savedLinks, toast]);
 
   const handleShare = useCallback(async (url: string, data: PaymentRequestData) => {
     const text = `Pay ${data.amount} ${data.toToken} on ${data.toChain} via goBlink`;
@@ -107,28 +144,55 @@ export default function PayPage() {
     }
   }, []);
 
+  const handleRecipientBlur = () => {
+    if (recipient && recipient.length < 3) {
+      setRecipientError('Please enter a valid wallet address');
+    } else {
+      setRecipientError(null);
+    }
+  };
+
+  const handleAmountBlur = () => {
+    if (amount && (isNaN(Number(amount)) || Number(amount) <= 0)) {
+      setAmountError('Amount must be greater than 0');
+    } else {
+      setAmountError(null);
+    }
+  };
+
   return (
     <div className="mx-auto max-w-lg px-4 py-6 space-y-6">
       {/* Create Payment Link */}
       <div className="card p-5 sm:p-6">
         <div className="flex items-center gap-2 mb-5">
           <CreditCard className="h-5 w-5" style={{ color: 'var(--color-primary)' }} />
-          <h2 className="text-h3">Create Payment Link</h2>
+          <h1 className="text-h3">Create Payment Link</h1>
         </div>
 
         <div className="space-y-4">
           {/* Recipient */}
           <div>
             <div className="flex items-center justify-between mb-1.5">
-              <label className="text-caption font-medium" style={{ color: 'var(--color-text-secondary)' }}>Receiving Address</label>
+              <label className="text-caption font-medium" style={{ color: 'var(--color-text-secondary)' }}>
+                Receiving Address<span className="text-[var(--color-danger)]"> *</span>
+              </label>
               {address && (
                 <button onClick={handleAutoFill} className="text-tiny font-semibold" style={{ color: 'var(--color-primary)' }}>
                   Use my wallet
                 </button>
               )}
             </div>
-            <input type="text" value={recipient} onChange={e => setRecipient(e.target.value)}
-              placeholder="Enter wallet address" className="input w-full h-11 font-mono text-body-sm" />
+            <input type="text" value={recipient}
+              onChange={e => { setRecipient(e.target.value); setRecipientError(null); }}
+              onBlur={handleRecipientBlur}
+              placeholder="Enter wallet address" className="input w-full h-11 font-mono text-body-sm"
+              style={{ borderColor: recipientError ? 'var(--color-danger)' : undefined }}
+            />
+            {recipientError && (
+              <p className="text-xs mt-1" role="alert" aria-live="polite" style={{ color: 'var(--color-danger)' }}>
+                {recipientError}
+              </p>
+            )}
           </div>
 
           {/* Chain */}
@@ -159,10 +223,20 @@ export default function PayPage() {
 
           {/* Amount */}
           <div>
-            <label className="block text-caption font-medium mb-1.5" style={{ color: 'var(--color-text-secondary)' }}>Amount</label>
+            <label className="block text-caption font-medium mb-1.5" style={{ color: 'var(--color-text-secondary)' }}>
+              Amount<span className="text-[var(--color-danger)]"> *</span>
+            </label>
             <input type="text" inputMode="decimal" value={amount}
-              onChange={e => { const v = e.target.value; if (v === '' || /^\d*\.?\d*$/.test(v)) setAmount(v); }}
-              placeholder="0.00" className="input w-full h-12 text-h4" />
+              onChange={e => { const v = e.target.value; if (v === '' || /^\d*\.?\d*$/.test(v)) { setAmount(v); setAmountError(null); } }}
+              onBlur={handleAmountBlur}
+              placeholder="0.00" className="input w-full h-12 text-h4"
+              style={{ borderColor: amountError ? 'var(--color-danger)' : undefined }}
+            />
+            {amountError && (
+              <p className="text-xs mt-1" role="alert" aria-live="polite" style={{ color: 'var(--color-danger)' }}>
+                {amountError}
+              </p>
+            )}
           </div>
 
           {/* Optional fields */}
@@ -206,7 +280,8 @@ export default function PayPage() {
                 {copied ? 'Copied!' : 'Copy'}
               </button>
               <button onClick={() => window.open(generatedUrl, '_blank')}
-                className="btn btn-secondary h-10 px-3" title="Open link">
+                className="btn btn-secondary h-10 px-3"
+                aria-label="Open payment link in new tab">
                 <ExternalLink className="h-4 w-4" />
               </button>
             </div>
@@ -214,10 +289,27 @@ export default function PayPage() {
         )}
       </div>
 
+      {/* Undo toast */}
+      {pendingDelete && (
+        <div className="fixed bottom-20 left-4 right-4 sm:left-auto sm:right-4 sm:max-w-sm z-[100]">
+          <div className="flex items-center gap-3 px-4 py-3 rounded-xl border shadow-lg animate-slide-up"
+            style={{ background: 'var(--info-bg)', borderColor: 'var(--color-border)' }}>
+            <span className="text-body-sm font-medium flex-1" style={{ color: 'var(--color-text-primary)' }}>
+              Link deleted
+            </span>
+            <button onClick={handleUndoDelete}
+              className="text-body-sm font-bold px-3 py-1 rounded-lg"
+              style={{ color: 'var(--color-primary)', background: 'var(--color-bg-tertiary)' }}>
+              Undo
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Saved Payment Links */}
       {savedLinks.length > 0 && (
         <div className="card p-5 sm:p-6">
-          <h3 className="text-h4 mb-4">Your Payment Links</h3>
+          <h2 className="text-h4 mb-4">Your Payment Links</h2>
           <div className="space-y-3">
             {savedLinks.map(link => (
               <div key={link.id} className="flex items-center gap-3 p-3 rounded-xl"
@@ -232,15 +324,18 @@ export default function PayPage() {
                 </div>
                 <div className="flex items-center gap-1">
                   <button onClick={() => handleShare(link.url, link.data)}
-                    className="p-1.5 rounded-lg" style={{ color: 'var(--color-text-muted)' }} title="Share">
+                    className="p-1.5 rounded-lg" style={{ color: 'var(--color-text-muted)' }}
+                    aria-label="Share payment link">
                     <Share2 className="h-4 w-4" />
                   </button>
                   <button onClick={() => handleCopy(link.url)}
-                    className="p-1.5 rounded-lg" style={{ color: 'var(--color-text-muted)' }} title="Copy">
+                    className="p-1.5 rounded-lg" style={{ color: 'var(--color-text-muted)' }}
+                    aria-label="Copy payment link">
                     <Copy className="h-4 w-4" />
                   </button>
                   <button onClick={() => handleDelete(link.id)}
-                    className="p-1.5 rounded-lg" style={{ color: 'var(--color-text-tertiary)' }} title="Delete">
+                    className="p-1.5 rounded-lg" style={{ color: 'var(--color-text-tertiary)' }}
+                    aria-label="Delete payment link">
                     <Trash2 className="h-4 w-4" />
                   </button>
                 </div>

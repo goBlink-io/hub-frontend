@@ -330,6 +330,7 @@ export function PaymentsList({
                         className="p-1.5 rounded-md transition-colors"
                         style={{ color: "var(--color-text-tertiary)" }}
                         title="Copy payment link"
+                        aria-label="Copy payment link"
                       >
                         <Share2 className="h-4 w-4" />
                       </button>
@@ -353,6 +354,7 @@ export function PaymentsList({
               disabled={currentPage <= 1}
               onClick={() => updateParams({ page: String(currentPage - 1) })}
               className="p-2 rounded-lg disabled:opacity-30"
+              aria-label="Previous page"
               style={{
                 border: "1px solid var(--color-border)",
                 color: "var(--color-text-secondary)",
@@ -369,6 +371,7 @@ export function PaymentsList({
               disabled={currentPage >= totalPages}
               onClick={() => updateParams({ page: String(currentPage + 1) })}
               className="p-2 rounded-lg disabled:opacity-30"
+              aria-label="Next page"
               style={{
                 border: "1px solid var(--color-border)",
                 color: "var(--color-text-secondary)",

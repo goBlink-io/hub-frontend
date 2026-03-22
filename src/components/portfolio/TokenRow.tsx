@@ -22,6 +22,8 @@ function TokenLogo({ token }: { token: TokenBalance }) {
         <img
           src={token.logoUrl}
           alt={token.symbol}
+          width={40}
+          height={40}
           className="w-10 h-10 rounded-full"
           onError={(e) => {
             (e.target as HTMLImageElement).style.display = 'none';
@@ -40,6 +42,8 @@ function TokenLogo({ token }: { token: TokenBalance }) {
           <img
             src={logo.icon}
             alt={meta.name}
+            width={16}
+            height={16}
             className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full border-2"
             style={{ borderColor: 'var(--color-bg-secondary)' }}
             onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}

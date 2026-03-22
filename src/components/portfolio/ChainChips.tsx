@@ -38,6 +38,7 @@ export function ChainChips({ breakdown, activeChain, onChainClick }: ChainChipsP
             key={chain.chain}
             type="button"
             onClick={() => onChainClick(isActive ? null : chain.chain)}
+            aria-label={`Filter by ${meta.name}`}
             className="flex-shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-full text-tiny font-medium transition-all"
             style={{
               background: isActive ? meta.color + '33' : 'var(--color-bg-tertiary)',
@@ -50,6 +51,8 @@ export function ChainChips({ breakdown, activeChain, onChainClick }: ChainChipsP
               <img
                 src={logo.icon}
                 alt={meta.name}
+                width={16}
+                height={16}
                 className="w-4 h-4 rounded-full"
                 onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
               />

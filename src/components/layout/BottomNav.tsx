@@ -123,7 +123,7 @@ export function BottomNav() {
               <Link
                 key={item.href}
                 href={item.href}
-                className="flex flex-col items-center justify-center gap-0.5 flex-1 py-2"
+                className="relative flex flex-col items-center justify-center gap-0.5 flex-1 py-2"
                 style={{
                   color: active
                     ? "var(--color-primary)"

@@ -300,6 +300,8 @@ export default function StatusTracker({ depositAddress, onReset }: StatusTracker
       {error && (
         <div
           className="p-3 rounded-xl mb-5 flex items-start gap-2"
+          role="alert"
+          aria-live="polite"
           style={{ background: 'var(--warning-bg)', border: '1px solid var(--color-warning)', color: 'var(--warning-text)' }}
         >
           <svg className="h-5 w-5 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

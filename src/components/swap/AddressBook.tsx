@@ -83,6 +83,7 @@ function AddressRow({
         <button
           onClick={handleCopy}
           title="Copy address"
+          aria-label="Copy address"
           className="p-1.5 rounded-lg transition-all hover:opacity-80 active:scale-90"
           style={{ color: copied ? 'var(--color-success)' : 'var(--color-text-muted)' }}
         >
@@ -91,6 +92,7 @@ function AddressRow({
         <button
           onClick={() => onRemove(entry.address)}
           title="Remove address"
+          aria-label="Remove address"
           className="p-1.5 rounded-lg transition-all hover:opacity-80 active:scale-90"
           style={{ color: 'var(--color-text-tertiary)' }}
         >
@@ -175,6 +177,7 @@ export default function AddressBook({ isOpen, onClose, onSelect }: AddressBookPr
               onClick={onClose}
               className="p-2 rounded-xl transition-all hover:opacity-80"
               style={{ color: 'var(--color-text-muted)' }}
+              aria-label="Close address book"
             >
               <X className="h-5 w-5" />
             </button>
@@ -251,7 +254,7 @@ export default function AddressBook({ isOpen, onClose, onSelect }: AddressBookPr
               </select>
             </div>
             {addError && (
-              <p className="text-tiny" style={{ color: 'var(--error, #ef4444)' }}>{addError}</p>
+              <p className="text-tiny" role="alert" aria-live="polite" style={{ color: 'var(--error, #ef4444)' }}>{addError}</p>
             )}
             <button
               onClick={handleAddAddress}

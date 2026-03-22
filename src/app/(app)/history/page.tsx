@@ -157,13 +157,13 @@ export default function HistoryPage() {
                 <div className="flex items-center gap-1">
                   {tx.deposit_tx_hash && (
                     <a href={getExplorerTxUrl(tx.from_chain, tx.deposit_tx_hash)} target="_blank" rel="noopener noreferrer"
-                      className="p-1 rounded" style={{ color: 'var(--color-text-muted)' }} title="View deposit tx">
+                      className="p-1 rounded" style={{ color: 'var(--color-text-muted)' }} title="View deposit tx" aria-label="View deposit transaction">
                       <ExternalLink className="h-3.5 w-3.5" />
                     </a>
                   )}
                   {tx.fulfillment_tx_hash && (
                     <a href={getExplorerTxUrl(tx.to_chain, tx.fulfillment_tx_hash)} target="_blank" rel="noopener noreferrer"
-                      className="p-1 rounded" style={{ color: 'var(--color-success)' }} title="View delivery tx">
+                      className="p-1 rounded" style={{ color: 'var(--color-success)' }} title="View delivery tx" aria-label="View delivery transaction">
                       <ExternalLink className="h-3.5 w-3.5" />
                     </a>
                   )}

@@ -9,6 +9,10 @@ import { Button } from "@/components/ui/button";
 import { ConnectButton } from "@goblink/connect/react";
 import { createClient } from "@/lib/supabase/client";
 
+function isValidEmail(email: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
 export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
@@ -16,11 +20,15 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [emailError, setEmailError] = useState<string | null>(null);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
 
   async function handleEmailLogin(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     setError(null);
+    setEmailError(null);
+    setPasswordError(null);
 
     const supabase = createClient();
     const { error: authError } = await supabase.auth.signInWithPassword({
@@ -29,7 +37,14 @@ export default function LoginPage() {
     });
 
     if (authError) {
-      setError(authError.message);
+      const msg = authError.message;
+      if (msg.toLowerCase().includes("user not found") || msg.toLowerCase().includes("no user")) {
+        setEmailError(msg);
+      } else if (msg.toLowerCase().includes("invalid") || msg.toLowerCase().includes("credentials") || msg.toLowerCase().includes("password")) {
+        setPasswordError(msg);
+      } else {
+        setError(msg);
+      }
       setLoading(false);
       return;
     }
@@ -47,6 +62,22 @@ export default function LoginPage() {
       },
     });
   }
+
+  const handleEmailBlur = () => {
+    if (email && !isValidEmail(email)) {
+      setEmailError("Please enter a valid email address");
+    } else {
+      setEmailError(null);
+    }
+  };
+
+  const handlePasswordBlur = () => {
+    if (!password) {
+      setPasswordError("Password is required");
+    } else {
+      setPasswordError(null);
+    }
+  };
 
   return (
     <div
@@ -72,6 +103,8 @@ export default function LoginPage() {
           {error && (
             <div
               className="px-4 py-3 text-sm"
+              role="alert"
+              aria-live="polite"
               style={{
                 color: "var(--color-danger)",
                 backgroundColor: "rgba(239, 68, 68, 0.1)",
@@ -89,7 +122,7 @@ export default function LoginPage() {
               className="block text-sm font-medium"
               style={{ color: "var(--color-text-secondary)" }}
             >
-              Email
+              Email<span className="text-[var(--color-danger)]"> *</span>
             </label>
             <div className="relative">
               <Mail
@@ -101,18 +134,24 @@ export default function LoginPage() {
                 id="email"
                 type="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => { setEmail(e.target.value); setEmailError(null); }}
+                onBlur={handleEmailBlur}
                 placeholder="you@example.com"
                 required
                 className="w-full pl-10 pr-4 py-3 text-sm outline-none transition-colors"
                 style={{
                   backgroundColor: "var(--color-bg-secondary)",
                   color: "var(--color-text-primary)",
-                  border: "1px solid var(--color-border)",
+                  border: emailError ? "1px solid var(--color-danger)" : "1px solid var(--color-border)",
                   borderRadius: "var(--radius-md)",
                 }}
               />
             </div>
+            {emailError && (
+              <p className="text-xs mt-1" role="alert" aria-live="polite" style={{ color: "var(--color-danger)" }}>
+                {emailError}
+              </p>
+            )}
           </div>
 
           <div className="space-y-1">
@@ -121,21 +160,22 @@ export default function LoginPage() {
               className="block text-sm font-medium"
               style={{ color: "var(--color-text-secondary)" }}
             >
-              Password
+              Password<span className="text-[var(--color-danger)]"> *</span>
             </label>
             <div className="relative">
               <input
                 id="password"
                 type={showPassword ? "text" : "password"}
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => { setPassword(e.target.value); setPasswordError(null); }}
+                onBlur={handlePasswordBlur}
                 placeholder="••••••••"
                 required
                 className="w-full pl-4 pr-10 py-3 text-sm outline-none transition-colors"
                 style={{
                   backgroundColor: "var(--color-bg-secondary)",
                   color: "var(--color-text-primary)",
-                  border: "1px solid var(--color-border)",
+                  border: passwordError ? "1px solid var(--color-danger)" : "1px solid var(--color-border)",
                   borderRadius: "var(--radius-md)",
                 }}
               />
@@ -149,6 +189,11 @@ export default function LoginPage() {
                 {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
               </button>
             </div>
+            {passwordError && (
+              <p className="text-xs mt-1" role="alert" aria-live="polite" style={{ color: "var(--color-danger)" }}>
+                {passwordError}
+              </p>
+            )}
           </div>
 
           <Button type="submit" fullWidth loading={loading}>

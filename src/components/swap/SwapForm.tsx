@@ -594,7 +594,8 @@ export default function SwapForm({ onQuoteReceived, refreshKey, initialValues }:
         <div className="flex justify-center -my-1 relative z-10">
           <button onClick={swapTokens}
             className="w-10 h-10 rounded-full flex items-center justify-center border-4 transition-all active:scale-90 active:rotate-180"
-            style={{ background: 'var(--color-bg-secondary)', borderColor: 'var(--color-bg-primary)', color: 'var(--color-text-muted)' }}>
+            style={{ background: 'var(--color-bg-secondary)', borderColor: 'var(--color-bg-primary)', color: 'var(--color-text-muted)' }}
+            aria-label="Swap send and receive chains">
             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
             </svg>
@@ -743,7 +744,7 @@ export default function SwapForm({ onQuoteReceived, refreshKey, initialValues }:
 
       {/* Error */}
       {formError && (
-        <div className="mb-4 p-3 rounded-xl text-body-sm" style={{ background: 'var(--error-bg)', color: 'var(--error-text)', border: '1px solid var(--color-danger)' }}>
+        <div className="mb-4 p-3 rounded-xl text-body-sm" role="alert" aria-live="polite" style={{ background: 'var(--error-bg)', color: 'var(--error-text)', border: '1px solid var(--color-danger)' }}>
           {formError}
         </div>
       )}

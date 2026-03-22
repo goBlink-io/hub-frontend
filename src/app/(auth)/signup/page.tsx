@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Mail, Eye, EyeOff, Chrome } from "lucide-react";
@@ -8,6 +8,24 @@ import { Logo } from "@/components/shared/Logo";
 import { Button } from "@/components/ui/button";
 import { ConnectButton } from "@goblink/connect/react";
 import { createClient } from "@/lib/supabase/client";
+
+function isValidEmail(email: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+function getPasswordStrength(pw: string): { score: number; label: string; color: string } {
+  let score = 0;
+  if (pw.length >= 8) score++;
+  if (pw.length >= 12) score++;
+  if (/[A-Z]/.test(pw)) score++;
+  if (/[0-9]/.test(pw)) score++;
+  if (/[^A-Za-z0-9]/.test(pw)) score++;
+
+  if (score <= 1) return { score, label: "Weak", color: "var(--color-danger)" };
+  if (score <= 2) return { score, label: "Fair", color: "var(--color-warning)" };
+  if (score <= 3) return { score, label: "Good", color: "var(--color-info)" };
+  return { score, label: "Strong", color: "var(--color-success)" };
+}
 
 export default function SignupPage() {
   const router = useRouter();
@@ -17,18 +35,26 @@ export default function SignupPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [emailError, setEmailError] = useState<string | null>(null);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
+  const [confirmError, setConfirmError] = useState<string | null>(null);
+
+  const passwordStrength = useMemo(() => getPasswordStrength(password), [password]);
 
   async function handleSignup(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+    setEmailError(null);
+    setPasswordError(null);
+    setConfirmError(null);
 
     if (password !== confirmPassword) {
-      setError("Passwords don't match");
+      setConfirmError("Passwords don't match");
       return;
     }
 
     if (password.length < 8) {
-      setError("Password must be at least 8 characters");
+      setPasswordError("Password must be at least 8 characters");
       return;
     }
 
@@ -62,6 +88,30 @@ export default function SignupPage() {
     });
   }
 
+  const handleEmailBlur = () => {
+    if (email && !isValidEmail(email)) {
+      setEmailError("Please enter a valid email address");
+    } else {
+      setEmailError(null);
+    }
+  };
+
+  const handlePasswordBlur = () => {
+    if (password && password.length < 8) {
+      setPasswordError("Password must be at least 8 characters");
+    } else {
+      setPasswordError(null);
+    }
+  };
+
+  const handleConfirmBlur = () => {
+    if (confirmPassword && confirmPassword !== password) {
+      setConfirmError("Passwords don't match");
+    } else {
+      setConfirmError(null);
+    }
+  };
+
   return (
     <div
       className="flex min-h-dvh flex-col items-center justify-center px-4 py-8"
@@ -84,6 +134,8 @@ export default function SignupPage() {
           {error && (
             <div
               className="px-4 py-3 text-sm"
+              role="alert"
+              aria-live="polite"
               style={{
                 color: "var(--color-danger)",
                 backgroundColor: "rgba(239, 68, 68, 0.1)",
@@ -101,7 +153,7 @@ export default function SignupPage() {
               className="block text-sm font-medium"
               style={{ color: "var(--color-text-secondary)" }}
             >
-              Email
+              Email<span className="text-[var(--color-danger)]"> *</span>
             </label>
             <div className="relative">
               <Mail
@@ -113,18 +165,24 @@ export default function SignupPage() {
                 id="email"
                 type="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => { setEmail(e.target.value); setEmailError(null); }}
+                onBlur={handleEmailBlur}
                 placeholder="you@example.com"
                 required
                 className="w-full pl-10 pr-4 py-3 text-sm outline-none transition-colors"
                 style={{
                   backgroundColor: "var(--color-bg-secondary)",
                   color: "var(--color-text-primary)",
-                  border: "1px solid var(--color-border)",
+                  border: emailError ? "1px solid var(--color-danger)" : "1px solid var(--color-border)",
                   borderRadius: "var(--radius-md)",
                 }}
               />
             </div>
+            {emailError && (
+              <p className="text-xs mt-1" role="alert" aria-live="polite" style={{ color: "var(--color-danger)" }}>
+                {emailError}
+              </p>
+            )}
           </div>
 
           <div className="space-y-1">
@@ -133,14 +191,15 @@ export default function SignupPage() {
               className="block text-sm font-medium"
               style={{ color: "var(--color-text-secondary)" }}
             >
-              Password
+              Password<span className="text-[var(--color-danger)]"> *</span>
             </label>
             <div className="relative">
               <input
                 id="password"
                 type={showPassword ? "text" : "password"}
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => { setPassword(e.target.value); setPasswordError(null); }}
+                onBlur={handlePasswordBlur}
                 placeholder="••••••••"
                 required
                 minLength={8}
@@ -148,7 +207,7 @@ export default function SignupPage() {
                 style={{
                   backgroundColor: "var(--color-bg-secondary)",
                   color: "var(--color-text-primary)",
-                  border: "1px solid var(--color-border)",
+                  border: passwordError ? "1px solid var(--color-danger)" : "1px solid var(--color-border)",
                   borderRadius: "var(--radius-md)",
                 }}
               />
@@ -162,6 +221,30 @@ export default function SignupPage() {
                 {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
               </button>
             </div>
+            {passwordError && (
+              <p className="text-xs mt-1" role="alert" aria-live="polite" style={{ color: "var(--color-danger)" }}>
+                {passwordError}
+              </p>
+            )}
+            {/* Password strength indicator */}
+            {password.length > 0 && (
+              <div className="mt-2">
+                <div className="flex gap-1 mb-1">
+                  {[1, 2, 3, 4, 5].map((level) => (
+                    <div
+                      key={level}
+                      className="h-1 flex-1 rounded-full transition-colors"
+                      style={{
+                        backgroundColor: level <= passwordStrength.score ? passwordStrength.color : "var(--color-bg-tertiary)",
+                      }}
+                    />
+                  ))}
+                </div>
+                <p className="text-xs" style={{ color: passwordStrength.color }}>
+                  {passwordStrength.label}
+                </p>
+              </div>
+            )}
           </div>
 
           <div className="space-y-1">
@@ -170,13 +253,14 @@ export default function SignupPage() {
               className="block text-sm font-medium"
               style={{ color: "var(--color-text-secondary)" }}
             >
-              Confirm password
+              Confirm password<span className="text-[var(--color-danger)]"> *</span>
             </label>
             <input
               id="confirm-password"
               type={showPassword ? "text" : "password"}
               value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
+              onChange={(e) => { setConfirmPassword(e.target.value); setConfirmError(null); }}
+              onBlur={handleConfirmBlur}
               placeholder="••••••••"
               required
               minLength={8}
@@ -184,10 +268,15 @@ export default function SignupPage() {
               style={{
                 backgroundColor: "var(--color-bg-secondary)",
                 color: "var(--color-text-primary)",
-                border: "1px solid var(--color-border)",
+                border: confirmError ? "1px solid var(--color-danger)" : "1px solid var(--color-border)",
                 borderRadius: "var(--radius-md)",
               }}
             />
+            {confirmError && (
+              <p className="text-xs mt-1" role="alert" aria-live="polite" style={{ color: "var(--color-danger)" }}>
+                {confirmError}
+              </p>
+            )}
           </div>
 
           <Button type="submit" fullWidth loading={loading}>

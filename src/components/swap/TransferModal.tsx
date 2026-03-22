@@ -253,7 +253,7 @@ export default function TransferModal({ quote, onClose, onComplete, onOutcome }:
               {step === 'tracking' && 'Transfer Status'}
             </h2>
             {step !== 'confirming' && (
-              <button onClick={onClose} className="p-1.5 rounded-lg transition-colors" style={{ color: 'var(--color-text-muted)' }}>
+              <button onClick={onClose} className="p-1.5 rounded-lg transition-colors" style={{ color: 'var(--color-text-muted)' }} aria-label="Close transfer modal">
                 <X className="h-5 w-5" />
               </button>
             )}
@@ -344,7 +344,7 @@ export default function TransferModal({ quote, onClose, onComplete, onOutcome }:
                       <code className="flex-1 px-3 py-2 rounded-lg text-tiny font-mono break-all" style={{ background: 'var(--color-bg-secondary)', border: '1px solid var(--color-border)', color: 'var(--color-text-primary)' }}>
                         {depositAddress}
                       </code>
-                      <button onClick={() => copyToClipboard(depositAddress)} className="p-2 rounded-lg" style={{ background: 'var(--color-primary)', color: '#fff' }}>
+                      <button onClick={() => copyToClipboard(depositAddress)} className="p-2 rounded-lg" style={{ background: 'var(--color-primary)', color: '#fff' }} aria-label="Copy deposit address">
                         {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
                       </button>
                     </div>
@@ -355,7 +355,7 @@ export default function TransferModal({ quote, onClose, onComplete, onOutcome }:
                 )}
 
                 {error && (
-                  <div className="p-3 rounded-xl flex items-start gap-2" style={{ background: 'var(--error-bg)', border: '1px solid var(--color-danger)' }}>
+                  <div className="p-3 rounded-xl flex items-start gap-2" role="alert" aria-live="polite" style={{ background: 'var(--error-bg)', border: '1px solid var(--color-danger)' }}>
                     <AlertTriangle className="h-4 w-4 mt-0.5 flex-shrink-0" style={{ color: 'var(--color-danger)' }} />
                     <p className="text-body-sm" style={{ color: 'var(--error-text)' }}>{error}</p>
                   </div>

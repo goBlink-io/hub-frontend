@@ -8,6 +8,7 @@ import { z } from "zod";
 import { ArrowLeft, ArrowRight, Check, Loader2, ExternalLink } from "lucide-react";
 import Link from "next/link";
 import { createStarterTemplate } from "@/lib/book/starter-template";
+import { useToast } from "@/contexts/ToastContext";
 
 const themePresets = [
   { id: "midnight", name: "Midnight", colors: { primary: "#2563eb", secondary: "#7c3aed", bg: "#09090b" } },
@@ -40,6 +41,7 @@ function pageSlugify(text: string): string {
 
 export default function NewSpacePage() {
   const router = useRouter();
+  const { toast } = useToast();
   const [step, setStep] = useState(1);
   const [selectedTheme, setSelectedTheme] = useState("midnight");
   const [firstPageTitle, setFirstPageTitle] = useState("Introduction");
@@ -125,6 +127,7 @@ export default function NewSpacePage() {
       setCreatedSpaceId(spaceId);
       setCreatedPageId(pageId);
       setStep(4);
+      toast('Site created!', 'success');
     } catch {
       setServerError("Something went wrong. Please try again.");
     } finally {
@@ -181,7 +184,7 @@ export default function NewSpacePage() {
           <div className="space-y-5">
             <div>
               <label className="mb-1.5 block text-sm font-medium" style={{ color: "var(--color-text-secondary)" }}>
-                Site name
+                Site name<span className="text-[var(--color-danger)]"> *</span>
               </label>
               <input
                 {...register("name")}
@@ -197,7 +200,7 @@ export default function NewSpacePage() {
                 autoFocus
               />
               {errors.name && (
-                <p className="mt-1 text-sm" style={{ color: "var(--color-error)" }}>
+                <p className="mt-1 text-sm" role="alert" aria-live="polite" style={{ color: "var(--color-error)" }}>
                   {errors.name.message}
                 </p>
               )}
@@ -233,7 +236,7 @@ export default function NewSpacePage() {
                 </div>
               </div>
               {errors.slug && (
-                <p className="mt-1 text-sm" style={{ color: "var(--color-error)" }}>
+                <p className="mt-1 text-sm" role="alert" aria-live="polite" style={{ color: "var(--color-error)" }}>
                   {errors.slug.message}
                 </p>
               )}
@@ -275,9 +278,9 @@ export default function NewSpacePage() {
       {/* Step 2: Theme */}
       {step === 2 && (
         <div>
-          <h1 className="mb-2 text-2xl font-bold" style={{ color: "var(--color-text-primary)" }}>
+          <h2 className="mb-2 text-2xl font-bold" style={{ color: "var(--color-text-primary)" }}>
             Choose a theme
-          </h1>
+          </h2>
           <p className="mb-8" style={{ color: "var(--color-text-secondary)" }}>
             Pick a color scheme for your docs site. You can change this later.
           </p>
@@ -353,9 +356,9 @@ export default function NewSpacePage() {
       {/* Step 3: First Page */}
       {step === 3 && (
         <div>
-          <h1 className="mb-2 text-2xl font-bold" style={{ color: "var(--color-text-primary)" }}>
+          <h2 className="mb-2 text-2xl font-bold" style={{ color: "var(--color-text-primary)" }}>
             Create your first page
-          </h1>
+          </h2>
           <p className="mb-8" style={{ color: "var(--color-text-secondary)" }}>
             Every great docs site starts with a first page.
           </p>
@@ -385,6 +388,8 @@ export default function NewSpacePage() {
           {serverError && (
             <div
               className="mt-6 px-4 py-3 text-sm"
+              role="alert"
+              aria-live="polite"
               style={{
                 backgroundColor: "rgba(239,68,68,0.1)",
                 border: "1px solid rgba(239,68,68,0.2)",
@@ -433,9 +438,9 @@ export default function NewSpacePage() {
           >
             <Check size={36} style={{ color: "var(--color-success)" }} />
           </div>
-          <h1 className="mb-2 text-2xl font-bold" style={{ color: "var(--color-text-primary)" }}>
+          <h2 className="mb-2 text-2xl font-bold" style={{ color: "var(--color-text-primary)" }}>
             Your docs site is ready!
-          </h1>
+          </h2>
           <p className="mx-auto mb-8 max-w-md" style={{ color: "var(--color-text-secondary)" }}>
             Your space has been created with your first page. Start writing content or preview your site.
           </p>

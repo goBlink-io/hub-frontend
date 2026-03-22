@@ -39,14 +39,38 @@ export function ChainDonut({ breakdown, totalValueUsd }: ChainDonutProps) {
     });
   }, [breakdown]);
 
+  // Calculate label positions for segments > 8%
+  const labelPositions = useMemo(() => {
+    if (breakdown.length === 0) return [];
+
+    const SIZE = 100;
+    const RADIUS = 40;
+    const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
+    let offset = 0;
+
+    return breakdown.map((chain) => {
+      const fraction = chain.percent / 100;
+      const dashLength = fraction * CIRCUMFERENCE;
+      const midAngle = ((offset + dashLength / 2) / CIRCUMFERENCE) * 360 - 90;
+      const radians = (midAngle * Math.PI) / 180;
+      const labelRadius = RADIUS + 2;
+      const x = SIZE / 2 + labelRadius * Math.cos(radians);
+      const y = SIZE / 2 + labelRadius * Math.sin(radians);
+      offset += dashLength;
+      return { x, y, name: getChainMeta(chain.chain).name, percent: chain.percent };
+    });
+  }, [breakdown]);
+
   const hovered = hoveredIdx !== null ? breakdown[hoveredIdx] : null;
 
   return (
-    <div className="relative flex items-center justify-center">
+    <div className="relative flex flex-col items-center justify-center gap-3">
       <svg
         viewBox="0 0 100 100"
         className="w-44 h-44 md:w-52 md:h-52"
         style={{ transform: 'rotate(-90deg)' }}
+        role="img"
+        aria-label={`Portfolio distribution across ${breakdown.length} chains`}
       >
         {/* Background ring */}
         <circle
@@ -76,7 +100,9 @@ export function ChainDonut({ breakdown, totalValueUsd }: ChainDonutProps) {
             }}
             onMouseEnter={() => setHoveredIdx(seg.index)}
             onMouseLeave={() => setHoveredIdx(null)}
-          />
+          >
+            <title>{`${getChainMeta(seg.chain).name}: ${formatUsd(seg.totalUsd)} (${seg.percent.toFixed(1)}%)`}</title>
+          </circle>
         ))}
       </svg>
 
@@ -102,6 +128,22 @@ export function ChainDonut({ breakdown, totalValueUsd }: ChainDonutProps) {
             </span>
           </>
         )}
+      </div>
+
+      {/* Legend labels below donut for colorblind accessibility */}
+      <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 mt-1">
+        {breakdown.map((chain) => {
+          const meta = getChainMeta(chain.chain);
+          return (
+            <span key={chain.chain} className="flex items-center gap-1 text-tiny" style={{ color: 'var(--color-text-secondary)' }}>
+              <span
+                className="inline-block w-2.5 h-2.5 rounded-sm flex-shrink-0"
+                style={{ backgroundColor: chain.color }}
+              />
+              {meta.name} {chain.percent.toFixed(0)}%
+            </span>
+          );
+        })}
       </div>
     </div>
   );

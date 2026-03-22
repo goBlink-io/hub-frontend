@@ -103,7 +103,7 @@ export default function PortfolioPage() {
       <div className="mx-auto max-w-lg px-4 py-6">
         <div className="card p-12 text-center animate-fade-up">
           <Wallet className="h-12 w-12 mx-auto mb-4 opacity-30" style={{ color: 'var(--color-text-muted)' }} />
-          <h1 className="text-h3 mb-2">Portfolio</h1>
+          <h2 className="text-h3 mb-2">Portfolio</h2>
           <p className="text-body-sm" style={{ color: 'var(--color-text-muted)' }}>
             Connect a wallet to view your portfolio
           </p>
@@ -228,6 +228,8 @@ export default function PortfolioPage() {
                       <img
                         src={logo.icon}
                         alt={meta.name}
+                        width={32}
+                        height={32}
                         className="w-8 h-8 rounded-full"
                         onError={(e) => {
                           (e.target as HTMLImageElement).style.display = 'none';

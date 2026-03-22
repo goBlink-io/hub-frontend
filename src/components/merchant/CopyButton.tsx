@@ -35,6 +35,7 @@ export function CopyButton({ value, className }: CopyButtonProps) {
       className={`p-1 rounded transition-colors ${className ?? ""}`}
       style={{ color: copied ? "var(--color-success)" : "var(--color-text-tertiary)" }}
       title={copied ? "Copied!" : "Copy"}
+      aria-label={copied ? "Copied" : "Copy to clipboard"}
     >
       {copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
     </button>

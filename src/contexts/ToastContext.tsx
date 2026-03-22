@@ -51,7 +51,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
             style={{ background: bgMap[t.type], borderColor: 'var(--color-border)' }}>
             {iconMap[t.type]}
             <span className="text-body-sm font-medium flex-1" style={{ color: 'var(--color-text-primary)' }}>{t.message}</span>
-            <button onClick={() => dismiss(t.id)} style={{ color: 'var(--color-text-muted)' }}>
+            <button onClick={() => dismiss(t.id)} style={{ color: 'var(--color-text-muted)' }} aria-label="Dismiss notification">
               <X className="h-4 w-4" />
             </button>
           </div>

@@ -236,7 +236,7 @@ export default function TokenSelector({
               <div className="rounded-2xl overflow-hidden flex flex-col" style={{ background: 'var(--color-bg-secondary)', border: '1px solid var(--color-border)', maxHeight: '85vh' }}>
                 <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: '1px solid var(--color-border)' }}>
                   <h3 className="text-h5" style={{ color: 'var(--color-text-primary)' }}>{label}</h3>
-                  <button onClick={close} className="p-1.5 rounded-lg transition-colors" style={{ color: 'var(--color-text-muted)' }}>
+                  <button onClick={close} className="p-1.5 rounded-lg transition-colors" style={{ color: 'var(--color-text-muted)' }} aria-label="Close token selector">
                     <X className="h-5 w-5" />
                   </button>
                 </div>

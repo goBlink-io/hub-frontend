@@ -125,9 +125,9 @@ export function OnboardingWizard({
           >
             <Zap className="h-7 w-7 text-white" />
           </div>
-          <h1 className="text-2xl font-bold" style={{ color: "var(--color-text-primary)" }}>
+          <h2 className="text-2xl font-bold" style={{ color: "var(--color-text-primary)" }}>
             Set Up Your Merchant Account
-          </h1>
+          </h2>
           <p className="mt-2" style={{ color: "var(--color-text-secondary)" }}>
             Accept crypto payments from any chain. Non-custodial, instant settlement.
           </p>

@@ -242,6 +242,7 @@ function EndpointsSection({
                       className="p-2 rounded-lg transition-colors"
                       style={{ color: "var(--color-text-tertiary)", minHeight: "44px", minWidth: "44px" }}
                       title="Send test event"
+                      aria-label="Send test event"
                     >
                       {testing === wh.id ? (
                         <Loader2 className="h-4 w-4 animate-spin" />
@@ -254,6 +255,7 @@ function EndpointsSection({
                       className="p-2 rounded-lg transition-colors"
                       style={{ color: "var(--color-text-tertiary)", minHeight: "44px", minWidth: "44px" }}
                       title="Delete endpoint"
+                      aria-label="Delete endpoint"
                     >
                       <Trash2 className="h-4 w-4" />
                     </button>
@@ -297,7 +299,7 @@ function EndpointsSection({
               <h3 className="text-lg font-semibold" style={{ color: "var(--color-text-primary)" }}>
                 Add Webhook Endpoint
               </h3>
-              <button onClick={() => setDialogOpen(false)} className="p-1" style={{ color: "var(--color-text-tertiary)" }}>
+              <button onClick={() => setDialogOpen(false)} className="p-1" style={{ color: "var(--color-text-tertiary)" }} aria-label="Close dialog">
                 <X className="h-5 w-5" />
               </button>
             </div>
@@ -603,6 +605,7 @@ function DeliveryLogsSection({ webhooks }: { webhooks: WebhookEndpoint[] }) {
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 className="p-2 rounded-lg disabled:opacity-30"
                 style={{ border: "1px solid var(--color-border)", color: "var(--color-text-secondary)", minHeight: "44px" }}
+                aria-label="Previous page"
               >
                 <ChevronLeft className="h-4 w-4" />
               </button>
@@ -611,6 +614,7 @@ function DeliveryLogsSection({ webhooks }: { webhooks: WebhookEndpoint[] }) {
                 onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                 className="p-2 rounded-lg disabled:opacity-30"
                 style={{ border: "1px solid var(--color-border)", color: "var(--color-text-secondary)", minHeight: "44px" }}
+                aria-label="Next page"
               >
                 <ChevronRight className="h-4 w-4" />
               </button>

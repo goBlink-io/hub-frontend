@@ -71,6 +71,7 @@ export function EditorSidebar({ activePageId }: EditorSidebarProps) {
           onClick={() => setMobileOpen(false)}
           className="p-1 transition lg:hidden"
           style={{ color: "var(--color-text-tertiary)" }}
+          aria-label="Close sidebar"
         >
           <X size={16} />
         </button>
@@ -93,6 +94,7 @@ export function EditorSidebar({ activePageId }: EditorSidebarProps) {
           className="rounded p-1 transition"
           style={{ color: "var(--color-text-tertiary)" }}
           title="New page"
+          aria-label="Add new page"
         >
           <Plus size={14} />
         </button>

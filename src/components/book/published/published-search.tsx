@@ -62,6 +62,7 @@ export function PublishedSearch({ spaceSlug }: { spaceSlug: string }) {
       <button
         type="button"
         onClick={() => setOpen(true)}
+        aria-label="Search documentation"
         className="flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm transition"
         style={{
           color: "var(--color-text-secondary)",
@@ -113,6 +114,7 @@ export function PublishedSearch({ spaceSlug }: { spaceSlug: string }) {
                 type="button"
                 onClick={() => setOpen(false)}
                 style={{ color: "var(--color-text-tertiary)" }}
+                aria-label="Close search"
               >
                 <X size={16} />
               </button>
