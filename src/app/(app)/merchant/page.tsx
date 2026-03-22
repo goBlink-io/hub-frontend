@@ -1,0 +1,44 @@
+import { Store } from "lucide-react";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = { title: "Merchant" };
+
+export default function MerchantPage() {
+  return (
+    <div className="mx-auto max-w-5xl px-4 py-12">
+      <div
+        className="flex flex-col items-center justify-center gap-4 py-20"
+        style={{
+          backgroundColor: "var(--color-bg-secondary)",
+          border: "1px solid var(--color-border)",
+          borderRadius: "var(--radius-xl)",
+        }}
+      >
+        <Store size={48} style={{ color: "var(--color-primary)" }} />
+        <h1
+          className="text-xl font-bold"
+          style={{ color: "var(--color-text-primary)" }}
+        >
+          Merchant Tools
+        </h1>
+        <p
+          className="text-sm text-center max-w-xs"
+          style={{ color: "var(--color-text-secondary)" }}
+        >
+          Non-custodial crypto payment processing. POS, invoices, embeddable
+          buttons, webhooks, and analytics.
+        </p>
+        <span
+          className="text-xs font-medium px-3 py-1"
+          style={{
+            color: "var(--color-warning)",
+            backgroundColor: "rgba(245, 158, 11, 0.1)",
+            borderRadius: "var(--radius-sm)",
+          }}
+        >
+          Coming Soon
+        </span>
+      </div>
+    </div>
+  );
+}
