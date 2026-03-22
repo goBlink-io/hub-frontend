@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { Navbar } from "@/components/layout/Navbar";
 import { BottomNav } from "@/components/layout/BottomNav";
 import { PageTransition } from "@/components/shared/PageTransition";
+import { CommandPalette } from "@/components/shared/CommandPalette";
 
 export default async function AppLayout({
   children,
@@ -28,6 +29,7 @@ export default async function AppLayout({
         <PageTransition>{children}</PageTransition>
       </main>
       <BottomNav />
+      <CommandPalette />
     </>
   );
 }

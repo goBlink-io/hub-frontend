@@ -11,6 +11,7 @@ import {
   Code,
 } from "lucide-react";
 import { useWallet } from "@goblink/connect/react";
+import { Skeleton } from "@/components/ui/Skeleton";
 
 interface DashboardContentProps {
   userEmail: string | null;
@@ -79,6 +80,37 @@ const products: ProductCard[] = [
   },
 ];
 
+function DashboardSkeleton() {
+  return (
+    <div className="mx-auto max-w-5xl px-4 py-6 space-y-8 animate-fade-up">
+      <div className="space-y-2">
+        <Skeleton className="h-8 w-64" />
+        <Skeleton className="h-4 w-48" />
+      </div>
+      <div className="space-y-3">
+        <Skeleton className="h-4 w-24" />
+        <div className="grid grid-cols-3 gap-3">
+          {[0, 1, 2].map((i) => (
+            <Skeleton key={i} className="h-28" />
+          ))}
+        </div>
+      </div>
+      <div className="space-y-3">
+        <Skeleton className="h-4 w-32" />
+        <Skeleton className="h-24" />
+      </div>
+      <div className="space-y-3">
+        <Skeleton className="h-4 w-20" />
+        <div className="grid gap-3 sm:grid-cols-3">
+          {[0, 1, 2].map((i) => (
+            <Skeleton key={i} className="h-36" />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function DashboardContent({ userEmail }: DashboardContentProps) {
   const { wallets, isConnected, address } = useWallet();
 
@@ -88,10 +120,7 @@ export function DashboardContent({ userEmail }: DashboardContentProps) {
     <div className="mx-auto max-w-5xl px-4 py-6 space-y-8">
       {/* Welcome */}
       <div>
-        <h1
-          className="text-2xl font-bold"
-          style={{ color: "var(--color-text-primary)" }}
-        >
+        <h1 className="text-2xl font-bold text-blue-gradient">
           Welcome back, {displayName}
         </h1>
         <p
@@ -115,11 +144,8 @@ export function DashboardContent({ userEmail }: DashboardContentProps) {
             <Link
               key={action.label}
               href={action.href}
-              className="flex flex-col items-center gap-2 p-4 text-center transition-colors"
+              className="card-hero flex flex-col items-center gap-2 p-4 text-center"
               style={{
-                backgroundColor: "var(--color-bg-secondary)",
-                border: "1px solid var(--color-border)",
-                borderRadius: "var(--radius-lg)",
                 color: "var(--color-primary)",
                 minHeight: "44px",
               }}
@@ -155,12 +181,7 @@ export function DashboardContent({ userEmail }: DashboardContentProps) {
             {wallets.map((w) => (
               <div
                 key={`${w.chain}-${w.address}`}
-                className="flex items-center gap-3 px-4 py-3"
-                style={{
-                  backgroundColor: "var(--color-bg-secondary)",
-                  border: "1px solid var(--color-border)",
-                  borderRadius: "var(--radius-md)",
-                }}
+                className="card-standard flex items-center gap-3 px-4 py-3"
               >
                 <Wallet
                   size={18}
@@ -225,12 +246,7 @@ export function DashboardContent({ userEmail }: DashboardContentProps) {
             <Link
               key={product.label}
               href={product.href}
-              className="flex flex-col gap-3 p-5 transition-colors group"
-              style={{
-                backgroundColor: "var(--color-bg-secondary)",
-                border: "1px solid var(--color-border)",
-                borderRadius: "var(--radius-lg)",
-              }}
+              className="card-standard flex flex-col gap-3 p-5 group"
             >
               <div className="flex items-center justify-between">
                 <div style={{ color: "var(--color-primary)" }}>
@@ -268,3 +284,5 @@ export function DashboardContent({ userEmail }: DashboardContentProps) {
     </div>
   );
 }
+
+export { DashboardSkeleton };

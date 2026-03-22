@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useWallet } from '@goblink/connect/react';
-import { Clock, CheckCircle, AlertTriangle, Loader2, Search, Filter, ExternalLink, ArrowUpDown } from 'lucide-react';
+import { Clock, CheckCircle, AlertTriangle, Loader2, ExternalLink, ArrowUpDown } from 'lucide-react';
 import { getExplorerTxUrl } from '@/lib/shared';
 
 interface Transaction {
@@ -107,9 +107,16 @@ export default function HistoryPage() {
           <p className="text-tiny mt-1" style={{ color: 'var(--text-muted)' }}>All your cross-chain transfers will appear here.</p>
         </div>
       ) : loading ? (
-        <div className="card p-12 text-center">
-          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-3" style={{ color: 'var(--brand)' }} />
-          <p className="text-body-sm" style={{ color: 'var(--text-muted)' }}>Loading transactions...</p>
+        <div className="space-y-2">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className="card p-4 space-y-2">
+              <div className="flex items-center justify-between">
+                <div className="skeleton-shimmer h-4 w-40" />
+                <div className="skeleton-shimmer h-5 w-20 rounded-full" />
+              </div>
+              <div className="skeleton-shimmer h-3 w-56" />
+            </div>
+          ))}
         </div>
       ) : transactions.length === 0 ? (
         <div className="card p-12 text-center">

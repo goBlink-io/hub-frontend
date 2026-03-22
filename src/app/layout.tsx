@@ -59,7 +59,7 @@ export default function RootLayout({
       className={`${inter.variable} ${jetbrainsMono.variable} dark`}
       suppressHydrationWarning
     >
-      <body className="min-h-dvh flex flex-col antialiased">
+      <body className="min-h-dvh flex flex-col antialiased noise-overlay">
         <a href="#main-content" className="skip-to-main">
           Skip to main content
         </a>

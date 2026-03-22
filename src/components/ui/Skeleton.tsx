@@ -3,8 +3,7 @@
 export function Skeleton({ className = '' }: { className?: string }) {
   return (
     <div
-      className={`animate-pulse rounded ${className}`}
-      style={{ background: 'var(--color-bg-tertiary)' }}
+      className={`skeleton-shimmer ${className}`}
     />
   );
 }

@@ -1,12 +1,29 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import SwapForm from '@/components/swap/SwapForm';
+import dynamic from 'next/dynamic';
 import QuotePreview from '@/components/swap/QuotePreview';
 import StatusTracker from '@/components/swap/StatusTracker';
 import TransferModal from '@/components/swap/TransferModal';
 import RecentTransfers from '@/components/swap/RecentTransfers';
 import { useTransactionHistory } from '@/hooks/useTransactionHistory';
+import { Skeleton } from '@/components/ui/Skeleton';
+
+const SwapForm = dynamic(() => import('@/components/swap/SwapForm'), {
+  ssr: false,
+  loading: () => <SwapSkeleton />,
+});
+
+function SwapSkeleton() {
+  return (
+    <div className="card-hero p-6 space-y-4">
+      <Skeleton className="h-6 w-32" />
+      <Skeleton className="h-16 w-full" />
+      <Skeleton className="h-16 w-full" />
+      <Skeleton className="h-12 w-full" />
+    </div>
+  );
+}
 
 type SwapView = 'form' | 'quote' | 'tracking' | 'modal';
 
@@ -26,7 +43,6 @@ export default function SwapPage() {
     setDepositAddress(depAddr);
     setView('tracking');
 
-    // Log to local history
     if (quote) {
       const q = quote as Record<string, any>;
       addEntry({
@@ -68,11 +84,13 @@ export default function SwapPage() {
     <div className="mx-auto max-w-lg px-4 py-6">
       {view === 'form' && (
         <>
-          <SwapForm
-            onQuoteReceived={handleQuoteReceived}
-            refreshKey={refreshKey}
-            onSwapInitiated={handleSwapInitiated}
-          />
+          <div className="card-hero p-1">
+            <SwapForm
+              onQuoteReceived={handleQuoteReceived}
+              refreshKey={refreshKey}
+              onSwapInitiated={handleSwapInitiated}
+            />
+          </div>
           <div className="mt-4">
             <RecentTransfers history={history} onSelect={handleSelectRecent} />
           </div>
