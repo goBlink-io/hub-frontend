@@ -1,17 +1,13 @@
+import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { redirect } from "next/navigation";
-import { OverviewContent } from "@/components/merchant/OverviewContent";
 import { getExchangeRate } from "@/lib/merchant/forex";
-import type { Metadata } from "next";
 
-export const metadata: Metadata = { title: "Merchant Dashboard" };
 export const dynamic = "force-dynamic";
 
-export default async function MerchantDashboardPage() {
+export async function GET(request: NextRequest) {
   const supabase = await createClient();
-
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { data: merchant } = await supabase
     .from("merchants")
@@ -19,10 +15,10 @@ export default async function MerchantDashboardPage() {
     .eq("user_id", user.id)
     .single();
 
-  if (!merchant) redirect("/merchant/onboarding");
-  if (!merchant.onboarding_completed) redirect("/merchant/onboarding");
+  if (!merchant) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  // Get today's start in UTC
+  const isTest = request.nextUrl.searchParams.get("is_test") === "true";
+
   const todayStart = new Date();
   todayStart.setUTCHours(0, 0, 0, 0);
 
@@ -30,7 +26,7 @@ export default async function MerchantDashboardPage() {
     .from("payments")
     .select("id, external_order_id, amount, currency, status, created_at, is_test")
     .eq("merchant_id", merchant.id)
-    .eq("is_test", false)
+    .eq("is_test", isTest)
     .order("created_at", { ascending: false })
     .limit(10);
 
@@ -39,14 +35,14 @@ export default async function MerchantDashboardPage() {
     .select("net_amount")
     .eq("merchant_id", merchant.id)
     .eq("status", "confirmed")
-    .eq("is_test", false)
+    .eq("is_test", isTest)
     .gte("confirmed_at", todayStart.toISOString());
 
   const { count: pendingCount } = await supabase
     .from("payments")
     .select("*", { count: "exact", head: true })
     .eq("merchant_id", merchant.id)
-    .eq("is_test", false)
+    .eq("is_test", isTest)
     .in("status", ["pending", "processing"]);
 
   const { data: allConfirmed } = await supabase
@@ -54,7 +50,7 @@ export default async function MerchantDashboardPage() {
     .select("net_amount")
     .eq("merchant_id", merchant.id)
     .eq("status", "confirmed")
-    .eq("is_test", false);
+    .eq("is_test", isTest);
 
   const todayRevenue = todayPayments?.reduce(
     (sum, p) => sum + (Number(p.net_amount) || 0), 0
@@ -64,29 +60,23 @@ export default async function MerchantDashboardPage() {
     (sum, p) => sum + (Number(p.net_amount) || 0), 0
   ) ?? 0;
 
-  const totalPayments = allConfirmed?.length ?? 0;
-
   const displayCurrency = merchant.display_currency || "USD";
   const exchangeRate = await getExchangeRate(displayCurrency);
 
-  return (
-    <OverviewContent
-      data={{
-        totalBalance,
-        todayRevenue,
-        pendingCount: pendingCount ?? 0,
-        totalPayments,
-        recentPayments: recentPayments ?? [],
-        currency: merchant.currency,
-        displayCurrency,
-        exchangeRate: exchangeRate ?? 1,
-        settlementToken: merchant.settlement_token,
-        settlementChain: merchant.settlement_chain,
-        businessName: merchant.business_name,
-        onboardingChecklist: merchant.onboarding_checklist ?? null,
-        firstPaymentCelebrated: merchant.first_payment_celebrated ?? false,
-        merchantId: merchant.id,
-      }}
-    />
-  );
+  return NextResponse.json({
+    totalBalance,
+    todayRevenue,
+    pendingCount: pendingCount ?? 0,
+    totalPayments: allConfirmed?.length ?? 0,
+    recentPayments: recentPayments ?? [],
+    currency: merchant.currency,
+    displayCurrency,
+    exchangeRate: exchangeRate ?? 1,
+    settlementToken: merchant.settlement_token,
+    settlementChain: merchant.settlement_chain,
+    businessName: merchant.business_name,
+    onboardingChecklist: merchant.onboarding_checklist ?? null,
+    firstPaymentCelebrated: merchant.first_payment_celebrated ?? false,
+    merchantId: merchant.id,
+  });
 }
