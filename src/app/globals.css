@@ -309,3 +309,17 @@ select {
 .animate-fade-up {
   animation: fade-up 0.3s ease-out;
 }
+
+/* Hide scrollbar for horizontal chip scrollers */
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+/* Tabular numbers for financial data */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
