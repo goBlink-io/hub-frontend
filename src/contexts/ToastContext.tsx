@@ -27,10 +27,10 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const iconMap = {
-    success: <CheckCircle className="h-5 w-5 flex-shrink-0" style={{ color: 'var(--success)' }} />,
-    error: <AlertTriangle className="h-5 w-5 flex-shrink-0" style={{ color: 'var(--error)' }} />,
-    warning: <AlertCircle className="h-5 w-5 flex-shrink-0" style={{ color: 'var(--warning)' }} />,
-    info: <Info className="h-5 w-5 flex-shrink-0" style={{ color: 'var(--brand)' }} />,
+    success: <CheckCircle className="h-5 w-5 flex-shrink-0" style={{ color: 'var(--color-success)' }} />,
+    error: <AlertTriangle className="h-5 w-5 flex-shrink-0" style={{ color: 'var(--color-danger)' }} />,
+    warning: <AlertCircle className="h-5 w-5 flex-shrink-0" style={{ color: 'var(--color-warning)' }} />,
+    info: <Info className="h-5 w-5 flex-shrink-0" style={{ color: 'var(--color-primary)' }} />,
   };
 
   const bgMap = {
@@ -48,10 +48,10 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
         {toasts.map(t => (
           <div key={t.id}
             className="flex items-center gap-3 px-4 py-3 rounded-xl border shadow-lg animate-slide-up"
-            style={{ background: bgMap[t.type], borderColor: 'var(--border)' }}>
+            style={{ background: bgMap[t.type], borderColor: 'var(--color-border)' }}>
             {iconMap[t.type]}
-            <span className="text-body-sm font-medium flex-1" style={{ color: 'var(--text-primary)' }}>{t.message}</span>
-            <button onClick={() => dismiss(t.id)} style={{ color: 'var(--text-muted)' }}>
+            <span className="text-body-sm font-medium flex-1" style={{ color: 'var(--color-text-primary)' }}>{t.message}</span>
+            <button onClick={() => dismiss(t.id)} style={{ color: 'var(--color-text-muted)' }}>
               <X className="h-4 w-4" />
             </button>
           </div>

@@ -87,17 +87,17 @@ export function ChainDonut({ breakdown, totalValueUsd }: ChainDonutProps) {
             <span className="text-tiny font-semibold" style={{ color: hovered.color }}>
               {getChainMeta(hovered.chain).name}
             </span>
-            <span className="text-body-sm font-bold" style={{ color: 'var(--text-primary)' }}>
+            <span className="text-body-sm font-bold" style={{ color: 'var(--color-text-primary)' }}>
               {formatUsd(hovered.totalUsd)}
             </span>
-            <span className="text-tiny" style={{ color: 'var(--text-muted)' }}>
+            <span className="text-tiny" style={{ color: 'var(--color-text-muted)' }}>
               {hovered.percent.toFixed(1)}%
             </span>
           </>
         ) : (
           <>
-            <span className="text-tiny" style={{ color: 'var(--text-muted)' }}>Total</span>
-            <span className="text-body-sm font-bold" style={{ color: 'var(--text-primary)' }}>
+            <span className="text-tiny" style={{ color: 'var(--color-text-muted)' }}>Total</span>
+            <span className="text-body-sm font-bold" style={{ color: 'var(--color-text-primary)' }}>
               {formatUsd(totalValueUsd)}
             </span>
           </>

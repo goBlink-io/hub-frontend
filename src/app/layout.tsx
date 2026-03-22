@@ -23,6 +23,7 @@ export const metadata: Metadata = {
   description:
     "One app. Every chain. Swap, pay, and build across 26+ blockchains with goBlink.",
   metadataBase: new URL("https://goblink.io"),
+  icons: { icon: "/favicon.svg" },
   openGraph: {
     title: "goBlink — Cross-Chain Everything",
     description:
@@ -30,6 +31,7 @@ export const metadata: Metadata = {
     url: "https://goblink.io",
     siteName: "goBlink",
     type: "website",
+    images: ["/og.png"],
   },
   twitter: {
     card: "summary_large_image",

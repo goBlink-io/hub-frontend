@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useWallet } from '@goblink/connect/react';
 import { Clock, CheckCircle, AlertTriangle, Loader2, ExternalLink, ArrowUpDown } from 'lucide-react';
 import { getExplorerTxUrl } from '@/lib/shared';
+import { ProductSuggestion } from '@/components/shared/ProductSuggestion';
 
 interface Transaction {
   id: string;
@@ -25,13 +26,13 @@ interface Transaction {
 function StatusBadge({ status }: { status: string }) {
   const s = status.toLowerCase();
   const config = {
-    completed: { icon: <CheckCircle className="h-3.5 w-3.5" />, color: 'var(--success)', bg: 'var(--success-bg)', label: 'Completed' },
-    success: { icon: <CheckCircle className="h-3.5 w-3.5" />, color: 'var(--success)', bg: 'var(--success-bg)', label: 'Completed' },
-    pending: { icon: <Clock className="h-3.5 w-3.5" />, color: 'var(--warning)', bg: 'var(--warning-bg)', label: 'Pending' },
-    processing: { icon: <Loader2 className="h-3.5 w-3.5 animate-spin" />, color: 'var(--brand)', bg: 'var(--info-bg)', label: 'Processing' },
-    failed: { icon: <AlertTriangle className="h-3.5 w-3.5" />, color: 'var(--error)', bg: 'var(--error-bg)', label: 'Failed' },
-    refunded: { icon: <AlertTriangle className="h-3.5 w-3.5" />, color: 'var(--warning)', bg: 'var(--warning-bg)', label: 'Refunded' },
-  }[s] || { icon: <Clock className="h-3.5 w-3.5" />, color: 'var(--text-muted)', bg: 'var(--elevated)', label: status };
+    completed: { icon: <CheckCircle className="h-3.5 w-3.5" />, color: 'var(--color-success)', bg: 'var(--success-bg)', label: 'Completed' },
+    success: { icon: <CheckCircle className="h-3.5 w-3.5" />, color: 'var(--color-success)', bg: 'var(--success-bg)', label: 'Completed' },
+    pending: { icon: <Clock className="h-3.5 w-3.5" />, color: 'var(--color-warning)', bg: 'var(--warning-bg)', label: 'Pending' },
+    processing: { icon: <Loader2 className="h-3.5 w-3.5 animate-spin" />, color: 'var(--color-primary)', bg: 'var(--info-bg)', label: 'Processing' },
+    failed: { icon: <AlertTriangle className="h-3.5 w-3.5" />, color: 'var(--color-danger)', bg: 'var(--error-bg)', label: 'Failed' },
+    refunded: { icon: <AlertTriangle className="h-3.5 w-3.5" />, color: 'var(--color-warning)', bg: 'var(--warning-bg)', label: 'Refunded' },
+  }[s] || { icon: <Clock className="h-3.5 w-3.5" />, color: 'var(--color-text-muted)', bg: 'var(--color-bg-tertiary)', label: status };
 
   return (
     <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-tiny font-medium"
@@ -45,6 +46,7 @@ export default function HistoryPage() {
   const { address } = useWallet();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(false);
+  const [fetchError, setFetchError] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>('');
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -54,6 +56,7 @@ export default function HistoryPage() {
   const fetchTransactions = useCallback(async () => {
     if (!walletAddresses) return;
     setLoading(true);
+    setFetchError(null);
     try {
       const params = new URLSearchParams({
         wallet: walletAddresses,
@@ -67,8 +70,8 @@ export default function HistoryPage() {
       const data = await res.json();
       setTransactions(data.data?.transactions || []);
       setTotalPages(data.data?.totalPages || 1);
-    } catch (err) {
-      console.error('Failed to fetch transactions:', err);
+    } catch {
+      setFetchError('Failed to load transactions. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -102,9 +105,15 @@ export default function HistoryPage() {
 
       {!walletAddresses ? (
         <div className="card p-12 text-center">
-          <ArrowUpDown className="h-10 w-10 mx-auto mb-3 opacity-30" style={{ color: 'var(--text-muted)' }} />
-          <p className="text-body-sm font-medium" style={{ color: 'var(--text-primary)' }}>Connect a wallet to see your history</p>
-          <p className="text-tiny mt-1" style={{ color: 'var(--text-muted)' }}>All your cross-chain transfers will appear here.</p>
+          <ArrowUpDown className="h-10 w-10 mx-auto mb-3 opacity-30" style={{ color: 'var(--color-text-muted)' }} />
+          <p className="text-body-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>Connect a wallet to see your history</p>
+          <p className="text-tiny mt-1" style={{ color: 'var(--color-text-muted)' }}>All your cross-chain transfers will appear here.</p>
+        </div>
+      ) : fetchError ? (
+        <div className="card p-12 text-center">
+          <AlertTriangle className="h-10 w-10 mx-auto mb-3 opacity-40" style={{ color: 'var(--color-danger)' }} />
+          <p className="text-body-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>{fetchError}</p>
+          <button onClick={fetchTransactions} className="btn btn-secondary px-4 h-9 text-tiny mt-3">Retry</button>
         </div>
       ) : loading ? (
         <div className="space-y-2">
@@ -120,9 +129,9 @@ export default function HistoryPage() {
         </div>
       ) : transactions.length === 0 ? (
         <div className="card p-12 text-center">
-          <Clock className="h-10 w-10 mx-auto mb-3 opacity-30" style={{ color: 'var(--text-muted)' }} />
-          <p className="text-body-sm font-medium" style={{ color: 'var(--text-primary)' }}>No transactions yet</p>
-          <p className="text-tiny mt-1" style={{ color: 'var(--text-muted)' }}>Your transfer history will show up here.</p>
+          <Clock className="h-10 w-10 mx-auto mb-3 opacity-30" style={{ color: 'var(--color-text-muted)' }} />
+          <p className="text-body-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>No transactions yet</p>
+          <p className="text-tiny mt-1" style={{ color: 'var(--color-text-muted)' }}>Your transfer history will show up here.</p>
         </div>
       ) : (
         <div className="space-y-2">
@@ -130,31 +139,31 @@ export default function HistoryPage() {
             <div key={tx.id} className="card p-4">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
-                  <span className="text-body-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
+                  <span className="text-body-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
                     {tx.amount_in} {tx.from_token}
                   </span>
-                  <span style={{ color: 'var(--text-faint)' }}>→</span>
-                  <span className="text-body-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
+                  <span style={{ color: 'var(--color-text-tertiary)' }}>→</span>
+                  <span className="text-body-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
                     {tx.amount_out || '...'} {tx.to_token}
                   </span>
                 </div>
                 <StatusBadge status={tx.status} />
               </div>
               <div className="flex items-center justify-between">
-                <div className="text-tiny" style={{ color: 'var(--text-muted)' }}>
+                <div className="text-tiny" style={{ color: 'var(--color-text-muted)' }}>
                   {tx.from_chain} → {tx.to_chain} · {formatDate(tx.created_at)}
                   {tx.amount_usd && ` · $${tx.amount_usd.toFixed(2)}`}
                 </div>
                 <div className="flex items-center gap-1">
                   {tx.deposit_tx_hash && (
                     <a href={getExplorerTxUrl(tx.from_chain, tx.deposit_tx_hash)} target="_blank" rel="noopener noreferrer"
-                      className="p-1 rounded" style={{ color: 'var(--text-muted)' }} title="View deposit tx">
+                      className="p-1 rounded" style={{ color: 'var(--color-text-muted)' }} title="View deposit tx">
                       <ExternalLink className="h-3.5 w-3.5" />
                     </a>
                   )}
                   {tx.fulfillment_tx_hash && (
                     <a href={getExplorerTxUrl(tx.to_chain, tx.fulfillment_tx_hash)} target="_blank" rel="noopener noreferrer"
-                      className="p-1 rounded" style={{ color: 'var(--success)' }} title="View delivery tx">
+                      className="p-1 rounded" style={{ color: 'var(--color-success)' }} title="View delivery tx">
                       <ExternalLink className="h-3.5 w-3.5" />
                     </a>
                   )}
@@ -168,7 +177,7 @@ export default function HistoryPage() {
             <div className="flex items-center justify-center gap-3 pt-4">
               <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}
                 className="btn btn-secondary px-4 h-9 text-tiny">Previous</button>
-              <span className="text-tiny" style={{ color: 'var(--text-muted)' }}>
+              <span className="text-tiny" style={{ color: 'var(--color-text-muted)' }}>
                 Page {page} of {totalPages}
               </span>
               <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages}
@@ -177,6 +186,8 @@ export default function HistoryPage() {
           )}
         </div>
       )}
+
+      <ProductSuggestion exclude="history" />
     </div>
   );
 }

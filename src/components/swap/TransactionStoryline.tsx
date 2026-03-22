@@ -147,17 +147,17 @@ export default function TransactionStoryline({
   return (
     <div className="space-y-5">
       {/* ── Header: amount flow ── */}
-      <div className="flex items-center justify-between p-4 rounded-xl" style={{ background: 'var(--elevated)' }}>
+      <div className="flex items-center justify-between p-4 rounded-xl" style={{ background: 'var(--color-bg-tertiary)' }}>
         <div className="flex items-center gap-2">
           {(fromTokenIcon || fromLogo) && (
             <img src={fromTokenIcon || fromLogo!.icon} alt={fromToken} className="w-6 h-6 rounded-full"
               onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
           )}
-          <span className="font-semibold text-sm" style={{ color: 'var(--text-primary)' }}>{amountIn} {fromToken}</span>
+          <span className="font-semibold text-sm" style={{ color: 'var(--color-text-primary)' }}>{amountIn} {fromToken}</span>
         </div>
-        <ArrowRight className="h-4 w-4" style={{ color: 'var(--text-muted)' }} />
+        <ArrowRight className="h-4 w-4" style={{ color: 'var(--color-text-muted)' }} />
         <div className="flex items-center gap-2">
-          <span className="font-semibold text-sm" style={{ color: complete ? 'var(--success)' : 'var(--text-primary)' }}>
+          <span className="font-semibold text-sm" style={{ color: complete ? 'var(--color-success)' : 'var(--color-text-primary)' }}>
             {amountOut || '...'} {toToken}
           </span>
           {(toTokenIcon || toLogo) && (
@@ -179,7 +179,7 @@ export default function TransactionStoryline({
           <div className="text-lg font-bold" style={{ color: status?.toUpperCase() === 'REFUNDED' ? 'var(--warning, #eab308)' : 'var(--error, #ef4444)' }}>
             {status?.toUpperCase() === 'REFUNDED' ? 'Funds Returned' : 'Transfer Failed'}
           </div>
-          <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>
+          <p className="text-sm mt-1" style={{ color: 'var(--color-text-secondary)' }}>
             {status?.toUpperCase() === 'REFUNDED'
               ? 'Your funds have been returned to your wallet.'
               : 'Something went wrong. Your funds are safe.'}
@@ -191,7 +191,7 @@ export default function TransactionStoryline({
       {!failed && !complete && (
         <div>
           {/* Progress bar */}
-          <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--elevated)' }}>
+          <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--color-bg-tertiary)' }}>
             <div
               className="h-full rounded-full transition-all duration-1000 ease-linear"
               style={{
@@ -202,16 +202,16 @@ export default function TransactionStoryline({
           </div>
           {/* Time info */}
           <div className="flex justify-between mt-2">
-            <span className="text-tiny" style={{ color: 'var(--text-muted)' }}>
+            <span className="text-tiny" style={{ color: 'var(--color-text-muted)' }}>
               {elapsed}s elapsed
             </span>
             {remaining !== null && remaining > 0 && (
-              <span className="text-tiny font-medium" style={{ color: 'var(--brand)' }}>
+              <span className="text-tiny font-medium" style={{ color: 'var(--color-primary)' }}>
                 ~{remaining}s remaining
               </span>
             )}
             {remaining === 0 && !complete && (
-              <span className="text-tiny" style={{ color: 'var(--text-muted)' }}>
+              <span className="text-tiny" style={{ color: 'var(--color-text-muted)' }}>
                 Almost there...
               </span>
             )}
@@ -223,12 +223,12 @@ export default function TransactionStoryline({
       {complete && (
         <div className="flex flex-col items-center py-6 rounded-xl" style={{ background: 'var(--success-bg, rgba(34,197,94,0.08))' }}>
           <div className="mb-3 p-3 rounded-full" style={{ background: 'rgba(34,197,94,0.15)' }}>
-            <Check className="h-7 w-7" style={{ color: 'var(--success)' }} />
+            <Check className="h-7 w-7" style={{ color: 'var(--color-success)' }} />
           </div>
-          <div className="text-lg font-bold" style={{ color: 'var(--success)' }}>
+          <div className="text-lg font-bold" style={{ color: 'var(--color-success)' }}>
             Transfer Complete!
           </div>
-          <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>
+          <p className="text-sm mt-1" style={{ color: 'var(--color-text-secondary)' }}>
             {amountOut || amountIn} {toToken} arrived in {elapsed}s
           </p>
         </div>
@@ -248,7 +248,7 @@ export default function TransactionStoryline({
                 <div
                   className="absolute left-[13px] top-[26px] w-0.5 h-[calc(100%-2px)]"
                   style={{
-                    background: isCompleted ? 'var(--success, #22c55e)' : 'var(--border)',
+                    background: isCompleted ? 'var(--color-success)' : 'var(--color-border)',
                   }}
                 />
               )}
@@ -260,14 +260,14 @@ export default function TransactionStoryline({
                 }`}
                 style={{
                   background: isCompleted
-                    ? 'var(--success, #22c55e)'
+                    ? 'var(--color-success)'
                     : isActive
-                    ? 'var(--brand)'
-                    : 'var(--elevated)',
-                  color: isCompleted || isActive ? 'white' : 'var(--text-muted)',
-                  ringColor: isActive ? 'var(--brand)' : undefined,
+                    ? 'var(--color-primary)'
+                    : 'var(--color-bg-tertiary)',
+                  color: isCompleted || isActive ? 'white' : 'var(--color-text-muted)',
+                  ringColor: isActive ? 'var(--color-primary)' : undefined,
                   // ring-offset needs to match the parent bg
-                  '--tw-ring-offset-color': 'var(--bg-primary)',
+                  '--tw-ring-offset-color': 'var(--color-bg-primary)',
                 } as React.CSSProperties}
               >
                 {isCompleted ? (
@@ -275,7 +275,7 @@ export default function TransactionStoryline({
                 ) : isActive ? (
                   <Loader2 className="h-3.5 w-3.5 animate-spin" />
                 ) : (
-                  <div className="w-2 h-2 rounded-full" style={{ background: 'var(--text-faint)' }} />
+                  <div className="w-2 h-2 rounded-full" style={{ background: 'var(--color-text-tertiary)' }} />
                 )}
               </div>
 
@@ -283,11 +283,11 @@ export default function TransactionStoryline({
               <div className={`pb-5 ${isFuture ? 'opacity-40' : ''}`}>
                 <div
                   className={`text-sm font-medium ${isActive ? 'font-semibold' : ''}`}
-                  style={{ color: isCompleted ? 'var(--success, #22c55e)' : isActive ? 'var(--text-primary)' : 'var(--text-secondary)' }}
+                  style={{ color: isCompleted ? 'var(--color-success)' : isActive ? 'var(--color-text-primary)' : 'var(--color-text-secondary)' }}
                 >
                   {phase.label}
                 </div>
-                <div className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
+                <div className="text-xs mt-0.5" style={{ color: 'var(--color-text-muted)' }}>
                   {phase.detail}
                 </div>
               </div>
@@ -305,15 +305,15 @@ export default function TransactionStoryline({
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center justify-between p-3 rounded-lg transition-colors"
-              style={{ background: 'var(--elevated)' }}
+              style={{ background: 'var(--color-bg-tertiary)' }}
             >
               <div>
-                <div className="text-tiny" style={{ color: 'var(--text-muted)' }}>Deposit tx</div>
-                <code className="text-tiny font-mono" style={{ color: 'var(--text-secondary)' }}>
+                <div className="text-tiny" style={{ color: 'var(--color-text-muted)' }}>Deposit tx</div>
+                <code className="text-tiny font-mono" style={{ color: 'var(--color-text-secondary)' }}>
                   {depositTxHash.slice(0, 10)}...{depositTxHash.slice(-8)}
                 </code>
               </div>
-              <ExternalLink className="h-4 w-4" style={{ color: 'var(--text-muted)' }} />
+              <ExternalLink className="h-4 w-4" style={{ color: 'var(--color-text-muted)' }} />
             </a>
           )}
           {fulfillmentTxHash && (
@@ -325,12 +325,12 @@ export default function TransactionStoryline({
               style={{ background: 'var(--success-bg, rgba(34,197,94,0.08))' }}
             >
               <div>
-                <div className="text-tiny" style={{ color: 'var(--success)' }}>Delivery tx</div>
-                <code className="text-tiny font-mono" style={{ color: 'var(--text-secondary)' }}>
+                <div className="text-tiny" style={{ color: 'var(--color-success)' }}>Delivery tx</div>
+                <code className="text-tiny font-mono" style={{ color: 'var(--color-text-secondary)' }}>
                   {fulfillmentTxHash.slice(0, 10)}...{fulfillmentTxHash.slice(-8)}
                 </code>
               </div>
-              <ExternalLink className="h-4 w-4" style={{ color: 'var(--success)' }} />
+              <ExternalLink className="h-4 w-4" style={{ color: 'var(--color-success)' }} />
             </a>
           )}
         </div>

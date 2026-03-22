@@ -19,27 +19,27 @@ const ICONS: Record<string, React.ReactNode> = {
 const COLORS: Record<string, { bg: string; border: string; text: string; accent: string }> = {
   'first-ever': {
     bg: 'var(--info-bg)',
-    border: 'var(--brand)',
-    text: 'var(--text-primary)',
-    accent: 'var(--brand)',
+    border: 'var(--color-primary)',
+    text: 'var(--color-text-primary)',
+    accent: 'var(--color-primary)',
   },
   'first-chain': {
     bg: 'var(--info-bg)',
-    border: 'var(--brand)',
-    text: 'var(--text-primary)',
-    accent: 'var(--brand)',
+    border: 'var(--color-primary)',
+    text: 'var(--color-text-primary)',
+    accent: 'var(--color-primary)',
   },
   'first-large': {
     bg: 'var(--warning-bg, rgba(234, 179, 8, 0.08))',
     border: 'var(--warning, #eab308)',
-    text: 'var(--text-primary)',
+    text: 'var(--color-text-primary)',
     accent: 'var(--warning, #eab308)',
   },
   'welcome-back': {
     bg: 'var(--info-bg)',
-    border: 'var(--brand)',
-    text: 'var(--text-primary)',
-    accent: 'var(--brand)',
+    border: 'var(--color-primary)',
+    text: 'var(--color-text-primary)',
+    accent: 'var(--color-primary)',
   },
 };
 

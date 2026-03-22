@@ -522,11 +522,11 @@ export default function SwapForm({ onQuoteReceived, refreshKey, initialValues }:
       {/* From Section */}
       <div className="mb-4">
         <div className="flex items-center justify-between mb-2">
-          <label className="text-caption font-medium" style={{ color: 'var(--text-secondary)' }}>You send</label>
-          <div className="text-tiny" style={{ color: 'var(--text-muted)' }}>
+          <label className="text-caption font-medium" style={{ color: 'var(--color-text-secondary)' }}>You send</label>
+          <div className="text-tiny" style={{ color: 'var(--color-text-muted)' }}>
             {fromAddress() ? (
               <span className="flex items-center gap-1">
-                <span className="inline-block w-1.5 h-1.5 rounded-full" style={{ background: 'var(--success)' }} />
+                <span className="inline-block w-1.5 h-1.5 rounded-full" style={{ background: 'var(--color-success)' }} />
                 <span className="font-mono">{formatAddress(fromAddress())}</span>
               </span>
             ) : (
@@ -534,7 +534,7 @@ export default function SwapForm({ onQuoteReceived, refreshKey, initialValues }:
                 type="button"
                 onClick={() => connect()}
                 className="font-semibold underline underline-offset-2 transition-opacity hover:opacity-70 active:scale-95"
-                style={{ color: 'var(--warning)' }}
+                style={{ color: 'var(--color-warning)' }}
               >
                 Connect wallet
               </button>
@@ -580,7 +580,7 @@ export default function SwapForm({ onQuoteReceived, refreshKey, initialValues }:
                     setAmount(amt.toFixed(6).replace(/\.?0+$/, ''));
                   }}
                   className="flex-1 h-11 text-tiny font-semibold rounded-lg transition-all active:scale-95"
-                  style={{ background: 'var(--elevated)', color: 'var(--text-secondary)' }}>
+                  style={{ background: 'var(--color-bg-tertiary)', color: 'var(--color-text-secondary)' }}>
                   {pct}%
                 </button>
               ))}
@@ -594,7 +594,7 @@ export default function SwapForm({ onQuoteReceived, refreshKey, initialValues }:
         <div className="flex justify-center -my-1 relative z-10">
           <button onClick={swapTokens}
             className="w-10 h-10 rounded-full flex items-center justify-center border-4 transition-all active:scale-90 active:rotate-180"
-            style={{ background: 'var(--surface)', borderColor: 'var(--bg-primary)', color: 'var(--text-muted)' }}>
+            style={{ background: 'var(--color-bg-secondary)', borderColor: 'var(--color-bg-primary)', color: 'var(--color-text-muted)' }}>
             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
             </svg>
@@ -605,18 +605,18 @@ export default function SwapForm({ onQuoteReceived, refreshKey, initialValues }:
       {/* To Section */}
       <div className="mb-4">
         <div className="flex items-center justify-between mb-2">
-          <label className="text-caption font-medium" style={{ color: 'var(--text-secondary)' }}>
+          <label className="text-caption font-medium" style={{ color: 'var(--color-text-secondary)' }}>
             {initialValues?.lockDest ? 'Recipient receives' : 'You receive'}
           </label>
           {!initialValues?.lockDest && (
-            <div className="text-tiny" style={{ color: 'var(--text-muted)' }}>
+            <div className="text-tiny" style={{ color: 'var(--color-text-muted)' }}>
               {toAddress() ? (
                 <span className="flex items-center gap-1">
-                  <span className="inline-block w-1.5 h-1.5 rounded-full" style={{ background: 'var(--success)' }} />
+                  <span className="inline-block w-1.5 h-1.5 rounded-full" style={{ background: 'var(--color-success)' }} />
                   <span className="font-mono">{formatAddress(toAddress())}</span>
                 </span>
               ) : (
-                <span style={{ color: 'var(--text-faint)' }}>No wallet</span>
+                <span style={{ color: 'var(--color-text-tertiary)' }}>No wallet</span>
               )}
             </div>
           )}
@@ -626,22 +626,22 @@ export default function SwapForm({ onQuoteReceived, refreshKey, initialValues }:
           /* Locked destination display — read-only pill */
           <div
             className="flex items-center gap-3 p-3 rounded-xl mb-2"
-            style={{ background: 'var(--elevated)', border: '1px solid var(--border)' }}
+            style={{ background: 'var(--color-bg-tertiary)', border: '1px solid var(--color-border)' }}
           >
             <div
               className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-body-sm font-semibold flex-shrink-0"
-              style={{ background: 'var(--surface)', color: 'var(--text-primary)' }}
+              style={{ background: 'var(--color-bg-secondary)', color: 'var(--color-text-primary)' }}
             >
               {SUPPORTED_CHAINS.find(c => c.id === toChain)?.name || toChain}
             </div>
             <div className="flex items-center gap-2 flex-1 min-w-0">
-              <span className="font-bold text-body-sm" style={{ color: 'var(--text-primary)' }}>
+              <span className="font-bold text-body-sm" style={{ color: 'var(--color-text-primary)' }}>
                 {toTokens.find(t => t.assetId === destinationAsset)?.symbol || initialValues?.toToken}
               </span>
             </div>
             <span
               className="text-tiny font-semibold px-2 py-0.5 rounded-full flex-shrink-0"
-              style={{ background: 'rgba(37,99,235,0.1)', color: 'var(--brand)' }}
+              style={{ background: 'rgba(37,99,235,0.1)', color: 'var(--color-primary)' }}
             >
               Locked
             </span>
@@ -683,10 +683,10 @@ export default function SwapForm({ onQuoteReceived, refreshKey, initialValues }:
       {/* Receiving Address */}
       <div className="mb-4">
         <div className="flex items-center justify-between mb-1.5">
-          <label className="flex items-baseline gap-2 text-caption font-medium" style={{ color: 'var(--text-secondary)' }}>
+          <label className="flex items-baseline gap-2 text-caption font-medium" style={{ color: 'var(--color-text-secondary)' }}>
             Receiving Address
             {!initialValues?.lockDest && !toAddress() && (
-              <span className="text-tiny" style={{ color: 'var(--warning)' }}>(enter manually)</span>
+              <span className="text-tiny" style={{ color: 'var(--color-warning)' }}>(enter manually)</span>
             )}
           </label>
           {!initialValues?.lockDest && (
@@ -694,7 +694,7 @@ export default function SwapForm({ onQuoteReceived, refreshKey, initialValues }:
               type="button"
               onClick={() => setAddressBookOpen(true)}
               className="flex items-center gap-1 text-tiny font-semibold px-2 py-1 rounded-lg transition-all hover:opacity-80 active:scale-95"
-              style={{ color: 'var(--brand)', background: 'var(--elevated)' }}
+              style={{ color: 'var(--color-primary)', background: 'var(--color-bg-tertiary)' }}
               title="Open address book"
             >
               Saved
@@ -704,7 +704,7 @@ export default function SwapForm({ onQuoteReceived, refreshKey, initialValues }:
         {initialValues?.lockDest ? (
           <div
             className="p-3 rounded-xl font-mono text-xs break-all"
-            style={{ background: 'var(--elevated)', border: '1px solid var(--border)', color: 'var(--text-secondary)' }}
+            style={{ background: 'var(--color-bg-tertiary)', border: '1px solid var(--color-border)', color: 'var(--color-text-secondary)' }}
           >
             {recipient}
           </div>
@@ -714,7 +714,7 @@ export default function SwapForm({ onQuoteReceived, refreshKey, initialValues }:
               placeholder={toAddress() ? "Auto-filled from wallet" : "Enter receiving address"}
               className="input w-full h-11 font-mono text-body-sm" />
             {toAddress() && recipient === toAddress() && (
-              <p className="text-tiny mt-1" style={{ color: 'var(--text-muted)' }}>Sending to your wallet on {toChain}</p>
+              <p className="text-tiny mt-1" style={{ color: 'var(--color-text-muted)' }}>Sending to your wallet on {toChain}</p>
             )}
           </>
         )}
@@ -722,12 +722,12 @@ export default function SwapForm({ onQuoteReceived, refreshKey, initialValues }:
 
       {/* Return Address */}
       <div className="mb-5">
-        <label className="flex items-baseline gap-2 text-caption font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>
-          Return Address <span className="text-tiny" style={{ color: 'var(--text-faint)' }}>(auto)</span>
+        <label className="flex items-baseline gap-2 text-caption font-medium mb-1.5" style={{ color: 'var(--color-text-secondary)' }}>
+          Return Address <span className="text-tiny" style={{ color: 'var(--color-text-tertiary)' }}>(auto)</span>
         </label>
         <input type="text" value={refundTo} readOnly placeholder="Connect wallet on sending chain"
           className="input w-full h-11 font-mono text-body-sm opacity-60 cursor-not-allowed" />
-        <p className="text-tiny mt-1" style={{ color: 'var(--text-faint)' }}>
+        <p className="text-tiny mt-1" style={{ color: 'var(--color-text-tertiary)' }}>
           Funds returned here if transfer can&apos;t complete
         </p>
       </div>
@@ -743,7 +743,7 @@ export default function SwapForm({ onQuoteReceived, refreshKey, initialValues }:
 
       {/* Error */}
       {formError && (
-        <div className="mb-4 p-3 rounded-xl text-body-sm" style={{ background: 'var(--error-bg)', color: 'var(--error-text)', border: '1px solid var(--error)' }}>
+        <div className="mb-4 p-3 rounded-xl text-body-sm" style={{ background: 'var(--error-bg)', color: 'var(--error-text)', border: '1px solid var(--color-danger)' }}>
           {formError}
         </div>
       )}
@@ -766,7 +766,7 @@ export default function SwapForm({ onQuoteReceived, refreshKey, initialValues }:
               {loading ? 'Getting Preview...' : 'Preview Transfer'}
             </button>
             {isDisabled && !loading && disabledReason && (
-              <p className="text-center text-tiny mt-2" style={{ color: 'var(--text-faint)' }}>
+              <p className="text-center text-tiny mt-2" style={{ color: 'var(--color-text-tertiary)' }}>
                 {disabledReason}
               </p>
             )}

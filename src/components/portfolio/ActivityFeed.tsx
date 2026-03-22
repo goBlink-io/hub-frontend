@@ -30,15 +30,15 @@ type TxType = 'all' | 'send' | 'receive' | 'swap';
 
 function StatusIcon({ status }: { status: string }) {
   const s = status.toLowerCase();
-  if (s === 'completed' || s === 'success') return <CheckCircle className="h-3.5 w-3.5" style={{ color: 'var(--success)' }} />;
-  if (s === 'failed') return <AlertTriangle className="h-3.5 w-3.5" style={{ color: 'var(--error)' }} />;
-  if (s === 'processing') return <Loader2 className="h-3.5 w-3.5 animate-spin" style={{ color: 'var(--brand)' }} />;
-  return <Clock className="h-3.5 w-3.5" style={{ color: 'var(--warning)' }} />;
+  if (s === 'completed' || s === 'success') return <CheckCircle className="h-3.5 w-3.5" style={{ color: 'var(--color-success)' }} />;
+  if (s === 'failed') return <AlertTriangle className="h-3.5 w-3.5" style={{ color: 'var(--color-danger)' }} />;
+  if (s === 'processing') return <Loader2 className="h-3.5 w-3.5 animate-spin" style={{ color: 'var(--color-primary)' }} />;
+  return <Clock className="h-3.5 w-3.5" style={{ color: 'var(--color-warning)' }} />;
 }
 
 function TxTypeIcon({ fromChain, toChain }: { fromChain: string; toChain: string }) {
-  if (fromChain !== toChain) return <Repeat className="h-4 w-4" style={{ color: 'var(--brand)' }} />;
-  return <ArrowUpRight className="h-4 w-4" style={{ color: 'var(--text-secondary)' }} />;
+  if (fromChain !== toChain) return <Repeat className="h-4 w-4" style={{ color: 'var(--color-primary)' }} />;
+  return <ArrowUpRight className="h-4 w-4" style={{ color: 'var(--color-text-secondary)' }} />;
 }
 
 const usdFmt = new Intl.NumberFormat('en-US', {
@@ -116,12 +116,12 @@ export function ActivityFeed({ chainFilter }: ActivityFeedProps) {
 
       {loading && transactions.length === 0 ? (
         <div className="flex justify-center py-6">
-          <Loader2 className="h-5 w-5 animate-spin" style={{ color: 'var(--brand)' }} />
+          <Loader2 className="h-5 w-5 animate-spin" style={{ color: 'var(--color-primary)' }} />
         </div>
       ) : filtered.length === 0 ? (
         <div className="text-center py-6">
-          <Clock className="h-8 w-8 mx-auto mb-2 opacity-20" style={{ color: 'var(--text-muted)' }} />
-          <p className="text-tiny" style={{ color: 'var(--text-muted)' }}>
+          <Clock className="h-8 w-8 mx-auto mb-2 opacity-20" style={{ color: 'var(--color-text-muted)' }} />
+          <p className="text-tiny" style={{ color: 'var(--color-text-muted)' }}>
             No recent activity{chainFilter ? ` on ${getChainMeta(chainFilter).name}` : ''}
           </p>
         </div>
@@ -146,20 +146,20 @@ export function ActivityFeed({ chainFilter }: ActivityFeedProps) {
 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-1.5">
-                    <span className="text-body-sm font-semibold truncate" style={{ color: 'var(--text-primary)' }}>
+                    <span className="text-body-sm font-semibold truncate" style={{ color: 'var(--color-text-primary)' }}>
                       {tx.amount_in} {tx.from_token}
                     </span>
-                    <span style={{ color: 'var(--text-muted)' }}>→</span>
-                    <span className="text-body-sm font-semibold truncate" style={{ color: 'var(--text-primary)' }}>
+                    <span style={{ color: 'var(--color-text-muted)' }}>→</span>
+                    <span className="text-body-sm font-semibold truncate" style={{ color: 'var(--color-text-primary)' }}>
                       {tx.amount_out ?? '...'} {tx.to_token}
                     </span>
                   </div>
                   <div className="flex items-center gap-1.5 mt-0.5">
                     <StatusIcon status={tx.status} />
-                    <span className="text-tiny" style={{ color: 'var(--text-muted)' }}>
+                    <span className="text-tiny" style={{ color: 'var(--color-text-muted)' }}>
                       {fromMeta.name} → {toMeta.name}
                     </span>
-                    <span className="text-tiny" style={{ color: 'var(--text-muted)' }}>
+                    <span className="text-tiny" style={{ color: 'var(--color-text-muted)' }}>
                       · {formatDate(tx.created_at)}
                     </span>
                   </div>
@@ -167,7 +167,7 @@ export function ActivityFeed({ chainFilter }: ActivityFeedProps) {
 
                 <div className="flex items-center gap-1 flex-shrink-0">
                   {tx.amount_usd != null && tx.amount_usd > 0 && (
-                    <span className="text-tiny font-medium" style={{ color: 'var(--text-secondary)' }}>
+                    <span className="text-tiny font-medium" style={{ color: 'var(--color-text-secondary)' }}>
                       {usdFmt.format(tx.amount_usd)}
                     </span>
                   )}
@@ -177,7 +177,7 @@ export function ActivityFeed({ chainFilter }: ActivityFeedProps) {
                       target="_blank"
                       rel="noopener noreferrer"
                       className="p-1 rounded"
-                      style={{ color: 'var(--text-muted)', minWidth: '28px', minHeight: '28px' }}
+                      style={{ color: 'var(--color-text-muted)', minWidth: '28px', minHeight: '28px' }}
                       onClick={(e) => e.stopPropagation()}
                     >
                       <ExternalLink className="h-3.5 w-3.5" />

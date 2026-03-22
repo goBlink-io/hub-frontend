@@ -65,7 +65,7 @@ function ChangeIndicator({ change }: { change: number }) {
   if (change === 0) return null;
   const positive = change > 0;
   const Icon = positive ? TrendingUp : TrendingDown;
-  const color = positive ? 'var(--success)' : 'var(--danger)';
+  const color = positive ? 'var(--color-success)' : 'var(--danger)';
 
   return (
     <span className="inline-flex items-center gap-0.5 text-tiny font-medium" style={{ color }}>
@@ -82,7 +82,7 @@ function PortfolioBar({ percent }: { percent: number }) {
         className="h-full rounded-full transition-all duration-500"
         style={{
           width: `${Math.max(percent, 0.5)}%`,
-          background: 'var(--brand)',
+          background: 'var(--color-primary)',
           opacity: 0.7,
         }}
       />
@@ -107,16 +107,16 @@ function TokenCard({ token, onClick }: TokenRowProps) {
       type="button"
       onClick={onClick}
       className="w-full text-left p-4 rounded-xl transition-colors"
-      style={{ background: 'var(--elevated)', minHeight: '44px' }}
+      style={{ background: 'var(--color-bg-tertiary)', minHeight: '44px' }}
     >
       <div className="flex items-center gap-3">
         <TokenLogo token={token} />
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between">
-            <span className="text-body-sm font-semibold truncate" style={{ color: 'var(--text-primary)' }}>
+            <span className="text-body-sm font-semibold truncate" style={{ color: 'var(--color-text-primary)' }}>
               {token.symbol}
             </span>
-            <span className="text-body-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
+            <span className="text-body-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
               {usdFmt.format(token.usdValue)}
             </span>
           </div>
@@ -126,17 +126,17 @@ function TokenCard({ token, onClick }: TokenRowProps) {
                 className="inline-block w-2 h-2 rounded-full"
                 style={{ background: meta.color }}
               />
-              <span className="text-tiny" style={{ color: 'var(--text-muted)' }}>
+              <span className="text-tiny" style={{ color: 'var(--color-text-muted)' }}>
                 {meta.name}
               </span>
             </div>
-            <span className="text-tiny" style={{ color: 'var(--text-muted)' }}>
+            <span className="text-tiny" style={{ color: 'var(--color-text-muted)' }}>
               {token.balanceFormatted} {token.symbol}
             </span>
           </div>
           <div className="flex items-center justify-between mt-1.5">
             <ChangeIndicator change={token.change24h} />
-            <span className="text-tiny" style={{ color: 'var(--text-muted)' }}>
+            <span className="text-tiny" style={{ color: 'var(--color-text-muted)' }}>
               {token.portfolioPercent.toFixed(1)}%
             </span>
           </div>
@@ -158,17 +158,17 @@ function TokenTableRow({ token, onClick }: TokenRowProps) {
     <tr
       onClick={onClick}
       className="group transition-colors cursor-pointer"
-      style={{ borderBottom: '1px solid var(--border)' }}
+      style={{ borderBottom: '1px solid var(--color-border)' }}
     >
       {/* Token */}
       <td className="py-3 pr-3">
         <div className="flex items-center gap-3">
           <TokenLogo token={token} />
           <div>
-            <div className="text-body-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
+            <div className="text-body-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
               {token.name}
             </div>
-            <div className="text-tiny" style={{ color: 'var(--text-muted)' }}>
+            <div className="text-tiny" style={{ color: 'var(--color-text-muted)' }}>
               {token.symbol}
             </div>
           </div>
@@ -178,18 +178,18 @@ function TokenTableRow({ token, onClick }: TokenRowProps) {
       <td className="py-3 px-3">
         <div className="flex items-center gap-1.5">
           <span className="inline-block w-2.5 h-2.5 rounded-full" style={{ background: meta.color }} />
-          <span className="text-body-sm" style={{ color: 'var(--text-secondary)' }}>{meta.name}</span>
+          <span className="text-body-sm" style={{ color: 'var(--color-text-secondary)' }}>{meta.name}</span>
         </div>
       </td>
       {/* Balance */}
       <td className="py-3 px-3 text-right">
-        <span className="text-body-sm" style={{ color: 'var(--text-primary)' }}>
+        <span className="text-body-sm" style={{ color: 'var(--color-text-primary)' }}>
           {token.balanceFormatted}
         </span>
       </td>
       {/* USD Value */}
       <td className="py-3 px-3 text-right">
-        <span className="text-body-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
+        <span className="text-body-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
           {usdFmt.format(token.usdValue)}
         </span>
       </td>
@@ -200,7 +200,7 @@ function TokenTableRow({ token, onClick }: TokenRowProps) {
       {/* % of Portfolio */}
       <td className="py-3 pl-3 text-right">
         <div className="flex items-center gap-2 justify-end">
-          <span className="text-tiny" style={{ color: 'var(--text-muted)' }}>
+          <span className="text-tiny" style={{ color: 'var(--color-text-muted)' }}>
             {token.portfolioPercent.toFixed(1)}%
           </span>
           <div className="w-16">

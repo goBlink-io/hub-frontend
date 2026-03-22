@@ -41,11 +41,11 @@ function AddressRow({
   return (
     <div
       className="flex items-center gap-3 px-4 py-3 rounded-xl transition-all hover:opacity-90"
-      style={{ background: 'var(--elevated)', border: '1px solid var(--border)' }}
+      style={{ background: 'var(--color-bg-tertiary)', border: '1px solid var(--color-border)' }}
     >
       {/* Chain logo */}
       <div className="flex-shrink-0 w-8 h-8 rounded-full overflow-hidden flex items-center justify-center"
-        style={{ background: chainLogo?.bgColor || 'var(--surface)' }}>
+        style={{ background: chainLogo?.bgColor || 'var(--color-bg-secondary)' }}>
         {chainLogo?.icon ? (
           <img
             src={chainLogo.icon}
@@ -60,10 +60,10 @@ function AddressRow({
 
       {/* Label + address */}
       <div className="flex-1 min-w-0">
-        <div className="text-body-sm font-semibold truncate" style={{ color: 'var(--text-primary)' }}>
+        <div className="text-body-sm font-semibold truncate" style={{ color: 'var(--color-text-primary)' }}>
           {entry.label}
         </div>
-        <div className="font-mono text-tiny truncate" style={{ color: 'var(--text-muted)' }}>
+        <div className="font-mono text-tiny truncate" style={{ color: 'var(--color-text-muted)' }}>
           {truncateAddress(entry.address)} · {chainLogo?.name || entry.chain}
         </div>
       </div>
@@ -75,7 +75,7 @@ function AddressRow({
             onClick={() => onSelect(entry.address, entry.chain)}
             title="Use this address"
             className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-tiny font-semibold transition-all hover:opacity-80 active:scale-95"
-            style={{ background: 'var(--brand)', color: '#fff' }}
+            style={{ background: 'var(--color-primary)', color: '#fff' }}
           >
             Use <ArrowRight className="h-3 w-3" />
           </button>
@@ -84,7 +84,7 @@ function AddressRow({
           onClick={handleCopy}
           title="Copy address"
           className="p-1.5 rounded-lg transition-all hover:opacity-80 active:scale-90"
-          style={{ color: copied ? 'var(--success)' : 'var(--text-muted)' }}
+          style={{ color: copied ? 'var(--color-success)' : 'var(--color-text-muted)' }}
         >
           {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
         </button>
@@ -92,7 +92,7 @@ function AddressRow({
           onClick={() => onRemove(entry.address)}
           title="Remove address"
           className="p-1.5 rounded-lg transition-all hover:opacity-80 active:scale-90"
-          style={{ color: 'var(--text-faint)' }}
+          style={{ color: 'var(--color-text-tertiary)' }}
         >
           <Trash2 className="h-4 w-4" />
         </button>
@@ -151,13 +151,13 @@ export default function AddressBook({ isOpen, onClose, onSelect }: AddressBookPr
       {/* Panel */}
       <div
         className="relative w-full max-w-md rounded-2xl shadow-2xl flex flex-col"
-        style={{ background: 'var(--surface)', border: '1px solid var(--border)', maxHeight: '80vh' }}
+        style={{ background: 'var(--color-bg-secondary)', border: '1px solid var(--color-border)', maxHeight: '80vh' }}
       >
         {/* Header */}
         <div className="flex items-center justify-between px-5 pt-5 pb-4"
-          style={{ borderBottom: '1px solid var(--border)' }}>
+          style={{ borderBottom: '1px solid var(--color-border)' }}>
           <div className="flex items-center gap-2">
-            <BookUser className="h-5 w-5" style={{ color: 'var(--brand)' }} />
+            <BookUser className="h-5 w-5" style={{ color: 'var(--color-primary)' }} />
             <h2 className="text-h4">Address Book</h2>
           </div>
           <div className="flex items-center gap-2">
@@ -165,7 +165,7 @@ export default function AddressBook({ isOpen, onClose, onSelect }: AddressBookPr
               <button
                 onClick={() => setShowAddForm(!showAddForm)}
                 className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-tiny font-semibold transition-all hover:opacity-80 active:scale-95"
-                style={{ background: showAddForm ? 'var(--elevated)' : 'var(--brand)', color: showAddForm ? 'var(--text-secondary)' : '#fff' }}
+                style={{ background: showAddForm ? 'var(--color-bg-tertiary)' : 'var(--color-primary)', color: showAddForm ? 'var(--color-text-secondary)' : '#fff' }}
               >
                 <Plus className="h-3.5 w-3.5" />
                 {showAddForm ? 'Cancel' : 'Add'}
@@ -174,7 +174,7 @@ export default function AddressBook({ isOpen, onClose, onSelect }: AddressBookPr
             <button
               onClick={onClose}
               className="p-2 rounded-xl transition-all hover:opacity-80"
-              style={{ color: 'var(--text-muted)' }}
+              style={{ color: 'var(--color-text-muted)' }}
             >
               <X className="h-5 w-5" />
             </button>
@@ -189,8 +189,8 @@ export default function AddressBook({ isOpen, onClose, onSelect }: AddressBookPr
                 onClick={() => setFilterChain('')}
                 className="px-3 py-1 rounded-full text-tiny font-semibold transition-all"
                 style={{
-                  background: !filterChain ? 'var(--brand)' : 'var(--elevated)',
-                  color: !filterChain ? '#fff' : 'var(--text-secondary)',
+                  background: !filterChain ? 'var(--color-primary)' : 'var(--color-bg-tertiary)',
+                  color: !filterChain ? '#fff' : 'var(--color-text-secondary)',
                 }}
               >
                 All
@@ -201,8 +201,8 @@ export default function AddressBook({ isOpen, onClose, onSelect }: AddressBookPr
                   onClick={() => setFilterChain(filterChain === chain ? '' : chain)}
                   className="px-3 py-1 rounded-full text-tiny font-semibold transition-all capitalize"
                   style={{
-                    background: filterChain === chain ? 'var(--brand)' : 'var(--elevated)',
-                    color: filterChain === chain ? '#fff' : 'var(--text-secondary)',
+                    background: filterChain === chain ? 'var(--color-primary)' : 'var(--color-bg-tertiary)',
+                    color: filterChain === chain ? '#fff' : 'var(--color-text-secondary)',
                   }}
                 >
                   {CHAIN_LOGOS[chain]?.name || chain}
@@ -214,7 +214,7 @@ export default function AddressBook({ isOpen, onClose, onSelect }: AddressBookPr
 
         {/* Add address form */}
         {showAddForm && (
-          <div className="px-5 py-3 space-y-3" style={{ borderBottom: '1px solid var(--border)' }}>
+          <div className="px-5 py-3 space-y-3" style={{ borderBottom: '1px solid var(--color-border)' }}>
             <div>
               <input
                 type="text"
@@ -223,7 +223,7 @@ export default function AddressBook({ isOpen, onClose, onSelect }: AddressBookPr
                 onChange={(e) => setNewLabel(e.target.value)}
                 maxLength={30}
                 className="w-full px-3 py-2 rounded-lg text-body-sm outline-none transition-all"
-                style={{ background: 'var(--elevated)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}
+                style={{ background: 'var(--color-bg-tertiary)', border: '1px solid var(--color-border)', color: 'var(--color-text-primary)' }}
               />
             </div>
             <div>
@@ -233,7 +233,7 @@ export default function AddressBook({ isOpen, onClose, onSelect }: AddressBookPr
                 value={newAddress}
                 onChange={(e) => setNewAddress(e.target.value)}
                 className="w-full px-3 py-2 rounded-lg text-body-sm font-mono outline-none transition-all"
-                style={{ background: 'var(--elevated)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}
+                style={{ background: 'var(--color-bg-tertiary)', border: '1px solid var(--color-border)', color: 'var(--color-text-primary)' }}
               />
             </div>
             <div>
@@ -241,7 +241,7 @@ export default function AddressBook({ isOpen, onClose, onSelect }: AddressBookPr
                 value={newChain}
                 onChange={(e) => setNewChain(e.target.value)}
                 className="w-full px-3 py-2 rounded-lg text-body-sm outline-none transition-all capitalize"
-                style={{ background: 'var(--elevated)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}
+                style={{ background: 'var(--color-bg-tertiary)', border: '1px solid var(--color-border)', color: 'var(--color-text-primary)' }}
               >
                 {SUPPORTED_CHAINS.map(chain => (
                   <option key={chain} value={chain}>
@@ -256,7 +256,7 @@ export default function AddressBook({ isOpen, onClose, onSelect }: AddressBookPr
             <button
               onClick={handleAddAddress}
               className="w-full py-2 rounded-lg text-body-sm font-semibold transition-all hover:opacity-90 active:scale-[0.98]"
-              style={{ background: 'var(--brand)', color: '#fff' }}
+              style={{ background: 'var(--color-primary)', color: '#fff' }}
             >
               Save Address
             </button>
@@ -267,15 +267,15 @@ export default function AddressBook({ isOpen, onClose, onSelect }: AddressBookPr
         <div className="flex-1 overflow-y-auto px-5 py-3 space-y-2">
           {!hydrated ? (
             <div className="text-center py-8">
-              <div className="animate-pulse h-4 w-32 rounded mx-auto" style={{ background: 'var(--elevated)' }} />
+              <div className="animate-pulse h-4 w-32 rounded mx-auto" style={{ background: 'var(--color-bg-tertiary)' }} />
             </div>
           ) : addresses.length === 0 ? (
             <div className="text-center py-10">
-              <BookUser className="h-10 w-10 mx-auto mb-3 opacity-30" style={{ color: 'var(--text-muted)' }} />
-              <p className="text-body-sm" style={{ color: 'var(--text-muted)' }}>
+              <BookUser className="h-10 w-10 mx-auto mb-3 opacity-30" style={{ color: 'var(--color-text-muted)' }} />
+              <p className="text-body-sm" style={{ color: 'var(--color-text-muted)' }}>
                 {filterChain ? 'No addresses saved for this chain.' : 'No saved addresses yet.'}
               </p>
-              <p className="text-tiny mt-1" style={{ color: 'var(--text-faint)' }}>
+              <p className="text-tiny mt-1" style={{ color: 'var(--color-text-tertiary)' }}>
                 After a transfer, tap &ldquo;Save address&rdquo; to add it here.
               </p>
             </div>
@@ -288,8 +288,8 @@ export default function AddressBook({ isOpen, onClose, onSelect }: AddressBookPr
 
         {/* Footer */}
         {profile.savedAddresses.length > 0 && (
-          <div className="px-5 py-3" style={{ borderTop: '1px solid var(--border)' }}>
-            <p className="text-tiny text-center" style={{ color: 'var(--text-faint)' }}>
+          <div className="px-5 py-3" style={{ borderTop: '1px solid var(--color-border)' }}>
+            <p className="text-tiny text-center" style={{ color: 'var(--color-text-tertiary)' }}>
               {profile.savedAddresses.length}/{20} addresses saved
             </p>
           </div>

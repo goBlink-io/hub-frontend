@@ -20,8 +20,8 @@ export function ChainChips({ breakdown, activeChain, onChainClick }: ChainChipsP
         onClick={() => onChainClick(null)}
         className="flex-shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-full text-tiny font-medium transition-colors"
         style={{
-          background: activeChain === null ? 'var(--brand)' : 'var(--elevated)',
-          color: activeChain === null ? '#fff' : 'var(--text-secondary)',
+          background: activeChain === null ? 'var(--color-primary)' : 'var(--color-bg-tertiary)',
+          color: activeChain === null ? '#fff' : 'var(--color-text-secondary)',
           minHeight: '44px',
         }}
       >
@@ -40,8 +40,8 @@ export function ChainChips({ breakdown, activeChain, onChainClick }: ChainChipsP
             onClick={() => onChainClick(isActive ? null : chain.chain)}
             className="flex-shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-full text-tiny font-medium transition-all"
             style={{
-              background: isActive ? meta.color + '33' : 'var(--elevated)',
-              color: isActive ? meta.color : 'var(--text-secondary)',
+              background: isActive ? meta.color + '33' : 'var(--color-bg-tertiary)',
+              color: isActive ? meta.color : 'var(--color-text-secondary)',
               border: isActive ? `1px solid ${meta.color}55` : '1px solid transparent',
               minHeight: '44px',
             }}
@@ -55,7 +55,7 @@ export function ChainChips({ breakdown, activeChain, onChainClick }: ChainChipsP
               />
             )}
             <span>{meta.name}</span>
-            <span style={{ color: 'var(--text-muted)' }}>
+            <span style={{ color: 'var(--color-text-muted)' }}>
               {formatUsd(chain.totalUsd)}
             </span>
           </button>

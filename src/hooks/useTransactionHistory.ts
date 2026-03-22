@@ -52,6 +52,12 @@ export function useTransactionHistory() {
       saveHistory(updated);
       return updated;
     });
+    // Mark first swap for celebration
+    try {
+      if (typeof window !== 'undefined' && !localStorage.getItem('goblink_first_swap_completed')) {
+        localStorage.setItem('goblink_first_swap_completed', 'true');
+      }
+    } catch { /* ignore */ }
   }, []);
 
   const updateStatus = useCallback((depositAddress: string, status: string) => {

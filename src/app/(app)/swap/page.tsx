@@ -8,6 +8,7 @@ import TransferModal from '@/components/swap/TransferModal';
 import RecentTransfers from '@/components/swap/RecentTransfers';
 import { useTransactionHistory } from '@/hooks/useTransactionHistory';
 import { Skeleton } from '@/components/ui/Skeleton';
+import { ProductSuggestion } from '@/components/shared/ProductSuggestion';
 
 const SwapForm = dynamic(() => import('@/components/swap/SwapForm'), {
   ssr: false,
@@ -120,6 +121,8 @@ export default function SwapPage() {
           onOutcome={handleOutcome}
         />
       )}
+
+      <ProductSuggestion exclude="swap" />
     </div>
   );
 }

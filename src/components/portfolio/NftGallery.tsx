@@ -13,7 +13,7 @@ export function NftGallery({ connectedChains }: NftGalleryProps) {
     <div className="card p-5">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-h5 flex items-center gap-2">
-          <Image className="h-4 w-4" style={{ color: 'var(--brand)' }} />
+          <Image className="h-4 w-4" style={{ color: 'var(--color-primary)' }} />
           NFTs
         </h2>
         <span
@@ -26,7 +26,7 @@ export function NftGallery({ connectedChains }: NftGalleryProps) {
 
       {hasSui ? (
         <div className="space-y-3">
-          <p className="text-body-sm" style={{ color: 'var(--text-secondary)' }}>
+          <p className="text-body-sm" style={{ color: 'var(--color-text-secondary)' }}>
             Sui wallet detected — Rewardian NFTs will appear here.
           </p>
           {/* Placeholder grid */}
@@ -37,18 +37,18 @@ export function NftGallery({ connectedChains }: NftGalleryProps) {
                 className="aspect-square rounded-xl flex items-center justify-center"
                 style={{ background: 'var(--color-bg-tertiary)' }}
               >
-                <Sparkles className="h-6 w-6" style={{ color: 'var(--text-muted)', opacity: 0.3 }} />
+                <Sparkles className="h-6 w-6" style={{ color: 'var(--color-text-muted)', opacity: 0.3 }} />
               </div>
             ))}
           </div>
         </div>
       ) : (
         <div className="flex flex-col items-center py-8">
-          <Image className="h-10 w-10 mb-3 opacity-20" style={{ color: 'var(--text-muted)' }} />
-          <p className="text-body-sm" style={{ color: 'var(--text-muted)' }}>
+          <Image className="h-10 w-10 mb-3 opacity-20" style={{ color: 'var(--color-text-muted)' }} />
+          <p className="text-body-sm" style={{ color: 'var(--color-text-muted)' }}>
             NFT gallery coming soon
           </p>
-          <p className="text-tiny mt-1" style={{ color: 'var(--text-muted)' }}>
+          <p className="text-tiny mt-1" style={{ color: 'var(--color-text-muted)' }}>
             Connect a Sui wallet to view Rewardian NFTs
           </p>
         </div>

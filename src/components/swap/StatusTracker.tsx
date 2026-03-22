@@ -148,7 +148,7 @@ export default function StatusTracker({ depositAddress, onReset }: StatusTracker
         <button
           onClick={onReset}
           className="btn-ghost text-body-sm"
-          style={{ color: 'var(--text-muted)' }}
+          style={{ color: 'var(--color-text-muted)' }}
         >
           ← Back
         </button>
@@ -168,11 +168,11 @@ export default function StatusTracker({ depositAddress, onReset }: StatusTracker
           }}
         >
           {status === 'SUCCESS' ? (
-            <Check className="h-8 w-8" style={{ color: 'var(--success)' }} />
+            <Check className="h-8 w-8" style={{ color: 'var(--color-success)' }} />
           ) : status === 'FAILED' || status === 'REFUNDED' ? (
-            <X className="h-8 w-8" style={{ color: 'var(--error)' }} />
+            <X className="h-8 w-8" style={{ color: 'var(--color-danger)' }} />
           ) : (
-            <svg className="h-8 w-8 animate-spin" style={{ color: 'var(--brand)' }} fill="none" viewBox="0 0 24 24">
+            <svg className="h-8 w-8 animate-spin" style={{ color: 'var(--color-primary)' }} fill="none" viewBox="0 0 24 24">
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
             </svg>
@@ -180,7 +180,7 @@ export default function StatusTracker({ depositAddress, onReset }: StatusTracker
         </div>
 
         {/* Status Title */}
-        <h4 className="text-h4 mb-1" style={{ color: 'var(--text-primary)' }}>
+        <h4 className="text-h4 mb-1" style={{ color: 'var(--color-text-primary)' }}>
           {status === 'SUCCESS' && 'Transfer Complete!'}
           {status === 'FAILED' && 'Transfer Failed'}
           {status === 'REFUNDED' && 'Transfer Refunded'}
@@ -195,7 +195,7 @@ export default function StatusTracker({ depositAddress, onReset }: StatusTracker
         {currentReassurance && (
           <p
             className="text-body-sm text-center transition-opacity duration-500"
-            style={{ color: 'var(--text-secondary)' }}
+            style={{ color: 'var(--color-text-secondary)' }}
           >
             {currentReassurance}
           </p>
@@ -205,7 +205,7 @@ export default function StatusTracker({ depositAddress, onReset }: StatusTracker
         {!isTerminal && (
           <div
             className="mt-3 flex items-center gap-1.5 px-3 py-1 rounded-full text-tiny font-medium"
-            style={{ background: 'var(--elevated)', color: 'var(--text-muted)' }}
+            style={{ background: 'var(--color-bg-tertiary)', color: 'var(--color-text-muted)' }}
           >
             <Clock className="h-3.5 w-3.5" />
             {formatElapsed(elapsedSeconds)}
@@ -225,11 +225,11 @@ export default function StatusTracker({ depositAddress, onReset }: StatusTracker
                   className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0"
                   style={{
                     background: state === 'done'
-                      ? 'var(--success)'
+                      ? 'var(--color-success)'
                       : state === 'active'
-                        ? 'var(--brand)'
-                        : 'var(--elevated)',
-                    border: state === 'pending' ? '2px solid var(--border)' : 'none',
+                        ? 'var(--color-primary)'
+                        : 'var(--color-bg-tertiary)',
+                    border: state === 'pending' ? '2px solid var(--color-border)' : 'none',
                   }}
                 >
                   {state === 'done' ? (
@@ -237,14 +237,14 @@ export default function StatusTracker({ depositAddress, onReset }: StatusTracker
                   ) : state === 'active' ? (
                     <div className="w-2.5 h-2.5 rounded-full bg-white animate-pulse" />
                   ) : (
-                    <div className="w-2 h-2 rounded-full" style={{ background: 'var(--text-faint)' }} />
+                    <div className="w-2 h-2 rounded-full" style={{ background: 'var(--color-text-tertiary)' }} />
                   )}
                 </div>
                 {idx < steps.length - 1 && (
                   <div
                     className="w-0.5 h-8"
                     style={{
-                      background: state === 'done' ? 'var(--success)' : 'var(--border)',
+                      background: state === 'done' ? 'var(--color-success)' : 'var(--color-border)',
                     }}
                   />
                 )}
@@ -255,12 +255,12 @@ export default function StatusTracker({ depositAddress, onReset }: StatusTracker
                 <p
                   className="text-body-sm font-medium"
                   style={{
-                    color: state === 'pending' ? 'var(--text-faint)' : 'var(--text-primary)',
+                    color: state === 'pending' ? 'var(--color-text-tertiary)' : 'var(--color-text-primary)',
                   }}
                 >
                   {step.label}
                 </p>
-                <p className="text-tiny" style={{ color: 'var(--text-muted)' }}>
+                <p className="text-tiny" style={{ color: 'var(--color-text-muted)' }}>
                   {step.sub}
                 </p>
               </div>
@@ -273,15 +273,15 @@ export default function StatusTracker({ depositAddress, onReset }: StatusTracker
       {depositAddress && (
         <div
           className="p-3 rounded-xl mb-5"
-          style={{ background: 'var(--elevated)', border: '1px solid var(--border)' }}
+          style={{ background: 'var(--color-bg-tertiary)', border: '1px solid var(--color-border)' }}
         >
-          <label className="block text-tiny font-medium mb-1.5" style={{ color: 'var(--text-muted)' }}>
+          <label className="block text-tiny font-medium mb-1.5" style={{ color: 'var(--color-text-muted)' }}>
             Deposit Address
           </label>
           <div className="flex items-center gap-2">
             <code
               className="flex-1 text-tiny font-mono break-all"
-              style={{ color: 'var(--text-secondary)' }}
+              style={{ color: 'var(--color-text-secondary)' }}
             >
               {depositAddress}
             </code>
@@ -300,7 +300,7 @@ export default function StatusTracker({ depositAddress, onReset }: StatusTracker
       {error && (
         <div
           className="p-3 rounded-xl mb-5 flex items-start gap-2"
-          style={{ background: 'var(--warning-bg)', border: '1px solid var(--warning)', color: 'var(--warning-text)' }}
+          style={{ background: 'var(--warning-bg)', border: '1px solid var(--color-warning)', color: 'var(--warning-text)' }}
         >
           <svg className="h-5 w-5 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01" />

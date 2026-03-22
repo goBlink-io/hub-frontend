@@ -243,17 +243,17 @@ export default function TransferModal({ quote, onClose, onComplete, onOutcome }:
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" onClick={step !== 'confirming' ? onClose : undefined} />
 
         <div className="relative rounded-t-2xl sm:rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto"
-          style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+          style={{ background: 'var(--color-bg-secondary)', border: '1px solid var(--color-border)' }}>
           {/* Header */}
           <div className="sticky top-0 rounded-t-2xl z-10 px-6 py-4 flex items-center justify-between"
-            style={{ background: 'var(--surface)', borderBottom: '1px solid var(--border)' }}>
+            style={{ background: 'var(--color-bg-secondary)', borderBottom: '1px solid var(--color-border)' }}>
             <h2 className="text-h4">
               {step === 'preview' && 'Confirm Transfer'}
               {step === 'confirming' && 'Processing...'}
               {step === 'tracking' && 'Transfer Status'}
             </h2>
             {step !== 'confirming' && (
-              <button onClick={onClose} className="p-1.5 rounded-lg transition-colors" style={{ color: 'var(--text-muted)' }}>
+              <button onClick={onClose} className="p-1.5 rounded-lg transition-colors" style={{ color: 'var(--color-text-muted)' }}>
                 <X className="h-5 w-5" />
               </button>
             )}
@@ -264,43 +264,43 @@ export default function TransferModal({ quote, onClose, onComplete, onOutcome }:
             {step === 'preview' && (
               <div className="space-y-5">
                 {/* Summary card */}
-                <div className="rounded-xl overflow-hidden" style={{ border: '1px solid var(--border)' }}>
-                  <div className="p-4" style={{ background: 'var(--elevated)' }}>
-                    <p className="text-tiny font-medium mb-2" style={{ color: 'var(--text-muted)' }}>You&apos;re sending</p>
+                <div className="rounded-xl overflow-hidden" style={{ border: '1px solid var(--color-border)' }}>
+                  <div className="p-4" style={{ background: 'var(--color-bg-tertiary)' }}>
+                    <p className="text-tiny font-medium mb-2" style={{ color: 'var(--color-text-muted)' }}>You&apos;re sending</p>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         {fromLogo && <img src={fromLogo.icon} alt={fromLogo.name} className="w-8 h-8 rounded-full" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />}
                         <div>
-                          <div className="font-semibold" style={{ color: 'var(--text-primary)' }}>{originTokenMetadata?.symbol}</div>
-                          <div className="text-tiny" style={{ color: 'var(--text-muted)' }}>on {fromLogo?.name || fromChain}</div>
+                          <div className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>{originTokenMetadata?.symbol}</div>
+                          <div className="text-tiny" style={{ color: 'var(--color-text-muted)' }}>on {fromLogo?.name || fromChain}</div>
                         </div>
                       </div>
                       <div className="text-right">
-                        <div className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>{quoteData.amountInFormatted}</div>
-                        <div className="text-body-sm" style={{ color: 'var(--text-muted)' }}>${quoteData.amountInUsd}</div>
+                        <div className="text-lg font-bold" style={{ color: 'var(--color-text-primary)' }}>{quoteData.amountInFormatted}</div>
+                        <div className="text-body-sm" style={{ color: 'var(--color-text-muted)' }}>${quoteData.amountInUsd}</div>
                       </div>
                     </div>
                   </div>
 
                   <div className="flex justify-center -my-1 relative z-10">
-                    <div className="w-10 h-10 rounded-full flex items-center justify-center border-4" style={{ background: 'var(--surface)', borderColor: 'var(--elevated)' }}>
-                      <ArrowDown className="h-4 w-4" style={{ color: 'var(--text-muted)' }} />
+                    <div className="w-10 h-10 rounded-full flex items-center justify-center border-4" style={{ background: 'var(--color-bg-secondary)', borderColor: 'var(--color-bg-tertiary)' }}>
+                      <ArrowDown className="h-4 w-4" style={{ color: 'var(--color-text-muted)' }} />
                     </div>
                   </div>
 
-                  <div className="p-4" style={{ background: 'rgba(16,185,129,0.06)', borderTop: '1px solid var(--border)' }}>
-                    <p className="text-tiny font-medium mb-2" style={{ color: 'var(--success)' }}>You&apos;ll receive</p>
+                  <div className="p-4" style={{ background: 'rgba(16,185,129,0.06)', borderTop: '1px solid var(--color-border)' }}>
+                    <p className="text-tiny font-medium mb-2" style={{ color: 'var(--color-success)' }}>You&apos;ll receive</p>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         {toLogo && <img src={toLogo.icon} alt={toLogo.name} className="w-8 h-8 rounded-full" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />}
                         <div>
-                          <div className="font-semibold" style={{ color: 'var(--text-primary)' }}>{destinationTokenMetadata?.symbol}</div>
-                          <div className="text-tiny" style={{ color: 'var(--text-muted)' }}>on {toLogo?.name || toChain}</div>
+                          <div className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>{destinationTokenMetadata?.symbol}</div>
+                          <div className="text-tiny" style={{ color: 'var(--color-text-muted)' }}>on {toLogo?.name || toChain}</div>
                         </div>
                       </div>
                       <div className="text-right">
-                        <div className="text-lg font-bold" style={{ color: 'var(--success)' }}>~{formatTokenAmount(quoteData.amountOutFormatted)}</div>
-                        <div className="text-body-sm" style={{ color: 'var(--text-muted)' }}>${quoteData.amountOutUsd}</div>
+                        <div className="text-lg font-bold" style={{ color: 'var(--color-success)' }}>~{formatTokenAmount(quoteData.amountOutFormatted)}</div>
+                        <div className="text-body-sm" style={{ color: 'var(--color-text-muted)' }}>${quoteData.amountOutUsd}</div>
                       </div>
                     </div>
                   </div>
@@ -308,43 +308,43 @@ export default function TransferModal({ quote, onClose, onComplete, onOutcome }:
 
                 {/* Quick stats */}
                 <div className="grid grid-cols-3 gap-3 text-center text-body-sm">
-                  <div className="p-3 rounded-xl" style={{ background: 'var(--elevated)' }}>
-                    <div className="font-semibold" style={{ color: 'var(--text-primary)' }}>{feeInfo?.estimatedUsd ? `$${feeInfo.estimatedUsd}` : feePercent || '—'}</div>
-                    <div className="text-tiny mt-0.5" style={{ color: 'var(--text-muted)' }}>Fee</div>
+                  <div className="p-3 rounded-xl" style={{ background: 'var(--color-bg-tertiary)' }}>
+                    <div className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>{feeInfo?.estimatedUsd ? `$${feeInfo.estimatedUsd}` : feePercent || '—'}</div>
+                    <div className="text-tiny mt-0.5" style={{ color: 'var(--color-text-muted)' }}>Fee</div>
                   </div>
-                  <div className="p-3 rounded-xl" style={{ background: 'var(--elevated)' }}>
-                    <div className="font-semibold" style={{ color: 'var(--text-primary)' }}>~{timeEstimateSecs}s</div>
-                    <div className="text-tiny mt-0.5" style={{ color: 'var(--text-muted)' }}>Time</div>
+                  <div className="p-3 rounded-xl" style={{ background: 'var(--color-bg-tertiary)' }}>
+                    <div className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>~{timeEstimateSecs}s</div>
+                    <div className="text-tiny mt-0.5" style={{ color: 'var(--color-text-muted)' }}>Time</div>
                   </div>
-                  <div className="p-3 rounded-xl" style={{ background: 'var(--elevated)' }}>
-                    <div className="font-semibold" style={{ color: 'var(--text-primary)' }}>
+                  <div className="p-3 rounded-xl" style={{ background: 'var(--color-bg-tertiary)' }}>
+                    <div className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>
                       {destinationTokenMetadata ? formatAtomicAmount(quoteData.minAmountOut, destinationTokenMetadata.decimals) : quoteData.minAmountOut}
                     </div>
-                    <div className="text-tiny mt-0.5" style={{ color: 'var(--text-muted)' }}>Min. received</div>
+                    <div className="text-tiny mt-0.5" style={{ color: 'var(--color-text-muted)' }}>Min. received</div>
                   </div>
                 </div>
 
                 {/* Safety guarantee */}
                 <div className="flex items-start gap-3 p-3.5 rounded-xl" style={{ background: 'rgba(59,130,246,0.06)', border: '1px solid rgba(59,130,246,0.15)' }}>
-                  <Shield className="h-4 w-4 flex-shrink-0 mt-0.5" style={{ color: 'var(--brand)' }} />
-                  <p className="text-tiny" style={{ color: 'var(--text-secondary)' }}>
-                    <span className="font-semibold" style={{ color: 'var(--text-primary)' }}>Safety guarantee: </span>
+                  <Shield className="h-4 w-4 flex-shrink-0 mt-0.5" style={{ color: 'var(--color-primary)' }} />
+                  <p className="text-tiny" style={{ color: 'var(--color-text-secondary)' }}>
+                    <span className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>Safety guarantee: </span>
                     If anything goes wrong, your {originTokenMetadata?.symbol || 'tokens'} are automatically returned to you.
                   </p>
                 </div>
 
                 {/* Manual deposit */}
                 {showManualDeposit && depositAddress && (
-                  <div className="p-4 rounded-xl" style={{ background: 'var(--info-bg)', border: '1px solid var(--border)' }}>
+                  <div className="p-4 rounded-xl" style={{ background: 'var(--info-bg)', border: '1px solid var(--color-border)' }}>
                     <div className="text-body-sm font-medium mb-2" style={{ color: 'var(--info-text)' }}>Transfer Address</div>
-                    <p className="text-tiny mb-3" style={{ color: 'var(--text-secondary)' }}>
+                    <p className="text-tiny mb-3" style={{ color: 'var(--color-text-secondary)' }}>
                       Send {quoteData.amountInFormatted} to complete the transfer:
                     </p>
                     <div className="flex items-center gap-2">
-                      <code className="flex-1 px-3 py-2 rounded-lg text-tiny font-mono break-all" style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}>
+                      <code className="flex-1 px-3 py-2 rounded-lg text-tiny font-mono break-all" style={{ background: 'var(--color-bg-secondary)', border: '1px solid var(--color-border)', color: 'var(--color-text-primary)' }}>
                         {depositAddress}
                       </code>
-                      <button onClick={() => copyToClipboard(depositAddress)} className="p-2 rounded-lg" style={{ background: 'var(--brand)', color: '#fff' }}>
+                      <button onClick={() => copyToClipboard(depositAddress)} className="p-2 rounded-lg" style={{ background: 'var(--color-primary)', color: '#fff' }}>
                         {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
                       </button>
                     </div>
@@ -355,8 +355,8 @@ export default function TransferModal({ quote, onClose, onComplete, onOutcome }:
                 )}
 
                 {error && (
-                  <div className="p-3 rounded-xl flex items-start gap-2" style={{ background: 'var(--error-bg)', border: '1px solid var(--error)' }}>
-                    <AlertTriangle className="h-4 w-4 mt-0.5 flex-shrink-0" style={{ color: 'var(--error)' }} />
+                  <div className="p-3 rounded-xl flex items-start gap-2" style={{ background: 'var(--error-bg)', border: '1px solid var(--color-danger)' }}>
+                    <AlertTriangle className="h-4 w-4 mt-0.5 flex-shrink-0" style={{ color: 'var(--color-danger)' }} />
                     <p className="text-body-sm" style={{ color: 'var(--error-text)' }}>{error}</p>
                   </div>
                 )}
@@ -371,31 +371,31 @@ export default function TransferModal({ quote, onClose, onComplete, onOutcome }:
 
                 {/* How it works */}
                 {!showManualDeposit && (
-                  <div className="rounded-xl overflow-hidden" style={{ border: '1px solid var(--border)' }}>
+                  <div className="rounded-xl overflow-hidden" style={{ border: '1px solid var(--color-border)' }}>
                     <button type="button" onClick={() => setHowItWorksOpen(o => !o)}
                       className="w-full flex items-center justify-between px-4 py-3 transition-colors hover:opacity-80"
-                      style={{ background: 'var(--elevated)' }}>
+                      style={{ background: 'var(--color-bg-tertiary)' }}>
                       <div className="flex items-center gap-2">
-                        <HelpCircle className="h-4 w-4 flex-shrink-0" style={{ color: 'var(--brand)' }} />
-                        <span className="text-body-sm font-medium" style={{ color: 'var(--text-secondary)' }}>What happens after I click confirm?</span>
+                        <HelpCircle className="h-4 w-4 flex-shrink-0" style={{ color: 'var(--color-primary)' }} />
+                        <span className="text-body-sm font-medium" style={{ color: 'var(--color-text-secondary)' }}>What happens after I click confirm?</span>
                       </div>
                       <ChevronDown className="h-4 w-4 flex-shrink-0 transition-transform duration-200"
-                        style={{ color: 'var(--text-faint)', transform: howItWorksOpen ? 'rotate(180deg)' : 'rotate(0deg)' }} />
+                        style={{ color: 'var(--color-text-tertiary)', transform: howItWorksOpen ? 'rotate(180deg)' : 'rotate(0deg)' }} />
                     </button>
                     {howItWorksOpen && (
-                      <div className="px-4 pb-4 pt-1" style={{ background: 'var(--elevated)' }}>
+                      <div className="px-4 pb-4 pt-1" style={{ background: 'var(--color-bg-tertiary)' }}>
                         <ol className="space-y-2.5">
                           <li className="flex gap-3">
-                            <span className="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-tiny font-bold mt-0.5" style={{ background: 'var(--brand)', color: '#fff' }}>1</span>
-                            <p className="text-body-sm" style={{ color: 'var(--text-secondary)' }}>goBlink creates a <strong style={{ color: 'var(--text-primary)' }}>one-time deposit address</strong> for your transfer.</p>
+                            <span className="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-tiny font-bold mt-0.5" style={{ background: 'var(--color-primary)', color: '#fff' }}>1</span>
+                            <p className="text-body-sm" style={{ color: 'var(--color-text-secondary)' }}>goBlink creates a <strong style={{ color: 'var(--color-text-primary)' }}>one-time deposit address</strong> for your transfer.</p>
                           </li>
                           <li className="flex gap-3">
-                            <span className="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-tiny font-bold mt-0.5" style={{ background: 'var(--brand)', color: '#fff' }}>2</span>
-                            <p className="text-body-sm" style={{ color: 'var(--text-secondary)' }}>Your wallet sends <strong style={{ color: 'var(--text-primary)' }}>{quoteData.amountInFormatted} {originTokenMetadata?.symbol}</strong> there.</p>
+                            <span className="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-tiny font-bold mt-0.5" style={{ background: 'var(--color-primary)', color: '#fff' }}>2</span>
+                            <p className="text-body-sm" style={{ color: 'var(--color-text-secondary)' }}>Your wallet sends <strong style={{ color: 'var(--color-text-primary)' }}>{quoteData.amountInFormatted} {originTokenMetadata?.symbol}</strong> there.</p>
                           </li>
                           <li className="flex gap-3">
-                            <span className="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-tiny font-bold mt-0.5" style={{ background: 'var(--brand)', color: '#fff' }}>3</span>
-                            <p className="text-body-sm" style={{ color: 'var(--text-secondary)' }}><strong style={{ color: 'var(--text-primary)' }}>~{destinationTokenMetadata?.symbol} arrives in your wallet</strong> — usually within 60 seconds.</p>
+                            <span className="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-tiny font-bold mt-0.5" style={{ background: 'var(--color-primary)', color: '#fff' }}>3</span>
+                            <p className="text-body-sm" style={{ color: 'var(--color-text-secondary)' }}><strong style={{ color: 'var(--color-text-primary)' }}>~{destinationTokenMetadata?.symbol} arrives in your wallet</strong> — usually within 60 seconds.</p>
                           </li>
                         </ol>
                       </div>
@@ -415,12 +415,12 @@ export default function TransferModal({ quote, onClose, onComplete, onOutcome }:
             {step === 'confirming' && (
               <div className="flex flex-col items-center py-12">
                 <div className="relative w-20 h-20 mb-6">
-                  <div className="absolute inset-4 rounded-full flex items-center justify-center" style={{ background: 'var(--brand)' }}>
+                  <div className="absolute inset-4 rounded-full flex items-center justify-center" style={{ background: 'var(--color-primary)' }}>
                     <Loader2 className="h-6 w-6 text-white animate-spin" />
                   </div>
                 </div>
                 <h3 className="text-h4 mb-2">{confirmationStep || 'Processing...'}</h3>
-                <p className="text-body-sm text-center max-w-xs" style={{ color: 'var(--text-muted)' }}>
+                <p className="text-body-sm text-center max-w-xs" style={{ color: 'var(--color-text-muted)' }}>
                   Please don&apos;t close this window. Check your wallet for approval.
                 </p>
               </div>
@@ -443,8 +443,8 @@ export default function TransferModal({ quote, onClose, onComplete, onOutcome }:
 
                 {isComplete && (
                   <div className="flex items-center gap-2.5 px-4 py-3 rounded-xl" style={{ background: 'rgba(59,130,246,0.07)', border: '1px solid rgba(59,130,246,0.15)' }}>
-                    <Trophy className="h-4 w-4 flex-shrink-0" style={{ color: 'var(--brand)' }} />
-                    <p className="text-tiny font-medium" style={{ color: 'var(--text-secondary)' }}>Multiple routes competed for your transfer — you got the best available rate.</p>
+                    <Trophy className="h-4 w-4 flex-shrink-0" style={{ color: 'var(--color-primary)' }} />
+                    <p className="text-tiny font-medium" style={{ color: 'var(--color-text-secondary)' }}>Multiple routes competed for your transfer — you got the best available rate.</p>
                   </div>
                 )}
 

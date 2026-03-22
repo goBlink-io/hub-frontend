@@ -185,7 +185,7 @@ function calculateScore(props: ConfidenceScoreProps, routeStats: RouteStats | nu
 
   if (score >= 85) {
     label = 'Excellent';
-    color = 'var(--success, #22c55e)';
+    color = 'var(--color-success)';
     bgColor = 'var(--success-bg, rgba(34,197,94,0.08))';
   } else if (score >= 65) {
     label = 'Good';
@@ -238,7 +238,7 @@ export default function ConfidenceScore(props: ConfidenceScoreProps) {
       <div className="flex items-center justify-between mb-2.5">
         <div className="flex items-center gap-2">
           <Shield className="h-4 w-4" style={{ color: result.color }} />
-          <span className="text-body-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
+          <span className="text-body-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
             Transfer looks {result.label.toLowerCase()}
           </span>
         </div>
@@ -262,10 +262,10 @@ export default function ConfidenceScore(props: ConfidenceScoreProps) {
       <div className="space-y-1.5">
         {result.signals.map((signal, i) => (
           <div key={i} className="flex items-center gap-2">
-            <span style={{ color: signal.positive ? result.color : 'var(--text-muted)' }}>
+            <span style={{ color: signal.positive ? result.color : 'var(--color-text-muted)' }}>
               {signal.icon}
             </span>
-            <span className="text-caption" style={{ color: 'var(--text-secondary)' }}>
+            <span className="text-caption" style={{ color: 'var(--color-text-secondary)' }}>
               {signal.text}
             </span>
           </div>

@@ -84,70 +84,70 @@ export default function QuotePreview({ quote, onReset, onSwapInitiated }: QuoteP
     <div className="card p-5 sm:p-6">
       <div className="flex items-center justify-between mb-5">
         <h3 className="text-h3">Transfer Preview</h3>
-        <button onClick={onReset} className="btn-ghost text-body-sm" style={{ color: 'var(--text-muted)' }}>
+        <button onClick={onReset} className="btn-ghost text-body-sm" style={{ color: 'var(--color-text-muted)' }}>
           <X className="h-4 w-4" /> Cancel
         </button>
       </div>
 
-      <div className="rounded-xl p-4 mb-5 space-y-3" style={{ background: 'var(--elevated)', border: '1px solid var(--border)' }}>
+      <div className="rounded-xl p-4 mb-5 space-y-3" style={{ background: 'var(--color-bg-tertiary)', border: '1px solid var(--color-border)' }}>
         <div className="flex items-center justify-between">
-          <span className="text-body-sm" style={{ color: 'var(--text-muted)' }}>You send</span>
+          <span className="text-body-sm" style={{ color: 'var(--color-text-muted)' }}>You send</span>
           <div className="text-right">
-            <div className="text-h4 font-bold" style={{ color: 'var(--text-primary)' }}>{quoteData.amountInFormatted}</div>
-            {quoteData.amountInUsd && <div className="text-tiny" style={{ color: 'var(--text-faint)' }}>≈ ${quoteData.amountInUsd}</div>}
+            <div className="text-h4 font-bold" style={{ color: 'var(--color-text-primary)' }}>{quoteData.amountInFormatted}</div>
+            {quoteData.amountInUsd && <div className="text-tiny" style={{ color: 'var(--color-text-tertiary)' }}>≈ ${quoteData.amountInUsd}</div>}
           </div>
         </div>
 
         <div className="flex items-center justify-center gap-3">
-          <div className="flex-1 h-px" style={{ background: 'var(--border)' }} />
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full text-tiny font-medium" style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}>
+          <div className="flex-1 h-px" style={{ background: 'var(--color-border)' }} />
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full text-tiny font-medium" style={{ background: 'var(--color-bg-secondary)', border: '1px solid var(--color-border)', color: 'var(--color-text-muted)' }}>
             {fromChainName} → {toChainName}
           </div>
-          <div className="flex-1 h-px" style={{ background: 'var(--border)' }} />
+          <div className="flex-1 h-px" style={{ background: 'var(--color-border)' }} />
         </div>
 
         <div className="flex items-center justify-between">
-          <span className="text-body-sm" style={{ color: 'var(--text-muted)' }}>You receive</span>
+          <span className="text-body-sm" style={{ color: 'var(--color-text-muted)' }}>You receive</span>
           <div className="text-right">
-            <div className="text-h4 font-bold" style={{ color: 'var(--success)' }}>{formatTokenAmount(quoteData.amountOutFormatted)}</div>
-            {quoteData.amountOutUsd && <div className="text-tiny" style={{ color: 'var(--text-faint)' }}>≈ ${quoteData.amountOutUsd}</div>}
+            <div className="text-h4 font-bold" style={{ color: 'var(--color-success)' }}>{formatTokenAmount(quoteData.amountOutFormatted)}</div>
+            {quoteData.amountOutUsd && <div className="text-tiny" style={{ color: 'var(--color-text-tertiary)' }}>≈ ${quoteData.amountOutUsd}</div>}
           </div>
         </div>
       </div>
 
       <div className="space-y-2 mb-5">
         <div className="flex justify-between text-body-sm">
-          <span style={{ color: 'var(--text-muted)' }}>Minimum received</span>
-          <span className="font-medium" style={{ color: 'var(--text-primary)' }}>
+          <span style={{ color: 'var(--color-text-muted)' }}>Minimum received</span>
+          <span className="font-medium" style={{ color: 'var(--color-text-primary)' }}>
             {destinationTokenMetadata ? formatAtomicAmount(quoteData.minAmountOut, destinationTokenMetadata.decimals) : quoteData.minAmountOut}
           </span>
         </div>
         <div className="flex justify-between text-body-sm">
-          <span style={{ color: 'var(--text-muted)' }}>Estimated time</span>
-          <span className="font-medium" style={{ color: 'var(--text-primary)' }}>~{Math.max(60, quoteData.timeEstimate ?? 60)}s</span>
+          <span style={{ color: 'var(--color-text-muted)' }}>Estimated time</span>
+          <span className="font-medium" style={{ color: 'var(--color-text-primary)' }}>~{Math.max(60, quoteData.timeEstimate ?? 60)}s</span>
         </div>
         {feeInfo && (
           <div className="flex justify-between text-body-sm">
-            <span style={{ color: 'var(--text-muted)' }}>Platform fee</span>
-            <span className="font-medium" style={{ color: 'var(--text-primary)' }}>
+            <span style={{ color: 'var(--color-text-muted)' }}>Platform fee</span>
+            <span className="font-medium" style={{ color: 'var(--color-text-primary)' }}>
               {feeInfo.estimatedUsd ? `$${feeInfo.estimatedUsd}` : `${feeInfo.percent}%`}
             </span>
           </div>
         )}
         <div className="flex justify-between text-body-sm">
-          <span style={{ color: 'var(--text-muted)' }}>Price protection</span>
-          <span className="font-medium" style={{ color: 'var(--text-primary)' }}>{(quoteRequest.slippageTolerance / 100)}%</span>
+          <span style={{ color: 'var(--color-text-muted)' }}>Price protection</span>
+          <span className="font-medium" style={{ color: 'var(--color-text-primary)' }}>{(quoteRequest.slippageTolerance / 100)}%</span>
         </div>
       </div>
 
       {showDepositInfo && depositAddress && (
-        <div className="mt-5 p-4 rounded-xl" style={{ background: 'var(--info-bg)', border: '1px solid var(--border)' }}>
+        <div className="mt-5 p-4 rounded-xl" style={{ background: 'var(--info-bg)', border: '1px solid var(--color-border)' }}>
           <h4 className="font-semibold text-body-sm mb-2" style={{ color: 'var(--info-text)' }}>Transfer Address</h4>
-          <p className="text-body-sm mb-3" style={{ color: 'var(--text-secondary)' }}>
+          <p className="text-body-sm mb-3" style={{ color: 'var(--color-text-secondary)' }}>
             Send {quoteData.amountInFormatted} to the address below to complete the transfer:
           </p>
           <div className="flex items-center gap-2">
-            <code className="flex-1 px-3 py-2 rounded-lg text-body-sm font-mono break-all" style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}>
+            <code className="flex-1 px-3 py-2 rounded-lg text-body-sm font-mono break-all" style={{ background: 'var(--color-bg-secondary)', border: '1px solid var(--color-border)', color: 'var(--color-text-primary)' }}>
               {depositAddress}
             </code>
             <button onClick={() => copyToClipboard(depositAddress)} className="btn-secondary px-3 py-2 text-body-sm flex-shrink-0">
@@ -173,7 +173,7 @@ export default function QuotePreview({ quote, onReset, onSwapInitiated }: QuoteP
             {isConfirming ? 'Signing...' : 'Confirm & Sign'}
           </button>
           {!isConfirming && (
-            <p className="text-center text-tiny mt-2" style={{ color: 'var(--text-faint)' }}>
+            <p className="text-center text-tiny mt-2" style={{ color: 'var(--color-text-tertiary)' }}>
               You&apos;ll approve this in your wallet. Transfer is irreversible once signed.
             </p>
           )}
@@ -181,7 +181,7 @@ export default function QuotePreview({ quote, onReset, onSwapInitiated }: QuoteP
       )}
 
       {error && (
-        <div className="mt-4 p-4 rounded-xl flex items-start gap-2" style={{ background: 'var(--error-bg)', border: '1px solid var(--error)', color: 'var(--error-text)' }}>
+        <div className="mt-4 p-4 rounded-xl flex items-start gap-2" style={{ background: 'var(--error-bg)', border: '1px solid var(--color-danger)', color: 'var(--error-text)' }}>
           <AlertTriangle className="h-5 w-5 flex-shrink-0 mt-0.5" />
           <p className="text-body-sm">{error}</p>
         </div>

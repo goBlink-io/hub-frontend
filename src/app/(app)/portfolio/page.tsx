@@ -15,6 +15,7 @@ import { ActivityFeed } from '@/components/portfolio/ActivityFeed';
 import { PortfolioSkeleton } from '@/components/portfolio/PortfolioSkeleton';
 import { getChainMeta } from '@/lib/chain-meta';
 import { getChainLogo } from '@/lib/chain-logos';
+import { ProductSuggestion } from '@/components/shared/ProductSuggestion';
 
 type SortKey = 'value' | 'name' | 'chain' | 'change';
 
@@ -101,9 +102,9 @@ export default function PortfolioPage() {
     return (
       <div className="mx-auto max-w-lg px-4 py-6">
         <div className="card p-12 text-center animate-fade-up">
-          <Wallet className="h-12 w-12 mx-auto mb-4 opacity-30" style={{ color: 'var(--text-muted)' }} />
+          <Wallet className="h-12 w-12 mx-auto mb-4 opacity-30" style={{ color: 'var(--color-text-muted)' }} />
           <h1 className="text-h3 mb-2">Portfolio</h1>
-          <p className="text-body-sm" style={{ color: 'var(--text-muted)' }}>
+          <p className="text-body-sm" style={{ color: 'var(--color-text-muted)' }}>
             Connect a wallet to view your portfolio
           </p>
         </div>
@@ -125,7 +126,7 @@ export default function PortfolioPage() {
     return (
       <div className="mx-auto max-w-lg px-4 py-6">
         <div className="card p-12 text-center animate-fade-up">
-          <p className="text-body-sm mb-3" style={{ color: 'var(--error)' }}>{error}</p>
+          <p className="text-body-sm mb-3" style={{ color: 'var(--color-danger)' }}>{error}</p>
           <button onClick={refresh} className="btn btn-primary h-10 px-5 text-body-sm">
             Retry
           </button>
@@ -142,18 +143,18 @@ export default function PortfolioPage() {
       {/* ─── Total Value Header ─── */}
       <div className="card p-6 text-center">
         <div className="flex items-center justify-center gap-2 mb-3">
-          <PieChart className="h-5 w-5" style={{ color: 'var(--brand)' }} />
+          <PieChart className="h-5 w-5" style={{ color: 'var(--color-primary)' }} />
           <h1 className="text-h3">Portfolio</h1>
         </div>
 
         <div
           className="text-4xl md:text-5xl font-bold mb-1 tabular-nums"
-          style={{ color: 'var(--text-primary)' }}
+          style={{ color: 'var(--color-text-primary)' }}
         >
           {formatUsd(totalValueUsd)}
         </div>
 
-        <p className="text-tiny mb-3" style={{ color: 'var(--text-muted)' }}>
+        <p className="text-tiny mb-3" style={{ color: 'var(--color-text-muted)' }}>
           Across {chainBreakdown.length} chain{chainBreakdown.length !== 1 ? 's' : ''}
           {' · '}{tokens.length} token{tokens.length !== 1 ? 's' : ''}
         </p>
@@ -219,7 +220,7 @@ export default function PortfolioPage() {
                       background:
                         chainFilter === chain.chain
                           ? meta.color + '18'
-                          : 'var(--elevated)',
+                          : 'var(--color-bg-tertiary)',
                       minHeight: '44px',
                     }}
                   >
@@ -243,18 +244,18 @@ export default function PortfolioPage() {
                     <div className="flex-1 text-left">
                       <div
                         className="text-body-sm font-semibold"
-                        style={{ color: 'var(--text-primary)' }}
+                        style={{ color: 'var(--color-text-primary)' }}
                       >
                         {meta.name}
                       </div>
-                      <div className="text-tiny" style={{ color: 'var(--text-muted)' }}>
+                      <div className="text-tiny" style={{ color: 'var(--color-text-muted)' }}>
                         {chain.tokenCount} token{chain.tokenCount !== 1 ? 's' : ''} ·{' '}
                         {chain.percent.toFixed(1)}%
                       </div>
                     </div>
                     <div
                       className="text-body-sm font-semibold"
-                      style={{ color: 'var(--text-primary)' }}
+                      style={{ color: 'var(--color-text-primary)' }}
                     >
                       {formatUsd(chain.totalUsd)}
                     </div>
@@ -291,7 +292,7 @@ export default function PortfolioPage() {
           <div className="relative mb-4">
             <Search
               className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4"
-              style={{ color: 'var(--text-muted)' }}
+              style={{ color: 'var(--color-text-muted)' }}
             />
             <input
               type="text"
@@ -307,9 +308,9 @@ export default function PortfolioPage() {
             <div className="text-center py-8">
               <Search
                 className="h-8 w-8 mx-auto mb-2 opacity-20"
-                style={{ color: 'var(--text-muted)' }}
+                style={{ color: 'var(--color-text-muted)' }}
               />
-              <p className="text-tiny" style={{ color: 'var(--text-muted)' }}>
+              <p className="text-tiny" style={{ color: 'var(--color-text-muted)' }}>
                 No tokens match your search
               </p>
             </div>
@@ -319,23 +320,23 @@ export default function PortfolioPage() {
               <div className="hidden md:block overflow-x-auto">
                 <table className="w-full">
                   <thead>
-                    <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                      <th className="text-left text-tiny font-medium pb-2" style={{ color: 'var(--text-muted)' }}>
+                    <tr style={{ borderBottom: '1px solid var(--color-border)' }}>
+                      <th className="text-left text-tiny font-medium pb-2" style={{ color: 'var(--color-text-muted)' }}>
                         Token
                       </th>
-                      <th className="text-left text-tiny font-medium pb-2 px-3" style={{ color: 'var(--text-muted)' }}>
+                      <th className="text-left text-tiny font-medium pb-2 px-3" style={{ color: 'var(--color-text-muted)' }}>
                         Chain
                       </th>
-                      <th className="text-right text-tiny font-medium pb-2 px-3" style={{ color: 'var(--text-muted)' }}>
+                      <th className="text-right text-tiny font-medium pb-2 px-3" style={{ color: 'var(--color-text-muted)' }}>
                         Balance
                       </th>
-                      <th className="text-right text-tiny font-medium pb-2 px-3" style={{ color: 'var(--text-muted)' }}>
+                      <th className="text-right text-tiny font-medium pb-2 px-3" style={{ color: 'var(--color-text-muted)' }}>
                         Value
                       </th>
-                      <th className="text-right text-tiny font-medium pb-2 px-3" style={{ color: 'var(--text-muted)' }}>
+                      <th className="text-right text-tiny font-medium pb-2 px-3" style={{ color: 'var(--color-text-muted)' }}>
                         24h
                       </th>
-                      <th className="text-right text-tiny font-medium pb-2 pl-3" style={{ color: 'var(--text-muted)' }}>
+                      <th className="text-right text-tiny font-medium pb-2 pl-3" style={{ color: 'var(--color-text-muted)' }}>
                         Portfolio
                       </th>
                     </tr>
@@ -370,11 +371,11 @@ export default function PortfolioPage() {
       {/* ─── Empty tokens state ─── */}
       {!hasTokens && !loading && (
         <div className="card p-12 text-center">
-          <Wallet className="h-10 w-10 mx-auto mb-3 opacity-20" style={{ color: 'var(--text-muted)' }} />
-          <p className="text-body-sm font-medium" style={{ color: 'var(--text-primary)' }}>
+          <Wallet className="h-10 w-10 mx-auto mb-3 opacity-20" style={{ color: 'var(--color-text-muted)' }} />
+          <p className="text-body-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
             No tokens found
           </p>
-          <p className="text-tiny mt-1" style={{ color: 'var(--text-muted)' }}>
+          <p className="text-tiny mt-1" style={{ color: 'var(--color-text-muted)' }}>
             Transfer some tokens to your connected wallets to get started.
           </p>
         </div>
@@ -385,6 +386,8 @@ export default function PortfolioPage() {
 
       {/* ─── Activity Feed ─── */}
       <ActivityFeed chainFilter={chainFilter} />
+
+      <ProductSuggestion exclude="portfolio" />
     </div>
   );
 }

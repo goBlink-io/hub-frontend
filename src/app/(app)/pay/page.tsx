@@ -4,6 +4,7 @@ import { useState, useCallback } from 'react';
 import { useWallet } from '@goblink/connect/react';
 import { generatePaymentUrl, type PaymentRequestData } from '@/lib/payment-requests';
 import { CreditCard, Copy, Check, ExternalLink, QrCode, Share2, Plus, Trash2 } from 'lucide-react';
+import { ProductSuggestion } from '@/components/shared/ProductSuggestion';
 
 const SUPPORTED_CHAINS = [
   { id: 'near', name: 'NEAR' },
@@ -111,7 +112,7 @@ export default function PayPage() {
       {/* Create Payment Link */}
       <div className="card p-5 sm:p-6">
         <div className="flex items-center gap-2 mb-5">
-          <CreditCard className="h-5 w-5" style={{ color: 'var(--brand)' }} />
+          <CreditCard className="h-5 w-5" style={{ color: 'var(--color-primary)' }} />
           <h2 className="text-h3">Create Payment Link</h2>
         </div>
 
@@ -119,9 +120,9 @@ export default function PayPage() {
           {/* Recipient */}
           <div>
             <div className="flex items-center justify-between mb-1.5">
-              <label className="text-caption font-medium" style={{ color: 'var(--text-secondary)' }}>Receiving Address</label>
+              <label className="text-caption font-medium" style={{ color: 'var(--color-text-secondary)' }}>Receiving Address</label>
               {address && (
-                <button onClick={handleAutoFill} className="text-tiny font-semibold" style={{ color: 'var(--brand)' }}>
+                <button onClick={handleAutoFill} className="text-tiny font-semibold" style={{ color: 'var(--color-primary)' }}>
                   Use my wallet
                 </button>
               )}
@@ -132,7 +133,7 @@ export default function PayPage() {
 
           {/* Chain */}
           <div>
-            <label className="block text-caption font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>Chain</label>
+            <label className="block text-caption font-medium mb-1.5" style={{ color: 'var(--color-text-secondary)' }}>Chain</label>
             <select value={toChain} onChange={e => setToChain(e.target.value)}
               className="input w-full h-11 text-body-sm font-semibold">
               {SUPPORTED_CHAINS.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
@@ -141,14 +142,14 @@ export default function PayPage() {
 
           {/* Token */}
           <div>
-            <label className="block text-caption font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>Token</label>
+            <label className="block text-caption font-medium mb-1.5" style={{ color: 'var(--color-text-secondary)' }}>Token</label>
             <div className="flex flex-wrap gap-2">
               {POPULAR_TOKENS.map(t => (
                 <button key={t} onClick={() => setToToken(t)}
                   className="px-3 py-1.5 rounded-lg text-tiny font-semibold transition-all active:scale-95"
                   style={{
-                    background: toToken === t ? 'var(--brand)' : 'var(--elevated)',
-                    color: toToken === t ? '#fff' : 'var(--text-secondary)',
+                    background: toToken === t ? 'var(--color-primary)' : 'var(--color-bg-tertiary)',
+                    color: toToken === t ? '#fff' : 'var(--color-text-secondary)',
                   }}>
                   {t}
                 </button>
@@ -158,7 +159,7 @@ export default function PayPage() {
 
           {/* Amount */}
           <div>
-            <label className="block text-caption font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>Amount</label>
+            <label className="block text-caption font-medium mb-1.5" style={{ color: 'var(--color-text-secondary)' }}>Amount</label>
             <input type="text" inputMode="decimal" value={amount}
               onChange={e => { const v = e.target.value; if (v === '' || /^\d*\.?\d*$/.test(v)) setAmount(v); }}
               placeholder="0.00" className="input w-full h-12 text-h4" />
@@ -166,16 +167,16 @@ export default function PayPage() {
 
           {/* Optional fields */}
           <div>
-            <label className="block text-caption font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>
-              Name <span className="text-tiny" style={{ color: 'var(--text-faint)' }}>(optional)</span>
+            <label className="block text-caption font-medium mb-1.5" style={{ color: 'var(--color-text-secondary)' }}>
+              Name <span className="text-tiny" style={{ color: 'var(--color-text-tertiary)' }}>(optional)</span>
             </label>
             <input type="text" value={name} onChange={e => setName(e.target.value)}
               placeholder="Your name or business" className="input w-full h-11 text-body-sm" />
           </div>
 
           <div>
-            <label className="block text-caption font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>
-              Memo <span className="text-tiny" style={{ color: 'var(--text-faint)' }}>(optional)</span>
+            <label className="block text-caption font-medium mb-1.5" style={{ color: 'var(--color-text-secondary)' }}>
+              Memo <span className="text-tiny" style={{ color: 'var(--color-text-tertiary)' }}>(optional)</span>
             </label>
             <input type="text" value={memo} onChange={e => setMemo(e.target.value)}
               placeholder="What's this payment for?" className="input w-full h-11 text-body-sm" />
@@ -191,10 +192,10 @@ export default function PayPage() {
 
         {/* Generated URL */}
         {generatedUrl && (
-          <div className="mt-5 p-4 rounded-xl" style={{ background: 'var(--elevated)', border: '1px solid var(--border)' }}>
-            <label className="block text-tiny font-medium mb-2" style={{ color: 'var(--text-muted)' }}>Payment Link</label>
+          <div className="mt-5 p-4 rounded-xl" style={{ background: 'var(--color-bg-tertiary)', border: '1px solid var(--color-border)' }}>
+            <label className="block text-tiny font-medium mb-2" style={{ color: 'var(--color-text-muted)' }}>Payment Link</label>
             <div className="flex items-center gap-2 mb-3">
-              <code className="flex-1 text-tiny font-mono break-all" style={{ color: 'var(--text-secondary)' }}>
+              <code className="flex-1 text-tiny font-mono break-all" style={{ color: 'var(--color-text-secondary)' }}>
                 {generatedUrl}
               </code>
             </div>
@@ -220,26 +221,26 @@ export default function PayPage() {
           <div className="space-y-3">
             {savedLinks.map(link => (
               <div key={link.id} className="flex items-center gap-3 p-3 rounded-xl"
-                style={{ background: 'var(--elevated)', border: '1px solid var(--border)' }}>
+                style={{ background: 'var(--color-bg-tertiary)', border: '1px solid var(--color-border)' }}>
                 <div className="flex-1 min-w-0">
-                  <div className="text-body-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
+                  <div className="text-body-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
                     {link.data.amount} {link.data.toToken}
                   </div>
-                  <div className="text-tiny truncate" style={{ color: 'var(--text-muted)' }}>
+                  <div className="text-tiny truncate" style={{ color: 'var(--color-text-muted)' }}>
                     {link.data.toChain} · {link.data.memo || 'No memo'} · {new Date(link.createdAt).toLocaleDateString()}
                   </div>
                 </div>
                 <div className="flex items-center gap-1">
                   <button onClick={() => handleShare(link.url, link.data)}
-                    className="p-1.5 rounded-lg" style={{ color: 'var(--text-muted)' }} title="Share">
+                    className="p-1.5 rounded-lg" style={{ color: 'var(--color-text-muted)' }} title="Share">
                     <Share2 className="h-4 w-4" />
                   </button>
                   <button onClick={() => handleCopy(link.url)}
-                    className="p-1.5 rounded-lg" style={{ color: 'var(--text-muted)' }} title="Copy">
+                    className="p-1.5 rounded-lg" style={{ color: 'var(--color-text-muted)' }} title="Copy">
                     <Copy className="h-4 w-4" />
                   </button>
                   <button onClick={() => handleDelete(link.id)}
-                    className="p-1.5 rounded-lg" style={{ color: 'var(--text-faint)' }} title="Delete">
+                    className="p-1.5 rounded-lg" style={{ color: 'var(--color-text-tertiary)' }} title="Delete">
                     <Trash2 className="h-4 w-4" />
                   </button>
                 </div>
@@ -248,6 +249,8 @@ export default function PayPage() {
           </div>
         </div>
       )}
+
+      <ProductSuggestion exclude="pay" />
     </div>
   );
 }
