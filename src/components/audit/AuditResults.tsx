@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import {
   Layers,
   FileText,
@@ -9,11 +9,23 @@ import {
   AlertTriangle,
   Download,
   AlertOctagon,
+  Code2,
+  ListChecks,
+  Share2,
+  Copy,
+  ExternalLink,
+  Check,
+  FileDown,
 } from 'lucide-react';
 import { ModuleCard } from './ModuleCard';
 import { TestResults } from './TestResults';
 import { ScamWarnings } from './ScamWarnings';
 import { PatternMatches } from './PatternMatches';
+import { SecurityScore } from './SecurityScore';
+import { RemediationCard } from './RemediationCard';
+import { CodeViewer } from './CodeViewer';
+import { ContractComparison } from './ContractComparison';
+import { GasInsights } from './GasInsights';
 import type { AuditResponse } from '@/types/audit';
 
 interface AuditResultsProps {
@@ -106,10 +118,21 @@ function generateMarkdownReport(results: AuditResponse): string {
   return lines.join('\n');
 }
 
+type ViewTab = 'findings' | 'code';
+
 export function AuditResults({ results }: AuditResultsProps) {
   const { summary, modules, crossModuleWarnings } = results;
+  const [activeTab, setActiveTab] = useState<ViewTab>('findings');
 
-  const handleDownload = useCallback(() => {
+  const hasCodeView = !!results.sourceCode;
+
+  // Detect language from chain for code viewer
+  const codeLanguage: 'solidity' | 'move' | 'rust' =
+    results.chain === 'sui' || results.chain === 'aptos' ? 'move' :
+    results.chain === 'solana' || results.chain === 'near' ? 'rust' :
+    'solidity';
+
+  const handleDownloadMarkdown = useCallback(() => {
     const md = generateMarkdownReport(results);
     const blob = new Blob([md], { type: 'text/markdown' });
     const url = URL.createObjectURL(blob);
@@ -118,6 +141,32 @@ export function AuditResults({ results }: AuditResultsProps) {
     a.download = `audit-report-${results.id}.md`;
     a.click();
     URL.revokeObjectURL(url);
+  }, [results]);
+
+  const handleDownloadPDF = useCallback(async () => {
+    const ZION_API = process.env.NEXT_PUBLIC_ZION_API_URL || 'http://localhost:3900';
+    try {
+      const res = await fetch(`${ZION_API}/api/audit/report`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(results),
+      });
+      if (!res.ok) throw new Error('Failed to generate report');
+      const html = await res.text();
+      const blob = new Blob([html], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      window.open(url, '_blank');
+      // Clean up after a delay
+      setTimeout(() => URL.revokeObjectURL(url), 30_000);
+    } catch {
+      // Fallback: generate a simple printable page client-side
+      const printWindow = window.open('', '_blank');
+      if (printWindow) {
+        const md = generateMarkdownReport(results);
+        printWindow.document.write(`<html><head><title>Audit Report</title><style>body{font-family:system-ui;background:#0a0b0f;color:#f1f1f3;padding:40px;max-width:800px;margin:0 auto}pre{white-space:pre-wrap}</style></head><body><pre>${md.replace(/</g, '&lt;')}</pre></body></html>`);
+        printWindow.document.close();
+      }
+    }
   }, [results]);
 
   const statCards: Array<{
@@ -138,6 +187,11 @@ export function AuditResults({ results }: AuditResultsProps) {
 
   return (
     <div className="space-y-5 animate-fade-up">
+      {/* Security Score — FIRST thing shown */}
+      {results.securityScore && (
+        <SecurityScore score={results.securityScore} />
+      )}
+
       {/* Scam warning banner — TOP of results if flags found */}
       {hasScamFlags && <ScamWarnings scamFlags={testReport.scamFlags} />}
 
@@ -164,80 +218,294 @@ export function AuditResults({ results }: AuditResultsProps) {
         ))}
       </div>
 
-      {/* Cross-module warnings */}
-      {crossModuleWarnings.length > 0 && (
+      {/* View tab switcher — only show if source code available */}
+      {hasCodeView && (
         <div
-          className="p-4 space-y-2"
+          className="flex gap-1"
           style={{
-            backgroundColor: 'rgba(245, 158, 11, 0.06)',
-            border: '1px solid rgba(245, 158, 11, 0.15)',
-            borderRadius: 'var(--radius-lg)',
+            backgroundColor: 'var(--color-bg-tertiary)',
+            borderRadius: 'var(--radius-md)',
+            padding: '3px',
           }}
         >
-          <div className="flex items-center gap-2 mb-2">
-            <AlertOctagon size={16} style={{ color: 'var(--color-warning)' }} />
-            <span
-              className="text-sm font-semibold"
-              style={{ color: 'var(--color-warning)' }}
-            >
-              Cross-Module Warnings
-            </span>
-          </div>
-          {crossModuleWarnings.map((w, i) => (
-            <div key={i} className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>
-              <span
-                className="font-semibold uppercase mr-1"
-                style={{
-                  color:
-                    w.severity === 'high'
-                      ? 'var(--color-danger)'
-                      : w.severity === 'medium'
-                        ? 'var(--color-warning)'
-                        : 'var(--color-text-muted)',
-                }}
-              >
-                [{w.severity}]
-              </span>
-              {w.message}
-              <span style={{ color: 'var(--color-text-muted)' }}> — {w.modules.join(', ')}</span>
-            </div>
-          ))}
+          <button
+            onClick={() => setActiveTab('findings')}
+            className="flex items-center gap-1.5"
+            style={{
+              flex: 1,
+              padding: '8px 12px',
+              fontSize: '13px',
+              fontWeight: 600,
+              borderRadius: 'var(--radius-sm)',
+              border: 'none',
+              cursor: 'pointer',
+              backgroundColor: activeTab === 'findings' ? 'var(--color-bg-secondary)' : 'transparent',
+              color: activeTab === 'findings' ? 'var(--color-text-primary)' : 'var(--color-text-muted)',
+              transition: 'all 0.15s',
+            }}
+          >
+            <ListChecks size={14} />
+            Findings
+          </button>
+          <button
+            onClick={() => setActiveTab('code')}
+            className="flex items-center gap-1.5"
+            style={{
+              flex: 1,
+              padding: '8px 12px',
+              fontSize: '13px',
+              fontWeight: 600,
+              borderRadius: 'var(--radius-sm)',
+              border: 'none',
+              cursor: 'pointer',
+              backgroundColor: activeTab === 'code' ? 'var(--color-bg-secondary)' : 'transparent',
+              color: activeTab === 'code' ? 'var(--color-text-primary)' : 'var(--color-text-muted)',
+              transition: 'all 0.15s',
+            }}
+          >
+            <Code2 size={14} />
+            Code View
+          </button>
         </div>
       )}
 
-      {/* Module list */}
-      <div className="space-y-3">
-        {modules.map((mod, i) => (
-          <ModuleCard key={mod.name} module={mod} defaultOpen={i === 0} />
-        ))}
-      </div>
-
-      {/* Test Results Section */}
-      {testReport && testReport.totalTests > 0 && (
-        <TestResults testReport={testReport} />
-      )}
-
-      {/* Pattern Match Section */}
-      {testReport && testReport.matchedPatterns > 0 && (
-        <PatternMatches
-          matchedPatterns={testReport.matchedPatterns}
-          patternCoverage={testReport.patternCoverage}
+      {/* Code View Tab */}
+      {activeTab === 'code' && hasCodeView && results.sourceCode && (
+        <CodeViewer
+          sourceCode={results.sourceCode}
+          language={codeLanguage}
+          annotations={results.annotations ?? []}
         />
       )}
 
-      {/* Scam Scanner — clean badge if no flags */}
-      {testReport && !hasScamFlags && (
-        <ScamWarnings scamFlags={[]} />
+      {/* Findings Tab */}
+      {activeTab === 'findings' && (
+        <>
+          {/* Cross-module warnings */}
+          {crossModuleWarnings.length > 0 && (
+            <div
+              className="p-4 space-y-2"
+              style={{
+                backgroundColor: 'rgba(245, 158, 11, 0.06)',
+                border: '1px solid rgba(245, 158, 11, 0.15)',
+                borderRadius: 'var(--radius-lg)',
+              }}
+            >
+              <div className="flex items-center gap-2 mb-2">
+                <AlertOctagon size={16} style={{ color: 'var(--color-warning)' }} />
+                <span
+                  className="text-sm font-semibold"
+                  style={{ color: 'var(--color-warning)' }}
+                >
+                  Cross-Module Warnings
+                </span>
+              </div>
+              {crossModuleWarnings.map((w, i) => (
+                <div key={i} className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>
+                  <span
+                    className="font-semibold uppercase mr-1"
+                    style={{
+                      color:
+                        w.severity === 'high'
+                          ? 'var(--color-danger)'
+                          : w.severity === 'medium'
+                            ? 'var(--color-warning)'
+                            : 'var(--color-text-muted)',
+                    }}
+                  >
+                    [{w.severity}]
+                  </span>
+                  {w.message}
+                  <span style={{ color: 'var(--color-text-muted)' }}> — {w.modules.join(', ')}</span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Module list */}
+          <div className="space-y-3">
+            {modules.map((mod, i) => (
+              <ModuleCard key={mod.name} module={mod} defaultOpen={i === 0} />
+            ))}
+          </div>
+
+          {/* Scam flags with remediation */}
+          {hasScamFlags && testReport.scamFlags.map((flag, i) => (
+            flag.remediation ? (
+              <RemediationCard key={`rem-${i}`} remediation={flag.remediation} />
+            ) : null
+          ))}
+
+          {/* Test Results Section */}
+          {testReport && testReport.totalTests > 0 && (
+            <TestResults testReport={testReport} />
+          )}
+
+          {/* Pattern Match Section */}
+          {testReport && testReport.matchedPatterns > 0 && (
+            <PatternMatches
+              matchedPatterns={testReport.matchedPatterns}
+              patternCoverage={testReport.patternCoverage}
+            />
+          )}
+
+          {/* Scam Scanner — clean badge if no flags */}
+          {testReport && !hasScamFlags && (
+            <ScamWarnings scamFlags={[]} />
+          )}
+        </>
       )}
 
-      {/* Download */}
-      <button
-        onClick={handleDownload}
-        className="btn btn-secondary w-full h-11 text-sm gap-2"
-      >
-        <Download size={16} />
-        Download Report
-      </button>
+      {/* Contract Comparison */}
+      {results.similarity && results.similarity.similarity > 0 && (
+        <ContractComparison similarity={results.similarity} />
+      )}
+
+      {/* Gas Insights */}
+      {results.gasInsights && results.gasInsights.length > 0 && (
+        <GasInsights insights={results.gasInsights} />
+      )}
+
+      {/* Share Your Audit */}
+      <ShareAuditSection auditId={results.id} />
+
+      {/* Download buttons */}
+      <div className="grid grid-cols-2 gap-3">
+        <button
+          onClick={handleDownloadMarkdown}
+          className="btn btn-secondary h-11 text-sm gap-2"
+        >
+          <Download size={16} />
+          Download Markdown
+        </button>
+        <button
+          onClick={handleDownloadPDF}
+          className="btn btn-primary h-11 text-sm gap-2"
+        >
+          <FileDown size={16} />
+          Download PDF
+        </button>
+      </div>
     </div>
+  );
+}
+
+/* ─── Share Audit Section ─── */
+
+function ShareAuditSection({ auditId }: { auditId: string }) {
+  const [copiedField, setCopiedField] = useState<string | null>(null);
+
+  const ZION_API = process.env.NEXT_PUBLIC_ZION_API_URL || 'http://localhost:3900';
+  const badgeUrl = `${ZION_API}/api/audit/badge/${auditId}`;
+  const certUrl = `${ZION_API}/api/audit/certificate/${auditId}`;
+  const verifyUrl = `https://hub.goblink.io/audit/verify/${auditId}`;
+
+  const badgeMarkdown = `[![goBlink Audit](${badgeUrl})](${verifyUrl})`;
+  const badgeHtml = `<a href="${verifyUrl}"><img src="${badgeUrl}" alt="goBlink Audit" /></a>`;
+
+  const copyToClipboard = useCallback(async (text: string, field: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedField(field);
+      setTimeout(() => setCopiedField(null), 2000);
+    } catch {
+      // Silent fallback
+    }
+  }, []);
+
+  return (
+    <div
+      className="p-4 sm:p-5 space-y-4"
+      style={{
+        backgroundColor: 'var(--color-bg-secondary)',
+        border: '1px solid var(--color-border)',
+        borderRadius: 'var(--radius-lg)',
+      }}
+    >
+      <div className="flex items-center gap-2">
+        <Share2 size={16} style={{ color: 'var(--color-primary)' }} />
+        <span
+          className="text-sm font-semibold"
+          style={{ color: 'var(--color-text-primary)' }}
+        >
+          Share Your Audit
+        </span>
+      </div>
+
+      {/* Badge Preview */}
+      <div
+        className="flex items-center justify-center p-4"
+        style={{
+          backgroundColor: 'var(--color-bg-tertiary)',
+          borderRadius: 'var(--radius-md)',
+          border: '1px solid var(--color-border)',
+        }}
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={badgeUrl}
+          alt="goBlink Audit Badge"
+          style={{ height: 22 }}
+        />
+      </div>
+
+      {/* Copy buttons */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+        <CopyButton
+          label="Copy Markdown"
+          text={badgeMarkdown}
+          field="md"
+          copiedField={copiedField}
+          onCopy={copyToClipboard}
+        />
+        <CopyButton
+          label="Copy HTML"
+          text={badgeHtml}
+          field="html"
+          copiedField={copiedField}
+          onCopy={copyToClipboard}
+        />
+        <a
+          href={certUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="btn btn-secondary h-9 text-xs gap-1.5"
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            textDecoration: 'none',
+          }}
+        >
+          <ExternalLink size={12} />
+          View Certificate
+        </a>
+      </div>
+    </div>
+  );
+}
+
+function CopyButton({
+  label,
+  text,
+  field,
+  copiedField,
+  onCopy,
+}: {
+  label: string;
+  text: string;
+  field: string;
+  copiedField: string | null;
+  onCopy: (text: string, field: string) => void;
+}) {
+  const isCopied = copiedField === field;
+  return (
+    <button
+      onClick={() => onCopy(text, field)}
+      className="btn btn-secondary h-9 text-xs gap-1.5"
+    >
+      {isCopied ? <Check size={12} style={{ color: 'var(--color-success)' }} /> : <Copy size={12} />}
+      {isCopied ? 'Copied!' : label}
+    </button>
   );
 }

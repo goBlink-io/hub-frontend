@@ -37,6 +37,18 @@ export async function runAudit(
 }
 
 /**
+ * Fetch pre-computed demo audit (Solmate ERC20).
+ */
+export async function fetchDemo(): Promise<AuditResponse> {
+  const res = await fetch(`${ZION_API}/api/demo`);
+  if (!res.ok) {
+    const text = await res.text().catch(() => res.statusText);
+    throw new Error(`Demo failed: ${text}`);
+  }
+  return res.json() as Promise<AuditResponse>;
+}
+
+/**
  * Fetch the pattern library from Zion.
  */
 export async function getPatterns(): Promise<Pattern[]> {
@@ -61,4 +73,22 @@ export async function getStats(): Promise<AuditStats> {
   const res = await fetch(`${ZION_API}/api/stats`);
   if (!res.ok) throw new Error(`Failed to fetch stats: ${res.statusText}`);
   return res.json() as Promise<AuditStats>;
+}
+
+/**
+ * Submit a GitHub URL for audit.
+ */
+export async function auditFromGithub(url: string): Promise<AuditResponse> {
+  const res = await fetch(`${ZION_API}/api/audit/github`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ url }),
+  });
+
+  if (!res.ok) {
+    const text = await res.text().catch(() => res.statusText);
+    throw new Error(`GitHub audit failed: ${text}`);
+  }
+
+  return res.json() as Promise<AuditResponse>;
 }

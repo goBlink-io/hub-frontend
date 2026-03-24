@@ -60,6 +60,16 @@ export interface AuditResponse {
   durationMs: number;
   /** Test report from Zion test engine */
   testReport?: TestReport;
+  /** Security score (0-100) */
+  securityScore?: SecurityScore;
+  /** Original source code for code viewer */
+  sourceCode?: string;
+  /** Line-level annotations for code viewer */
+  annotations?: CodeAnnotation[];
+  /** Contract similarity analysis */
+  similarity?: SimilarityResult;
+  /** Gas optimization insights */
+  gasInsights?: GasInsight[];
 }
 
 export interface AuditOptions {
@@ -95,6 +105,66 @@ export interface AuditStats {
   exploits: number;
   chains: number;
   totalLossesUsd: string;
+  auditsPerformed?: number;
+  auditsToday?: number;
+}
+
+// ─── Similarity Types ────────────────────────────────────────────────────────
+
+export interface SimilarityResult {
+  closestMatch: string;
+  similarity: number;
+  matchedFunctions: string[];
+  extraFunctions: string[];
+  missingFunctions: string[];
+  standardSource: string;
+}
+
+// ─── Gas Insight Types ───────────────────────────────────────────────────────
+
+export interface GasInsight {
+  function: string;
+  gasUsed: number;
+  category: 'storage' | 'computation' | 'external-call' | 'loop' | 'memory';
+  suggestion: string;
+  estimatedSaving: string;
+  severity: 'high' | 'medium' | 'low';
+}
+
+// ─── Security Score ──────────────────────────────────────────────────────────
+
+export interface SecurityScoreBreakdown {
+  verification: number;
+  testCoverage: number;
+  patternSafety: number;
+  scamRisk: number;
+}
+
+export interface SecurityScore {
+  overall: number;
+  breakdown: SecurityScoreBreakdown;
+  grade: 'A' | 'B' | 'C' | 'D' | 'F';
+  riskLevel: 'Low' | 'Medium' | 'High' | 'Critical';
+}
+
+// ─── Remediation ─────────────────────────────────────────────────────────────
+
+export interface Remediation {
+  title: string;
+  description: string;
+  fixCode?: string;
+  reference?: string;
+  difficulty: 'easy' | 'medium' | 'hard';
+}
+
+// ─── Code Annotations ────────────────────────────────────────────────────────
+
+export interface CodeAnnotation {
+  line: number;
+  severity: 'critical' | 'high' | 'medium' | 'low' | 'info';
+  message: string;
+  category: string;
+  remediation?: string;
 }
 
 // ─── Test Report Types ───────────────────────────────────────────────────────
@@ -118,6 +188,7 @@ export interface ScamFlag {
   lineNumber?: number;
   redFlags: string[];
   confidence: number;
+  remediation?: Remediation;
 }
 
 export interface TestReport {

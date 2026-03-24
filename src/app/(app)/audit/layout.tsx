@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Shield, Grid3X3, Bug } from 'lucide-react';
+import { Shield, Grid3X3, Bug, BookOpen } from 'lucide-react';
 import type { ReactNode } from 'react';
 
 interface TabItem {
@@ -15,6 +15,7 @@ const tabs: TabItem[] = [
   { href: '/audit', label: 'Audit', icon: <Shield size={14} /> },
   { href: '/audit/patterns', label: 'Patterns', icon: <Grid3X3 size={14} /> },
   { href: '/audit/exploits', label: 'Exploits', icon: <Bug size={14} /> },
+  { href: '/audit/docs', label: 'Docs', icon: <BookOpen size={14} /> },
 ];
 
 export default function AuditLayout({ children }: { children: ReactNode }) {

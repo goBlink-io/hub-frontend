@@ -13,7 +13,8 @@ import { FileUpload } from '@/components/audit/FileUpload';
 import { AuditPayment } from '@/components/audit/AuditPayment';
 import { AuditResults } from '@/components/audit/AuditResults';
 import { RecentAudits } from '@/components/audit/RecentAudits';
-import { runAudit } from '@/lib/audit-api';
+import { runAudit, fetchDemo, auditFromGithub } from '@/lib/audit-api';
+import { Mail } from 'lucide-react';
 import {
   loadAudits,
   saveAudit,
@@ -78,7 +79,7 @@ const CHAINS: Array<{ id: AuditChain; label: string }> = [
   { id: 'near', label: 'NEAR' },
 ];
 
-const HERO_STATS = [
+const STATIC_HERO_STATS = [
   '105 Patterns',
   '150+ Exploits Tracked',
   '5 Chains',
@@ -100,10 +101,51 @@ export default function AuditPage() {
   const [results, setResults] = useState<AuditResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [recentAudits, setRecentAudits] = useState<SavedAudit[]>([]);
+  const [isDemo, setIsDemo] = useState(false);
+  const [demoLoading, setDemoLoading] = useState(false);
+  const [notifyEmail, setNotifyEmail] = useState('');
+  const [githubLoading, setGithubLoading] = useState(false);
+  const [auditCount, setAuditCount] = useState<number>(0);
 
-  // Load recent audits on mount
+  // Load recent audits + live audit counter on mount
   useEffect(() => {
     setRecentAudits(loadAudits());
+
+    // Fetch live audit counter
+    const ZION_API = process.env.NEXT_PUBLIC_ZION_API_URL || 'http://localhost:3900';
+    fetch(`${ZION_API}/api/stats`)
+      .then((res) => res.json())
+      .then((data: { auditsPerformed?: number }) => {
+        const target = data.auditsPerformed ?? 0;
+        if (target > 0) {
+          const duration = 1200;
+          const start = performance.now();
+          const step = (now: number) => {
+            const elapsed = now - start;
+            const pct = Math.min(elapsed / duration, 1);
+            const eased = 1 - Math.pow(1 - pct, 3);
+            setAuditCount(Math.round(eased * target));
+            if (pct < 1) requestAnimationFrame(step);
+          };
+          requestAnimationFrame(step);
+        }
+      })
+      .catch(() => { /* counter stays at 0 */ });
+  }, []);
+
+  const handleDemo = useCallback(async () => {
+    setDemoLoading(true);
+    setError(null);
+    setIsDemo(true);
+    try {
+      const res = await fetchDemo();
+      setResults(res);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Demo failed');
+      setIsDemo(false);
+    } finally {
+      setDemoLoading(false);
+    }
   }, []);
 
   const handleRunAudit = useCallback(async () => {
@@ -132,7 +174,32 @@ export default function AuditPage() {
       clearInterval(interval);
       setLoading(false);
     }
-  }, [files, options]);
+  }, [files, options, selectedTier]);
+
+  const handleGithubSubmit = useCallback(async (url: string) => {
+    setGithubLoading(true);
+    setError(null);
+    setProgress(0);
+
+    const interval = setInterval(() => {
+      setProgress((p) => Math.min(p + Math.random() * 10, 90));
+    }, 800);
+
+    try {
+      const res = await auditFromGithub(url);
+      setProgress(100);
+      setResults(res);
+
+      const saved = buildSavedAudit(res, selectedTier);
+      saveAudit(saved);
+      setRecentAudits(loadAudits());
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'GitHub audit failed');
+    } finally {
+      clearInterval(interval);
+      setGithubLoading(false);
+    }
+  }, [selectedTier]);
 
   const toggleOption = useCallback(
     (key: 'irAnalysis' | 'patternMatching' | 'aiSpecs') => {
@@ -172,14 +239,18 @@ export default function AuditPage() {
           annotations required.
         </p>
         <div className="flex items-center justify-center gap-2 flex-wrap">
-          {HERO_STATS.map((stat) => (
+          {[
+            ...(auditCount > 0 ? [`${auditCount} Contracts Audited`] : []),
+            ...STATIC_HERO_STATS,
+          ].map((stat) => (
             <span
               key={stat}
-              className="text-xs font-medium px-2 py-1"
+              className="text-xs font-medium px-2 py-1 tabular-nums"
               style={{
-                color: 'var(--color-text-muted)',
-                backgroundColor: 'var(--color-bg-tertiary)',
+                color: stat.includes('Audited') ? 'var(--color-primary)' : 'var(--color-text-muted)',
+                backgroundColor: stat.includes('Audited') ? 'rgba(59, 130, 246, 0.1)' : 'var(--color-bg-tertiary)',
                 borderRadius: 'var(--radius-sm)',
+                fontWeight: stat.includes('Audited') ? 700 : undefined,
               }}
             >
               {stat}
@@ -188,10 +259,68 @@ export default function AuditPage() {
         </div>
       </div>
 
+      {/* Demo Button */}
+      {!results && (
+        <div className="flex justify-center">
+          <button
+            onClick={handleDemo}
+            disabled={demoLoading}
+            className="flex items-center gap-2"
+            style={{
+              padding: '10px 20px',
+              fontSize: '13px',
+              fontWeight: 600,
+              color: 'var(--color-primary)',
+              backgroundColor: 'transparent',
+              border: '1.5px solid var(--color-primary)',
+              borderRadius: 'var(--radius-lg)',
+              cursor: demoLoading ? 'not-allowed' : 'pointer',
+              opacity: demoLoading ? 0.6 : 1,
+              transition: 'all 0.15s',
+            }}
+          >
+            {demoLoading ? (
+              <Loader2 size={14} className="animate-spin" />
+            ) : (
+              <Sparkles size={14} />
+            )}
+            {demoLoading ? 'Loading demo...' : 'See it in action — Try Free Demo'}
+          </button>
+        </div>
+      )}
+
+      {/* Demo banner */}
+      {isDemo && results && (
+        <div
+          style={{
+            padding: '12px 16px',
+            backgroundColor: 'rgba(59, 130, 246, 0.06)',
+            border: '1px solid rgba(59, 130, 246, 0.15)',
+            borderRadius: 'var(--radius-lg)',
+            textAlign: 'center',
+          }}
+        >
+          <p
+            style={{
+              fontSize: '13px',
+              fontWeight: 500,
+              color: 'var(--color-text-secondary)',
+              margin: 0,
+            }}
+          >
+            This is a demo audit of{' '}
+            <span style={{ fontWeight: 700, color: 'var(--color-text-primary)' }}>
+              Solmate&apos;s ERC20
+            </span>
+            . Upload your own contract for a full audit.
+          </p>
+        </div>
+      )}
+
       {/* Upload Zone */}
       <div className="card p-5 sm:p-6">
         <h2 className="text-h4 mb-4">Upload Contracts</h2>
-        <FileUpload onFilesChange={setFiles} />
+        <FileUpload onFilesChange={setFiles} onGithubSubmit={handleGithubSubmit} />
       </div>
 
       {/* Options Bar */}
@@ -346,6 +475,28 @@ export default function AuditPage() {
         </div>
       )}
 
+      {/* Email notification for Deep Audit */}
+      {files.length > 0 && !results && selectedTier === 'deep' && (
+        <div className="card p-4 sm:p-5 animate-fade-up">
+          <div className="flex items-center gap-2 mb-3">
+            <Mail size={14} style={{ color: 'var(--color-primary)' }} />
+            <span
+              className="text-xs font-semibold"
+              style={{ color: 'var(--color-text-secondary)' }}
+            >
+              Get notified when your audit is complete
+            </span>
+          </div>
+          <input
+            type="email"
+            value={notifyEmail}
+            onChange={(e) => setNotifyEmail(e.target.value)}
+            placeholder="your@email.com (optional)"
+            className="input w-full h-9 text-sm"
+          />
+        </div>
+      )}
+
       {/* Payment & Run */}
       {files.length > 0 && !results && (
         <div className="card p-5 sm:p-6 animate-fade-up">
@@ -395,14 +546,24 @@ export default function AuditPage() {
                   </span>
                 </div>
               ) : (
-                <button
-                  onClick={handleRunAudit}
-                  disabled={files.length === 0}
-                  className="btn btn-primary w-full h-12 text-sm gap-2"
-                >
-                  <Shield size={16} />
-                  Run Audit
-                </button>
+                <>
+                  <button
+                    onClick={handleRunAudit}
+                    disabled={files.length === 0}
+                    className="btn btn-primary w-full h-12 text-sm gap-2"
+                  >
+                    <Shield size={16} />
+                    Run Audit
+                  </button>
+                  {notifyEmail && selectedTier === 'deep' && (
+                    <p
+                      className="text-xs text-center"
+                      style={{ color: 'var(--color-text-muted)' }}
+                    >
+                      We&apos;ll email your results to {notifyEmail}
+                    </p>
+                  )}
+                </>
               )}
 
               {error && (
@@ -418,6 +579,54 @@ export default function AuditPage() {
                   {error}
                 </div>
               )}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* GitHub loading state */}
+      {githubLoading && (
+        <div className="card p-5 sm:p-6 animate-fade-up">
+          <div className="flex flex-col items-center gap-4 py-6">
+            <Loader2
+              size={32}
+              className="animate-spin"
+              style={{ color: 'var(--color-primary)' }}
+            />
+            <p
+              className="text-sm font-medium"
+              style={{ color: 'var(--color-text-secondary)' }}
+            >
+              Cloning repository and running audit...
+            </p>
+            <div
+              className="w-full h-2 overflow-hidden"
+              style={{
+                backgroundColor: 'var(--color-bg-tertiary)',
+                borderRadius: 'var(--radius-sm)',
+              }}
+            >
+              <div
+                className="h-full transition-all duration-500"
+                style={{
+                  width: `${progress}%`,
+                  backgroundColor: 'var(--color-primary)',
+                  borderRadius: 'var(--radius-sm)',
+                }}
+              />
+            </div>
+          </div>
+          {error && (
+            <div
+              className="p-3 text-sm"
+              style={{
+                backgroundColor: 'rgba(239, 68, 68, 0.08)',
+                border: '1px solid rgba(239, 68, 68, 0.15)',
+                borderRadius: 'var(--radius-md)',
+                color: 'var(--color-danger)',
+              }}
+            >
+              {error}
             </div>
           )}
         </div>
