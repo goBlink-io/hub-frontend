@@ -15,7 +15,51 @@ import { AuditResults } from '@/components/audit/AuditResults';
 import { runAudit } from '@/lib/audit-api';
 import type { AuditChain, AuditOptions, AuditResponse } from '@/types/audit';
 
-const AUDIT_PRICE = process.env.NEXT_PUBLIC_AUDIT_PRICE_USD || '9.99';
+type AuditTier = 'quick' | 'full' | 'deep';
+
+interface TierConfig {
+  id: AuditTier;
+  name: string;
+  price: string;
+  description: string;
+  features: string[];
+}
+
+const AUDIT_TIERS: TierConfig[] = [
+  {
+    id: 'quick',
+    name: 'Quick Scan',
+    price: '99',
+    description: 'Pattern matching & summary report',
+    features: ['105 vulnerability patterns', 'Summary report', 'Chain detection', 'Instant results'],
+  },
+  {
+    id: 'full',
+    name: 'Full Audit',
+    price: '249',
+    description: 'IR analysis + formal verification',
+    features: [
+      'Everything in Quick Scan',
+      'Formal verification (Z3)',
+      'Spec inference',
+      'Full detailed report',
+      'Exploit mapping',
+    ],
+  },
+  {
+    id: 'deep',
+    name: 'Deep Audit',
+    price: '499',
+    description: 'Complete analysis + AI specs',
+    features: [
+      'Everything in Full Audit',
+      'AI spec generation',
+      'Cross-module analysis',
+      'Downloadable PDF report',
+      'Priority processing',
+    ],
+  },
+];
 
 const CHAINS: Array<{ id: AuditChain; label: string }> = [
   { id: 'auto', label: 'Auto-Detect' },
@@ -35,6 +79,7 @@ const HERO_STATS = [
 
 export default function AuditPage() {
   const [files, setFiles] = useState<File[]>([]);
+  const [selectedTier, setSelectedTier] = useState<AuditTier>('full');
   const [options, setOptions] = useState<AuditOptions>({
     chain: 'auto',
     irAnalysis: true,
@@ -185,11 +230,103 @@ export default function AuditPage() {
         </div>
       )}
 
+      {/* Tier Selection */}
+      {files.length > 0 && !results && !paid && (
+        <div className="animate-fade-up">
+          <h2
+            className="text-sm font-semibold mb-3"
+            style={{ color: 'var(--color-text-secondary)' }}
+          >
+            Select Audit Tier
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {AUDIT_TIERS.map((tier) => {
+              const isSelected = selectedTier === tier.id;
+              const isPopular = tier.id === 'full';
+              return (
+                <button
+                  key={tier.id}
+                  onClick={() => {
+                    setSelectedTier(tier.id);
+                    setOptions((prev) => ({
+                      ...prev,
+                      irAnalysis: tier.id !== 'quick',
+                      aiSpecs: tier.id === 'deep',
+                    }));
+                  }}
+                  className="relative flex flex-col p-4 text-left transition-all active:scale-[0.98]"
+                  style={{
+                    backgroundColor: isSelected
+                      ? 'rgba(59, 130, 246, 0.06)'
+                      : 'var(--color-bg-secondary)',
+                    border: `1.5px solid ${
+                      isSelected ? 'var(--color-primary)' : 'var(--color-border)'
+                    }`,
+                    borderRadius: 'var(--radius-lg)',
+                  }}
+                >
+                  {isPopular && (
+                    <span
+                      className="absolute -top-2.5 left-1/2 -translate-x-1/2 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5"
+                      style={{
+                        backgroundColor: 'var(--color-primary)',
+                        color: '#fff',
+                        borderRadius: 'var(--radius-sm)',
+                      }}
+                    >
+                      Popular
+                    </span>
+                  )}
+                  <span
+                    className="text-xs font-semibold uppercase tracking-wider"
+                    style={{
+                      color: isSelected
+                        ? 'var(--color-primary)'
+                        : 'var(--color-text-muted)',
+                    }}
+                  >
+                    {tier.name}
+                  </span>
+                  <span
+                    className="text-2xl font-bold mt-1"
+                    style={{ color: 'var(--color-text-primary)' }}
+                  >
+                    ${tier.price}
+                  </span>
+                  <span
+                    className="text-xs mt-1 mb-3"
+                    style={{ color: 'var(--color-text-secondary)' }}
+                  >
+                    {tier.description}
+                  </span>
+                  <ul className="space-y-1.5">
+                    {tier.features.map((f) => (
+                      <li
+                        key={f}
+                        className="text-xs flex items-start gap-1.5"
+                        style={{ color: 'var(--color-text-tertiary)' }}
+                      >
+                        <span style={{ color: 'var(--color-success)' }}>✓</span>
+                        {f}
+                      </li>
+                    ))}
+                  </ul>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* Payment & Run */}
       {files.length > 0 && !results && (
         <div className="card p-5 sm:p-6 animate-fade-up">
           {!paid ? (
-            <AuditPayment onPaymentComplete={() => setPaid(true)} priceUsd={AUDIT_PRICE} />
+            <AuditPayment
+              onPaymentComplete={() => setPaid(true)}
+              priceUsd={AUDIT_TIERS.find((t) => t.id === selectedTier)?.price || '249'}
+              tierName={AUDIT_TIERS.find((t) => t.id === selectedTier)?.name || 'Full Audit'}
+            />
           ) : (
             <div className="space-y-4">
               {loading ? (

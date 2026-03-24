@@ -7,12 +7,13 @@ import { generatePaymentUrl, type PaymentRequestData } from '@/lib/payment-reque
 interface AuditPaymentProps {
   onPaymentComplete: () => void;
   priceUsd: string;
+  tierName?: string;
 }
 
 const TREASURY_ADDRESS =
   process.env.NEXT_PUBLIC_AUDIT_TREASURY_ADDRESS || 'goblink-treasury.near';
 
-export function AuditPayment({ onPaymentComplete, priceUsd }: AuditPaymentProps) {
+export function AuditPayment({ onPaymentComplete, priceUsd, tierName }: AuditPaymentProps) {
   const [paymentStatus, setPaymentStatus] = useState<'idle' | 'pending' | 'confirmed'>('idle');
   const [showComingSoon, setShowComingSoon] = useState(false);
 
@@ -66,7 +67,7 @@ export function AuditPayment({ onPaymentComplete, priceUsd }: AuditPaymentProps)
       {/* Price display */}
       <div className="text-center mb-4">
         <span className="text-xs uppercase tracking-wider" style={{ color: 'var(--color-text-muted)' }}>
-          Audit Price
+          {tierName || 'Audit'} — Total
         </span>
         <div
           className="text-2xl font-bold mt-1"
