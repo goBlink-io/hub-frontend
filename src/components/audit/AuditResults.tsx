@@ -11,6 +11,9 @@ import {
   AlertOctagon,
 } from 'lucide-react';
 import { ModuleCard } from './ModuleCard';
+import { TestResults } from './TestResults';
+import { ScamWarnings } from './ScamWarnings';
+import { PatternMatches } from './PatternMatches';
 import type { AuditResponse } from '@/types/audit';
 
 interface AuditResultsProps {
@@ -59,6 +62,45 @@ function generateMarkdownReport(results: AuditResponse): string {
     for (const w of results.crossModuleWarnings) {
       lines.push(`- [${w.severity.toUpperCase()}] ${w.message} (${w.modules.join(', ')})`);
     }
+    lines.push('');
+  }
+
+  if (results.testReport) {
+    const tr = results.testReport;
+    lines.push('## Test Results');
+    lines.push(`- Contract: ${tr.contractName}`);
+    lines.push(`- Total: ${tr.totalTests} | Passed: ${tr.passed} | Failed: ${tr.failed}`);
+    lines.push(`- Duration: ${(tr.duration / 1000).toFixed(1)}s`);
+    lines.push('');
+
+    if (tr.matchedPatterns > 0) {
+      lines.push(`### Pattern Matches: ${tr.matchedPatterns}`);
+      lines.push(`- Exploit: ${tr.patternCoverage.exploit}`);
+      lines.push(`- Scam: ${tr.patternCoverage.scam}`);
+      lines.push(`- Non-EVM: ${tr.patternCoverage.nonEvm}`);
+      lines.push('');
+    }
+
+    if (tr.scamFlags.length > 0) {
+      lines.push('### ⚠️ Scam Warnings');
+      for (const flag of tr.scamFlags) {
+        lines.push(`- **[${flag.severity.toUpperCase()}]** ${flag.name} (${flag.confidence}% confidence)`);
+        lines.push(`  ${flag.description}`);
+        if (flag.lineNumber != null) lines.push(`  Line: ${flag.lineNumber}`);
+        lines.push(`  Code: \`${flag.matchedCode}\``);
+        if (flag.redFlags.length > 0) lines.push(`  Red flags: ${flag.redFlags.join(', ')}`);
+      }
+      lines.push('');
+    }
+
+    lines.push('### Individual Tests');
+    for (const test of tr.results) {
+      const status = test.passed ? '✅' : '❌';
+      lines.push(`- ${status} **${test.name}** [${test.category}] [${test.severity}]`);
+      if (test.error) lines.push(`  Error: ${test.error}`);
+      if (test.gasUsed != null) lines.push(`  Gas: ${test.gasUsed.toLocaleString()}`);
+    }
+    lines.push('');
   }
 
   return lines.join('\n');
@@ -91,8 +133,14 @@ export function AuditResults({ results }: AuditResultsProps) {
     { label: 'Unknown', value: summary.unknown, color: 'var(--color-warning)', Icon: AlertTriangle },
   ];
 
+  const testReport = results.testReport;
+  const hasScamFlags = testReport && testReport.scamFlags.length > 0;
+
   return (
     <div className="space-y-5 animate-fade-up">
+      {/* Scam warning banner — TOP of results if flags found */}
+      {hasScamFlags && <ScamWarnings scamFlags={testReport.scamFlags} />}
+
       {/* Summary cards */}
       <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
         {statCards.map(({ label, value, color, Icon }) => (
@@ -163,6 +211,24 @@ export function AuditResults({ results }: AuditResultsProps) {
           <ModuleCard key={mod.name} module={mod} defaultOpen={i === 0} />
         ))}
       </div>
+
+      {/* Test Results Section */}
+      {testReport && testReport.totalTests > 0 && (
+        <TestResults testReport={testReport} />
+      )}
+
+      {/* Pattern Match Section */}
+      {testReport && testReport.matchedPatterns > 0 && (
+        <PatternMatches
+          matchedPatterns={testReport.matchedPatterns}
+          patternCoverage={testReport.patternCoverage}
+        />
+      )}
+
+      {/* Scam Scanner — clean badge if no flags */}
+      {testReport && !hasScamFlags && (
+        <ScamWarnings scamFlags={[]} />
+      )}
 
       {/* Download */}
       <button

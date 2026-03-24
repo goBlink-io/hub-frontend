@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import {
   Shield,
   Zap,
@@ -12,7 +12,15 @@ import {
 import { FileUpload } from '@/components/audit/FileUpload';
 import { AuditPayment } from '@/components/audit/AuditPayment';
 import { AuditResults } from '@/components/audit/AuditResults';
+import { RecentAudits } from '@/components/audit/RecentAudits';
 import { runAudit } from '@/lib/audit-api';
+import {
+  loadAudits,
+  saveAudit,
+  deleteAudit,
+  buildSavedAudit,
+  type SavedAudit,
+} from '@/lib/audit-storage';
 import type { AuditChain, AuditOptions, AuditResponse } from '@/types/audit';
 
 type AuditTier = 'quick' | 'full' | 'deep';
@@ -91,6 +99,12 @@ export default function AuditPage() {
   const [progress, setProgress] = useState(0);
   const [results, setResults] = useState<AuditResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [recentAudits, setRecentAudits] = useState<SavedAudit[]>([]);
+
+  // Load recent audits on mount
+  useEffect(() => {
+    setRecentAudits(loadAudits());
+  }, []);
 
   const handleRunAudit = useCallback(async () => {
     if (files.length === 0) return;
@@ -107,6 +121,11 @@ export default function AuditPage() {
       const res = await runAudit(files, options);
       setProgress(100);
       setResults(res);
+
+      // Save to localStorage
+      const saved = buildSavedAudit(res, selectedTier);
+      saveAudit(saved);
+      setRecentAudits(loadAudits());
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Audit failed');
     } finally {
@@ -121,6 +140,15 @@ export default function AuditPage() {
     },
     []
   );
+
+  const handleSelectAudit = useCallback((auditResults: AuditResponse) => {
+    setResults(auditResults);
+  }, []);
+
+  const handleDeleteAudit = useCallback((id: string) => {
+    deleteAudit(id);
+    setRecentAudits(loadAudits());
+  }, []);
 
   return (
     <div className="space-y-6">
@@ -397,6 +425,15 @@ export default function AuditPage() {
 
       {/* Results */}
       {results && <AuditResults results={results} />}
+
+      {/* Recent Audits */}
+      {!results && (
+        <RecentAudits
+          audits={recentAudits}
+          onSelect={handleSelectAudit}
+          onDelete={handleDeleteAudit}
+        />
+      )}
     </div>
   );
 }

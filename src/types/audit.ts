@@ -58,6 +58,8 @@ export interface AuditResponse {
   crossModuleWarnings: CrossModuleWarning[];
   /** Duration in milliseconds */
   durationMs: number;
+  /** Test report from Zion test engine */
+  testReport?: TestReport;
 }
 
 export interface AuditOptions {
@@ -93,4 +95,43 @@ export interface AuditStats {
   exploits: number;
   chains: number;
   totalLossesUsd: string;
+}
+
+// ─── Test Report Types ───────────────────────────────────────────────────────
+
+export interface TestResult {
+  name: string;
+  passed: boolean;
+  gasUsed?: number;
+  error?: string;
+  category: string;
+  severity: string;
+  description: string;
+}
+
+export interface ScamFlag {
+  patternId: string;
+  name: string;
+  severity: 'critical' | 'high' | 'medium' | 'low';
+  description: string;
+  matchedCode: string;
+  lineNumber?: number;
+  redFlags: string[];
+  confidence: number;
+}
+
+export interface TestReport {
+  contractName: string;
+  totalTests: number;
+  passed: number;
+  failed: number;
+  results: TestResult[];
+  matchedPatterns: number;
+  scamFlags: ScamFlag[];
+  patternCoverage: {
+    exploit: number;
+    scam: number;
+    nonEvm: number;
+  };
+  duration: number;
 }
