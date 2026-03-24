@@ -11,6 +11,7 @@ import {
   Store,
   BookOpen,
   Clock,
+  Shield,
 } from "lucide-react";
 import type { ReactNode } from "react";
 
@@ -27,6 +28,7 @@ const navItems: NavItem[] = [
   { href: "/history", label: "History", icon: <Clock size={16} /> },
   { href: "/merchant", label: "Merchant", icon: <Store size={16} /> },
   { href: "/book", label: "Book", icon: <BookOpen size={16} /> },
+  { href: "/audit", label: "Audit", icon: <Shield size={16} /> },
 ];
 
 export function Navbar() {
