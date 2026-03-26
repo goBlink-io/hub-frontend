@@ -308,10 +308,11 @@ function EndpointsSection({
             </p>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium" style={{ color: "var(--color-text-secondary)" }}>
+              <label htmlFor="webhook-endpoint-url" className="text-sm font-medium" style={{ color: "var(--color-text-secondary)" }}>
                 Endpoint URL
               </label>
               <input
+                id="webhook-endpoint-url"
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
                 placeholder="https://example.com/webhooks/goblink"

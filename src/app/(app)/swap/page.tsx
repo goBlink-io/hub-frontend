@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import QuotePreview from '@/components/swap/QuotePreview';
 import StatusTracker from '@/components/swap/StatusTracker';
@@ -74,6 +74,26 @@ export default function SwapPage() {
     setView('form');
     setQuote(null);
   }, []);
+
+  // Push history state when view changes (Fix 8: browser back button)
+  useEffect(() => {
+    if (view !== 'form') {
+      window.history.pushState({ swapView: view }, '');
+    }
+  }, [view]);
+
+  useEffect(() => {
+    const handlePopState = (event: PopStateEvent) => {
+      if (event.state?.swapView) {
+        handleReset();
+      } else if (view !== 'form') {
+        handleReset();
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [view, handleReset]);
 
   const handleOutcome = useCallback((result: { status: string; fulfillmentTxHash?: string }) => {
     if (depositAddress) {

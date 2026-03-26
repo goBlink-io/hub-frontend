@@ -138,6 +138,7 @@ export default function Home() {
       </motion.div>
 
       {/* Feature Cards */}
+      <h2 className="sr-only">Features</h2>
       <motion.section
         className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 max-w-5xl mx-auto px-4 sm:px-6 mb-20"
         initial="hidden"
@@ -149,7 +150,7 @@ export default function Home() {
           <motion.div key={f.title} className="card-standard p-6" variants={fadeUp}>
             <div
               className="w-10 h-10 rounded-lg flex items-center justify-center mb-4"
-              style={{ background: 'rgba(59,130,246,0.1)' }}
+              style={{ background: 'var(--color-primary-subtle)' }}
             >
               <f.icon className="h-5 w-5" style={{ color: 'var(--color-primary)' }} />
             </div>
@@ -165,7 +166,7 @@ export default function Home() {
 
       {/* How It Works */}
       <motion.section
-        className="max-w-4xl mx-auto px-4 sm:px-6 mb-20 text-center"
+        className="max-w-5xl mx-auto px-4 sm:px-6 mb-20 text-center"
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, margin: '-50px' }}
@@ -182,7 +183,7 @@ export default function Home() {
             <motion.div key={s.num} className="flex flex-col items-center" variants={fadeUp}>
               <div
                 className="w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold mb-4"
-                style={{ background: 'rgba(59,130,246,0.15)', color: 'var(--color-primary)' }}
+                style={{ background: 'var(--color-primary-muted)', color: 'var(--color-primary)' }}
               >
                 {s.num}
               </div>
@@ -220,7 +221,7 @@ export default function Home() {
               >
                 <div
                   className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
-                  style={{ background: 'rgba(59,130,246,0.1)' }}
+                  style={{ background: 'var(--color-primary-subtle)' }}
                 >
                   <p.icon className="h-5 w-5" style={{ color: 'var(--color-primary)' }} />
                 </div>
@@ -240,7 +241,7 @@ export default function Home() {
 
       {/* CTA */}
       <motion.section
-        className="card-hero mx-4 sm:mx-6 mb-20 px-6 py-14 text-center max-w-4xl lg:mx-auto w-auto"
+        className="card-hero mx-4 sm:mx-6 mb-20 px-6 py-14 text-center max-w-5xl lg:mx-auto w-auto"
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, margin: '-50px' }}

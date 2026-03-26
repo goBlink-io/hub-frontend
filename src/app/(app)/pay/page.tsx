@@ -173,7 +173,7 @@ export default function PayPage() {
           {/* Recipient */}
           <div>
             <div className="flex items-center justify-between mb-1.5">
-              <label className="text-caption font-medium" style={{ color: 'var(--color-text-secondary)' }}>
+              <label htmlFor="pay-recipient" className="text-caption font-medium" style={{ color: 'var(--color-text-secondary)' }}>
                 Receiving Address<span className="text-[var(--color-danger)]"> *</span>
               </label>
               {address && (
@@ -182,7 +182,7 @@ export default function PayPage() {
                 </button>
               )}
             </div>
-            <input type="text" value={recipient}
+            <input id="pay-recipient" type="text" value={recipient}
               onChange={e => { setRecipient(e.target.value); setRecipientError(null); }}
               onBlur={handleRecipientBlur}
               placeholder="Enter wallet address" className="input w-full h-11 font-mono text-body-sm"
@@ -197,8 +197,8 @@ export default function PayPage() {
 
           {/* Chain */}
           <div>
-            <label className="block text-caption font-medium mb-1.5" style={{ color: 'var(--color-text-secondary)' }}>Chain</label>
-            <select value={toChain} onChange={e => setToChain(e.target.value)}
+            <label htmlFor="pay-chain" className="block text-caption font-medium mb-1.5" style={{ color: 'var(--color-text-secondary)' }}>Chain</label>
+            <select id="pay-chain" value={toChain} onChange={e => setToChain(e.target.value)}
               className="input w-full h-11 text-body-sm font-semibold">
               {SUPPORTED_CHAINS.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
@@ -206,7 +206,7 @@ export default function PayPage() {
 
           {/* Token */}
           <div>
-            <label className="block text-caption font-medium mb-1.5" style={{ color: 'var(--color-text-secondary)' }}>Token</label>
+            <label className="block text-caption font-medium mb-1.5" id="pay-token-label" style={{ color: 'var(--color-text-secondary)' }}>Token</label>
             <div className="flex flex-wrap gap-2">
               {POPULAR_TOKENS.map(t => (
                 <button key={t} onClick={() => setToToken(t)}
@@ -223,10 +223,10 @@ export default function PayPage() {
 
           {/* Amount */}
           <div>
-            <label className="block text-caption font-medium mb-1.5" style={{ color: 'var(--color-text-secondary)' }}>
+            <label htmlFor="pay-amount" className="block text-caption font-medium mb-1.5" style={{ color: 'var(--color-text-secondary)' }}>
               Amount<span className="text-[var(--color-danger)]"> *</span>
             </label>
-            <input type="text" inputMode="decimal" value={amount}
+            <input id="pay-amount" type="text" inputMode="decimal" value={amount}
               onChange={e => { const v = e.target.value; if (v === '' || /^\d*\.?\d*$/.test(v)) { setAmount(v); setAmountError(null); } }}
               onBlur={handleAmountBlur}
               placeholder="0.00" className="input w-full h-12 text-h4"
@@ -241,18 +241,18 @@ export default function PayPage() {
 
           {/* Optional fields */}
           <div>
-            <label className="block text-caption font-medium mb-1.5" style={{ color: 'var(--color-text-secondary)' }}>
+            <label htmlFor="pay-name" className="block text-caption font-medium mb-1.5" style={{ color: 'var(--color-text-secondary)' }}>
               Name <span className="text-tiny" style={{ color: 'var(--color-text-tertiary)' }}>(optional)</span>
             </label>
-            <input type="text" value={name} onChange={e => setName(e.target.value)}
+            <input id="pay-name" type="text" value={name} onChange={e => setName(e.target.value)}
               placeholder="Your name or business" className="input w-full h-11 text-body-sm" />
           </div>
 
           <div>
-            <label className="block text-caption font-medium mb-1.5" style={{ color: 'var(--color-text-secondary)' }}>
+            <label htmlFor="pay-memo" className="block text-caption font-medium mb-1.5" style={{ color: 'var(--color-text-secondary)' }}>
               Memo <span className="text-tiny" style={{ color: 'var(--color-text-tertiary)' }}>(optional)</span>
             </label>
-            <input type="text" value={memo} onChange={e => setMemo(e.target.value)}
+            <input id="pay-memo" type="text" value={memo} onChange={e => setMemo(e.target.value)}
               placeholder="What's this payment for?" className="input w-full h-11 text-body-sm" />
           </div>
 

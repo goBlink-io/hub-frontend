@@ -159,7 +159,7 @@ export default async function PublishedSitePage({
   const logoUrl = space.brand_logo_url ?? space.logo_url;
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: "var(--color-bg-primary)", color: "var(--color-text-primary)" }}>
+    <div className="min-h-dvh" style={{ backgroundColor: "var(--color-bg-primary)", color: "var(--color-text-primary)" }}>
       {/* Header */}
       <header
         className="sticky top-0 z-30 backdrop-blur-lg"

@@ -13,6 +13,8 @@
   --color-primary: #3b82f6;
   --color-primary-hover: #2563eb;
   --color-accent-glow: rgba(59, 130, 246, 0.2);
+  --color-primary-subtle: rgba(59, 130, 246, 0.1);
+  --color-primary-muted: rgba(59, 130, 246, 0.15);
 
   /* Semantic */
   --color-success: #10b981;
@@ -23,8 +25,8 @@
   /* Text */
   --color-text-primary: #f1f1f3;
   --color-text-secondary: #8b8ca7;
-  --color-text-tertiary: #5e5f7a;
-  --color-text-muted: #4a4b65;
+  --color-text-tertiary: #6e6f8e;
+  --color-text-muted: #7a7b95;
 
   /* Border */
   --color-border: #1e1f2e;
@@ -147,6 +149,18 @@ select {
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+
+  .animate-spin {
+    animation: none !important;
+  }
+
+  .animate-pulse {
+    animation: none !important;
+  }
+
+  .animate-bounce {
+    animation: none !important;
+  }
 }
 
 /* ─── Safe Area ─── */
@@ -259,6 +273,10 @@ select {
   border: none;
 }
 
+.btn:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
 .btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
@@ -310,6 +328,27 @@ select {
 
 .animate-fade-up {
   animation: fade-up 0.3s ease-out;
+}
+
+/* Modal enter/exit animations */
+@keyframes modal-enter {
+  from { opacity: 0; transform: scale(0.95) translateY(8px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+@keyframes modal-exit {
+  from { opacity: 1; transform: scale(1) translateY(0); }
+  to { opacity: 0; transform: scale(0.95) translateY(8px); }
+}
+
+@keyframes backdrop-enter {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes backdrop-exit {
+  from { opacity: 1; }
+  to { opacity: 0; }
 }
 
 /* Hide scrollbar for horizontal chip scrollers */
