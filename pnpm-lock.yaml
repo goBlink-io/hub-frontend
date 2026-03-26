@@ -16,7 +16,7 @@ importers:
         version: 0.1.17
       '@goblink/connect':
         specifier: file:vendor/goblink-connect-0.2.0.tgz
-        version: file:vendor/goblink-connect-0.2.0.tgz(40cb4529f971e92cf33543537cd5b640)
+        version: file:vendor/goblink-connect-0.2.0.tgz(3c65166dbdb17fd5bc4cba1bf775ba4a)
       '@hookform/resolvers':
         specifier: ^5.2.2
         version: 5.2.2(react-hook-form@7.72.0(react@19.2.4))
@@ -467,7 +467,7 @@ packages:
     resolution: {integrity: sha512-RiB/yIh78pcIxl6lLMG0CgBXAZ2Y0eVHqMPYugu+9U0AeT6YBeiJpf7lbdJNIugFP5SIjwNRgo4DhR1Qxi26Gg==}
 
   '@goblink/connect@file:vendor/goblink-connect-0.2.0.tgz':
-    resolution: {integrity: sha512-O83B+PaskiBg9zMVBJf/EQF3E9xrfdU02N+DASHpPU1J8YQP69JJ7G1ceYi12KyPOZPZ3HZVXv2L/Nq065rcXw==, tarball: file:vendor/goblink-connect-0.2.0.tgz}
+    resolution: {integrity: sha512-st85GYjJGK4q4GyQcBLwImVDjAB44O1ASUoSW4NJd08LlRwMPUCBIkDNaQZDVUg8oM505vQYJf6V/QsxUK8Xww==, tarball: file:vendor/goblink-connect-0.2.0.tgz}
     version: 0.2.0
     peerDependencies:
       '@aptos-labs/wallet-adapter-react': '>=3.0.0'
@@ -477,7 +477,7 @@ packages:
       '@reown/appkit-adapter-solana': '>=1.0.0'
       '@reown/appkit-adapter-wagmi': '>=1.0.0'
       '@starknet-react/chains': '>=0.1.0'
-      '@starknet-react/core': '>=2.0.0'
+      '@starknet-react/core': '>=2.0.0 <6.0.0'
       '@tanstack/react-query': '>=5.0.0'
       '@tonconnect/ui-react': '>=2.0.0'
       '@tronweb3/tronwallet-adapter-react-hooks': '>=1.0.0'
@@ -6541,9 +6541,9 @@ snapshots:
 
   '@floating-ui/utils@0.2.11': {}
 
-  '@goblink/connect@file:vendor/goblink-connect-0.2.0.tgz(40cb4529f971e92cf33543537cd5b640)':
+  '@goblink/connect@file:vendor/goblink-connect-0.2.0.tgz(3c65166dbdb17fd5bc4cba1bf775ba4a)':
     dependencies:
-      '@reown/appkit': 1.7.20(@types/react@19.2.14)(bufferutil@4.1.0)(react@19.2.4)(typescript@5.9.3)(utf-8-validate@6.0.6)(zod@4.3.6)
+      '@reown/appkit': 1.8.19(@types/react@19.2.14)(bufferutil@4.1.0)(fastestsmallesttextencoderdecoder@1.0.22)(react@19.2.4)(typescript@5.9.3)(use-sync-external-store@1.4.0(react@19.2.4))(utf-8-validate@6.0.6)(zod@4.3.6)
       '@reown/appkit-adapter-solana': 1.8.19(@types/react@19.2.14)(bufferutil@4.1.0)(fastestsmallesttextencoderdecoder@1.0.22)(react@19.2.4)(typescript@5.9.3)(use-sync-external-store@1.4.0(react@19.2.4))(utf-8-validate@6.0.6)(zod@4.3.6)
       '@reown/appkit-adapter-wagmi': 1.8.19(2f51650c9fdfc958fbcabef86709c279)
       '@tanstack/react-query': 5.95.0(react@19.2.4)
