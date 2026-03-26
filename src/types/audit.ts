@@ -206,3 +206,61 @@ export interface TestReport {
   };
   duration: number;
 }
+
+// ─── Re-audit / Resubmission Types ──────────────────────────────────────────
+
+export interface FindingComparison {
+  resolved: AuditFinding[];
+  persistent: AuditFinding[];
+  newlyIntroduced: AuditFinding[];
+}
+
+export interface ReauditComparison {
+  originalAuditId: string;
+  originalScore: number;
+  originalGrade: string;
+  currentScore: number;
+  currentGrade: string;
+  scoreDelta: number;
+  findings: FindingComparison;
+  summary: {
+    totalResolved: number;
+    totalPersistent: number;
+    totalNew: number;
+    overallImprovement: boolean;
+  };
+}
+
+export interface ResubmitStatus {
+  auditId: string;
+  originalScore: number;
+  originalGrade: string;
+  resubmissionsRemaining: number;
+  canResubmit: boolean;
+  resubmitHistory: Array<{
+    reauditId: string;
+    timestamp: string;
+    score: number;
+    grade: string;
+  }>;
+}
+
+// ─── Audit Tier Types ─────────────────────────────────────────────────────────
+
+export type AuditTier = 'quick' | 'full' | 'deep';
+
+export interface TierConfig {
+  id: AuditTier;
+  name: string;
+  price: string;
+  description: string;
+  features: string[];
+}
+
+// Extend AuditResponse with resubmission fields
+export interface AuditResponseWithResubmit extends AuditResponse {
+  auditId: string;
+  reauditToken?: string;
+  resubmissionsRemaining?: number;
+  reauditComparison?: ReauditComparison;
+}
