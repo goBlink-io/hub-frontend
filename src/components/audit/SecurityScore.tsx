@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { Shield, CheckCircle2, FlaskConical, Search, AlertTriangle } from 'lucide-react';
 import type { SecurityScore as SecurityScoreType } from '@/types/audit';
 
@@ -57,7 +58,35 @@ const BREAKDOWN_ITEMS = [
 export function SecurityScore({ score }: SecurityScoreProps) {
   const color = getScoreColor(score.grade);
   const circumference = 2 * Math.PI * 54; // radius = 54
-  const dashOffset = circumference - (score.overall / 100) * circumference;
+
+  // ─── Count-up animation ───
+  const [displayScore, setDisplayScore] = useState(0);
+  const [revealed, setRevealed] = useState(false);
+
+  useEffect(() => {
+    if (score.overall <= 0 || revealed) return;
+
+    const duration = 1500; // 1.5s count-up
+    const start = performance.now();
+
+    const animate = (now: number) => {
+      const elapsed = now - start;
+      const progress = Math.min(elapsed / duration, 1);
+      // Ease out cubic
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setDisplayScore(Math.round(eased * score.overall));
+
+      if (progress < 1) {
+        requestAnimationFrame(animate);
+      } else {
+        setRevealed(true);
+      }
+    };
+
+    requestAnimationFrame(animate);
+  }, [score.overall]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const dashOffset = circumference - (displayScore / 100) * circumference;
 
   return (
     <div
@@ -94,7 +123,7 @@ export function SecurityScore({ score }: SecurityScoreProps) {
               strokeDasharray={circumference}
               strokeDashoffset={dashOffset}
               transform="rotate(-90 70 70)"
-              style={{ transition: 'stroke-dashoffset 1s ease-out' }}
+              style={{ transition: 'stroke-dashoffset 0.3s ease-out' }}
             />
           </svg>
           {/* Grade letter */}
@@ -108,16 +137,26 @@ export function SecurityScore({ score }: SecurityScoreProps) {
               justifyContent: 'center',
             }}
           >
-            <span
+            <div
+              className="transition-all duration-700"
               style={{
-                fontSize: '36px',
-                fontWeight: 800,
-                color,
-                lineHeight: 1,
+                transform: revealed ? 'scale(1)' : 'scale(0.5)',
+                opacity: revealed || displayScore > 0 ? 1 : 0,
               }}
             >
-              {score.grade}
-            </span>
+              <span
+                style={{
+                  fontSize: '36px',
+                  fontWeight: 800,
+                  color,
+                  lineHeight: 1,
+                  display: 'block',
+                  textAlign: 'center',
+                }}
+              >
+                {score.grade}
+              </span>
+            </div>
             <span
               className="tabular-nums"
               style={{
@@ -127,7 +166,7 @@ export function SecurityScore({ score }: SecurityScoreProps) {
                 marginTop: '2px',
               }}
             >
-              {score.overall}/100
+              {displayScore}/100
             </span>
           </div>
         </div>

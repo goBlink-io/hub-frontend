@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import {
   Layers,
   FileText,
@@ -123,6 +123,13 @@ type ViewTab = 'findings' | 'code';
 export function AuditResults({ results }: AuditResultsProps) {
   const { summary, modules, crossModuleWarnings } = results;
   const [activeTab, setActiveTab] = useState<ViewTab>('findings');
+  const [showDetails, setShowDetails] = useState(false);
+
+  // Brief delay before showing full results — let the score animate first
+  useEffect(() => {
+    const t = setTimeout(() => setShowDetails(true), 300);
+    return () => clearTimeout(t);
+  }, []);
 
   const hasCodeView = !!results.sourceCode;
 
@@ -192,6 +199,9 @@ export function AuditResults({ results }: AuditResultsProps) {
         <SecurityScore score={results.securityScore} />
       )}
 
+      {/* Delayed details — let score animate first */}
+      {!showDetails ? null : (
+        <>
       {/* Scam warning banner — TOP of results if flags found */}
       {hasScamFlags && <ScamWarnings scamFlags={testReport.scamFlags} />}
 
@@ -368,6 +378,8 @@ export function AuditResults({ results }: AuditResultsProps) {
 
       {/* Share Your Audit */}
       <ShareAuditSection auditId={results.id} />
+        </>
+      )}
 
       {/* Download buttons */}
       <div className="grid grid-cols-2 gap-3">
