@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { SwapStatus } from '@/lib/shared';
 import { Check, X, Clock } from 'lucide-react';
+import Link from 'next/link';
 
 interface StatusTrackerProps {
   depositAddress: string;
@@ -36,6 +37,7 @@ export default function StatusTracker({ depositAddress, onReset }: StatusTracker
   const [error, setError] = useState<string | null>(null);
   const [reassuranceIdx, setReassuranceIdx] = useState(0);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  const [dismissedCloseMsg, setDismissedCloseMsg] = useState(false);
   const startTime = useRef(Date.now());
 
   // Elapsed time counter
@@ -213,16 +215,39 @@ export default function StatusTracker({ depositAddress, onReset }: StatusTracker
         )}
       </div>
 
+      {/* Safe to close message */}
+      {elapsedSeconds >= 30 && !isTerminal && !dismissedCloseMsg && (
+        <div
+          className="p-3 rounded-xl mb-4 flex items-center justify-between"
+          style={{ background: 'var(--info-bg)', border: '1px solid rgba(59,130,246,0.15)' }}
+        >
+          <p className="text-body-sm" style={{ color: 'var(--info-text)' }}>
+            You can safely close this page — we&apos;ll complete your transfer in the background.
+            Check your <Link href="/history" style={{ color: 'var(--color-primary)', textDecoration: 'underline' }}>transfer history</Link> anytime.
+          </p>
+          <button
+            onClick={() => setDismissedCloseMsg(true)}
+            className="ml-3 flex-shrink-0"
+            style={{ color: 'var(--color-text-muted)' }}
+            aria-label="Dismiss"
+          >
+            <X size={14} />
+          </button>
+        </div>
+      )}
+
       {/* Timeline Stepper */}
       <div className="space-y-0 mb-6">
         {steps.map((step, idx) => {
           const state = getStepState(step.key);
           return (
-            <div key={step.key} className="flex items-start gap-3">
+            <div key={step.key} className="flex items-start gap-3" {...(state === 'active' ? { 'aria-current': 'step' as const } : {})}>
               {/* Vertical connector + dot */}
               <div className="flex flex-col items-center">
                 <div
                   className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0"
+                  role="img"
+                  aria-label={`${step.label}: ${state === 'done' ? 'Complete' : state === 'active' ? 'In progress' : 'Pending'}`}
                   style={{
                     background: state === 'done'
                       ? 'var(--color-success)'

@@ -7,6 +7,7 @@ import { isEvmChain, isNativeToken, EVM_CHAINS, getExplorerTxUrl } from '@/lib/s
 import { getChainLogo } from '@/lib/chain-logos';
 import { formatTokenAmount } from '@/lib/format';
 import { X, ArrowDown, Check, Loader2, AlertTriangle, Copy, Shield, Trophy, ChevronDown, HelpCircle } from 'lucide-react';
+import Link from 'next/link';
 import TransactionStoryline from './TransactionStoryline';
 import ConfidenceScore from './ConfidenceScore';
 import TransferSuccess from './TransferSuccess';
@@ -34,6 +35,14 @@ export default function TransferModal({ quote, onClose, onComplete, onOutcome }:
   const { quote: quoteData, quoteRequest, originTokenMetadata, destinationTokenMetadata, fromChain, toChain, feeInfo, source, paymentRequestId } = quote as Record<string, any>;
   const { getAddress } = useWallet();
 
+  const [closing, setClosing] = useState(false);
+  const handleClose = useCallback(() => {
+    setClosing(true);
+    setTimeout(() => {
+      onClose();
+    }, 200);
+  }, [onClose]);
+
   const [step, setStep] = useState<ModalStep>('preview');
   const [confirmationStep, setConfirmationStep] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -43,6 +52,8 @@ export default function TransferModal({ quote, onClose, onComplete, onOutcome }:
   const [showManualDeposit, setShowManualDeposit] = useState(false);
   const [trackingStartedAt, setTrackingStartedAt] = useState(0);
   const [howItWorksOpen, setHowItWorksOpen] = useState(false);
+  const [dismissedCloseMsg, setDismissedCloseMsg] = useState(false);
+  const [trackingElapsed, setTrackingElapsed] = useState(0);
 
   const startTracking = () => {
     setTrackingStartedAt(Date.now());
@@ -115,6 +126,15 @@ export default function TransferModal({ quote, onClose, onComplete, onOutcome }:
     } catch { /* retry */ }
     return false;
   }, [outcomeLogged, fromChain, toChain, originTokenMetadata, destinationTokenMetadata, onOutcome]);
+
+  // Track elapsed seconds during tracking step
+  useEffect(() => {
+    if (step !== 'tracking' || !trackingStartedAt) return;
+    const timer = setInterval(() => {
+      setTrackingElapsed(Math.floor((Date.now() - trackingStartedAt) / 1000));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [step, trackingStartedAt]);
 
   useEffect(() => {
     if (step !== 'tracking' || !depositAddress) return;
@@ -239,8 +259,11 @@ export default function TransferModal({ quote, onClose, onComplete, onOutcome }:
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
-      <div className="flex min-h-screen items-end sm:items-center justify-center sm:p-4">
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" onClick={step !== 'confirming' ? onClose : undefined} />
+      <div className="flex min-h-screen items-end sm:items-center justify-center sm:p-4"
+        style={{ animation: closing ? 'modal-exit 0.2s ease-in forwards' : 'modal-enter 0.25s ease-out' }}>
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm"
+          style={{ animation: closing ? 'backdrop-exit 0.2s ease-in forwards' : 'backdrop-enter 0.25s ease-out' }}
+          onClick={step !== 'confirming' ? handleClose : undefined} />
 
         <div className="relative rounded-t-2xl sm:rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto"
           style={{ background: 'var(--color-bg-secondary)', border: '1px solid var(--color-border)' }}>
@@ -253,7 +276,7 @@ export default function TransferModal({ quote, onClose, onComplete, onOutcome }:
               {step === 'tracking' && 'Transfer Status'}
             </h2>
             {step !== 'confirming' && (
-              <button onClick={onClose} className="p-1.5 rounded-lg transition-colors" style={{ color: 'var(--color-text-muted)' }} aria-label="Close transfer modal">
+              <button onClick={handleClose} className="p-1.5 rounded-lg transition-colors" style={{ color: 'var(--color-text-muted)' }} aria-label="Close transfer modal">
                 <X className="h-5 w-5" />
               </button>
             )}
@@ -448,6 +471,27 @@ export default function TransferModal({ quote, onClose, onComplete, onOutcome }:
                   </div>
                 )}
 
+                {/* Safe to close message */}
+                {trackingElapsed >= 30 && !isComplete && !dismissedCloseMsg && (
+                  <div
+                    className="p-3 rounded-xl flex items-center justify-between"
+                    style={{ background: 'var(--info-bg)', border: '1px solid rgba(59,130,246,0.15)' }}
+                  >
+                    <p className="text-body-sm" style={{ color: 'var(--info-text)' }}>
+                      You can safely close this modal — we&apos;ll complete your transfer in the background.
+                      Check your <Link href="/history" style={{ color: 'var(--color-primary)', textDecoration: 'underline' }}>transfer history</Link> anytime.
+                    </p>
+                    <button
+                      onClick={() => setDismissedCloseMsg(true)}
+                      className="ml-3 flex-shrink-0"
+                      style={{ color: 'var(--color-text-muted)' }}
+                      aria-label="Dismiss"
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
+                )}
+
                 <TransactionStoryline
                   status={transaction?.status || null}
                   fromChain={fromChain} toChain={toChain}
@@ -463,7 +507,7 @@ export default function TransferModal({ quote, onClose, onComplete, onOutcome }:
                   startedAt={trackingStartedAt}
                 />
 
-                <button onClick={onClose}
+                <button onClick={handleClose}
                   className={`btn w-full py-3 text-body-sm ${isComplete ? 'btn-primary' : 'btn-secondary'}`}>
                   {isComplete ? 'Done' : 'Close'}
                 </button>
