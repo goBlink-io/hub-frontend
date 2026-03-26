@@ -6,10 +6,9 @@ import { sendNearTransaction, sendSuiTransaction } from '@/lib/transactions';
 import { isEvmChain, isNativeToken, EVM_CHAINS, getExplorerTxUrl } from '@/lib/shared';
 import { getChainLogo } from '@/lib/chain-logos';
 import { formatTokenAmount } from '@/lib/format';
-import { X, ArrowDown, Check, Loader2, AlertTriangle, Copy, Shield, Trophy, ChevronDown, HelpCircle } from 'lucide-react';
+import { X, ArrowDown, Check, Loader2, AlertTriangle, Copy, Shield } from 'lucide-react';
 import Link from 'next/link';
 import TransactionStoryline from './TransactionStoryline';
-import ConfidenceScore from './ConfidenceScore';
 import TransferSuccess from './TransferSuccess';
 
 type ModalStep = 'preview' | 'confirming' | 'tracking';
@@ -51,7 +50,6 @@ export default function TransferModal({ quote, onClose, onComplete, onOutcome }:
   const [copied, setCopied] = useState(false);
   const [showManualDeposit, setShowManualDeposit] = useState(false);
   const [trackingStartedAt, setTrackingStartedAt] = useState(0);
-  const [howItWorksOpen, setHowItWorksOpen] = useState(false);
   const [dismissedCloseMsg, setDismissedCloseMsg] = useState(false);
   const [trackingElapsed, setTrackingElapsed] = useState(0);
 
@@ -351,8 +349,7 @@ export default function TransferModal({ quote, onClose, onComplete, onOutcome }:
                 <div className="flex items-start gap-3 p-3.5 rounded-xl" style={{ background: 'rgba(59,130,246,0.06)', border: '1px solid rgba(59,130,246,0.15)' }}>
                   <Shield className="h-4 w-4 flex-shrink-0 mt-0.5" style={{ color: 'var(--color-primary)' }} />
                   <p className="text-tiny" style={{ color: 'var(--color-text-secondary)' }}>
-                    <span className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>Safety guarantee: </span>
-                    If anything goes wrong, your {originTokenMetadata?.symbol || 'tokens'} are automatically returned to you.
+                    If the transfer can&apos;t complete, your {originTokenMetadata?.symbol || 'tokens'} will be returned to your wallet.
                   </p>
                 </div>
 
@@ -381,48 +378,6 @@ export default function TransferModal({ quote, onClose, onComplete, onOutcome }:
                   <div className="p-3 rounded-xl flex items-start gap-2" role="alert" aria-live="polite" style={{ background: 'var(--error-bg)', border: '1px solid var(--color-danger)' }}>
                     <AlertTriangle className="h-4 w-4 mt-0.5 flex-shrink-0" style={{ color: 'var(--color-danger)' }} />
                     <p className="text-body-sm" style={{ color: 'var(--error-text)' }}>{error}</p>
-                  </div>
-                )}
-
-                <ConfidenceScore
-                  timeEstimate={quoteData.timeEstimate ? Math.max(60, parseInt(quoteData.timeEstimate, 10)) : null}
-                  fromChain={fromChain} toChain={toChain}
-                  fromToken={originTokenMetadata?.symbol || ''} toToken={destinationTokenMetadata?.symbol || ''}
-                  amountUsd={feeInfo?.estimatedUsd ? parseFloat(feeInfo.estimatedUsd) / (feeInfo.bps / 10000) : null}
-                  quoteAvailable={true}
-                />
-
-                {/* How it works */}
-                {!showManualDeposit && (
-                  <div className="rounded-xl overflow-hidden" style={{ border: '1px solid var(--color-border)' }}>
-                    <button type="button" onClick={() => setHowItWorksOpen(o => !o)}
-                      className="w-full flex items-center justify-between px-4 py-3 transition-colors hover:opacity-80"
-                      style={{ background: 'var(--color-bg-tertiary)' }}>
-                      <div className="flex items-center gap-2">
-                        <HelpCircle className="h-4 w-4 flex-shrink-0" style={{ color: 'var(--color-primary)' }} />
-                        <span className="text-body-sm font-medium" style={{ color: 'var(--color-text-secondary)' }}>What happens after I click confirm?</span>
-                      </div>
-                      <ChevronDown className="h-4 w-4 flex-shrink-0 transition-transform duration-200"
-                        style={{ color: 'var(--color-text-tertiary)', transform: howItWorksOpen ? 'rotate(180deg)' : 'rotate(0deg)' }} />
-                    </button>
-                    {howItWorksOpen && (
-                      <div className="px-4 pb-4 pt-1" style={{ background: 'var(--color-bg-tertiary)' }}>
-                        <ol className="space-y-2.5">
-                          <li className="flex gap-3">
-                            <span className="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-tiny font-bold mt-0.5" style={{ background: 'var(--color-primary)', color: '#fff' }}>1</span>
-                            <p className="text-body-sm" style={{ color: 'var(--color-text-secondary)' }}>goBlink creates a <strong style={{ color: 'var(--color-text-primary)' }}>one-time deposit address</strong> for your transfer.</p>
-                          </li>
-                          <li className="flex gap-3">
-                            <span className="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-tiny font-bold mt-0.5" style={{ background: 'var(--color-primary)', color: '#fff' }}>2</span>
-                            <p className="text-body-sm" style={{ color: 'var(--color-text-secondary)' }}>Your wallet sends <strong style={{ color: 'var(--color-text-primary)' }}>{quoteData.amountInFormatted} {originTokenMetadata?.symbol}</strong> there.</p>
-                          </li>
-                          <li className="flex gap-3">
-                            <span className="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-tiny font-bold mt-0.5" style={{ background: 'var(--color-primary)', color: '#fff' }}>3</span>
-                            <p className="text-body-sm" style={{ color: 'var(--color-text-secondary)' }}><strong style={{ color: 'var(--color-text-primary)' }}>~{destinationTokenMetadata?.symbol} arrives in your wallet</strong> — usually within 60 seconds.</p>
-                          </li>
-                        </ol>
-                      </div>
-                    )}
                   </div>
                 )}
 
@@ -462,13 +417,6 @@ export default function TransferModal({ quote, onClose, onComplete, onOutcome }:
                     recipientAddress={quoteRequest?.recipient}
                     fromTokenIcon={originTokenMetadata?.icon} toTokenIcon={destinationTokenMetadata?.icon}
                   />
-                )}
-
-                {isComplete && (
-                  <div className="flex items-center gap-2.5 px-4 py-3 rounded-xl" style={{ background: 'rgba(59,130,246,0.07)', border: '1px solid rgba(59,130,246,0.15)' }}>
-                    <Trophy className="h-4 w-4 flex-shrink-0" style={{ color: 'var(--color-primary)' }} />
-                    <p className="text-tiny font-medium" style={{ color: 'var(--color-text-secondary)' }}>Multiple routes competed for your transfer — you got the best available rate.</p>
-                  </div>
                 )}
 
                 {/* Safe to close message */}

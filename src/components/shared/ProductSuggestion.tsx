@@ -5,11 +5,11 @@ import Link from 'next/link';
 import { ArrowLeftRight, CreditCard, Store, BookOpen, PieChart } from 'lucide-react';
 
 const PRODUCTS = [
-  { id: 'swap', icon: ArrowLeftRight, title: 'Swap', desc: 'Transfer tokens across 26+ chains in seconds', href: '/swap', affinity: ['pay', 'portfolio'] },
-  { id: 'pay', icon: CreditCard, title: 'Pay', desc: 'Create and share payment links instantly', href: '/pay', affinity: ['swap', 'merchant'] },
-  { id: 'merchant', icon: Store, title: 'Merchant', desc: 'Accept crypto payments for your business', href: '/merchant', affinity: ['pay'] },
-  { id: 'book', icon: BookOpen, title: 'BlinkBook', desc: 'Build and publish knowledge bases', href: '/book', affinity: [] as string[] },
-  { id: 'portfolio', icon: PieChart, title: 'Portfolio', desc: 'Track your cross-chain balances', href: '/portfolio', affinity: ['swap', 'history'] },
+  { id: 'swap', icon: ArrowLeftRight, title: 'Swap', desc: 'Cross-chain token transfers', href: '/swap', affinity: ['pay', 'portfolio'] },
+  { id: 'pay', icon: CreditCard, title: 'Pay', desc: 'Crypto payment links', href: '/pay', affinity: ['swap', 'merchant'] },
+  { id: 'merchant', icon: Store, title: 'Merchant', desc: 'Merchant payment tools', href: '/merchant', affinity: ['pay'] },
+  { id: 'book', icon: BookOpen, title: 'BlinkBook', desc: 'Documentation platform', href: '/book', affinity: [] as string[] },
+  { id: 'portfolio', icon: PieChart, title: 'Portfolio', desc: 'Portfolio tracker', href: '/portfolio', affinity: ['swap', 'history'] },
 ] as const;
 
 interface ProductSuggestionProps {
@@ -37,7 +37,7 @@ export function ProductSuggestion({ exclude }: ProductSuggestionProps) {
   return (
     <div className="mt-8">
       <h3 className="text-caption font-semibold mb-3" style={{ color: 'var(--color-text-secondary)' }}>
-        Explore more
+        More
       </h3>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {suggestions.map((product) => (

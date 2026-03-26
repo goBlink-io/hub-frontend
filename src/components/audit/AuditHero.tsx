@@ -3,10 +3,7 @@
 import { Shield, Sparkles, Loader2 } from 'lucide-react';
 
 const STATIC_HERO_STATS = [
-  '105 Patterns',
-  '150+ Exploits Tracked',
-  '5 Chains',
-  '$56B+ Losses Analyzed',
+  '5 Chains Supported',
 ];
 
 interface AuditHeroProps {
@@ -35,8 +32,7 @@ export function AuditHero({ auditCount, onDemo, demoLoading, showDemo }: AuditHe
           className="text-sm sm:text-base max-w-xl mx-auto"
           style={{ color: 'var(--color-text-secondary)' }}
         >
-          Formal verification for smart contracts. Mathematical proof — no
-          annotations required.
+          Automated security analysis for smart contracts.
         </p>
         <div className="flex items-center justify-center gap-2 flex-wrap">
           {[

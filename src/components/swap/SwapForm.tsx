@@ -241,13 +241,6 @@ export default function SwapForm({ onQuoteReceived, refreshKey, initialValues }:
     if (price <= 0) return 0;
     return parseFloat(amount) * price;
   }, [amount, selectedFromToken]);
-  // Detect if user is on their usual route
-  const isUsualRoute = useMemo(() => {
-    const suggested = getSuggestedRoute();
-    if (!suggested) return false;
-    return suggested.fromChain === fromChain && suggested.toChain === toChain;
-  }, [fromChain, toChain, getSuggestedRoute]);
-
   const { nudge, dismiss: dismissNudge } = useSmartFirstTransaction(
     fromChain,
     toChain,
@@ -509,14 +502,6 @@ export default function SwapForm({ onQuoteReceived, refreshKey, initialValues }:
     <div className="card p-5 sm:p-6">
       <div className="flex items-center justify-between mb-5">
         <h2 className="text-h3">Transfer</h2>
-        {isUsualRoute && (
-          <span
-            className="text-tiny font-medium px-2 py-0.5 rounded-full"
-            style={{ background: 'var(--info-bg)', color: 'var(--info-text)' }}
-          >
-            ★ Your usual route
-          </span>
-        )}
       </div>
 
       {/* From Section */}

@@ -22,31 +22,31 @@ const features = [
   {
     icon: ArrowLeftRight,
     title: 'Swap',
-    desc: 'Cross-chain transfers in seconds. Any token, any chain — one click.',
+    desc: 'Send tokens between chains without bridges or wrapping.',
   },
   {
     icon: CreditCard,
     title: 'Pay',
-    desc: 'Create payment links anyone can use. No wallet required for senders.',
+    desc: 'Payment links that accept crypto from any chain.',
   },
   {
     icon: Code,
     title: 'Build',
-    desc: 'SDK, Merchant tools, and BlinkBook — build on top of cross-chain rails.',
+    desc: 'SDKs and merchant tools for developers.',
   },
 ];
 
 const steps = [
-  { num: '01', title: 'Connect', desc: 'Link any wallet — EVM, Solana, NEAR, Sui, and more.' },
-  { num: '02', title: 'Choose', desc: 'Pick source and destination token + chain. We find the best route.' },
-  { num: '03', title: 'Done', desc: 'Funds arrive in seconds. Non-custodial, always.' },
+  { num: '01', title: 'Connect', desc: 'Connect your wallet.' },
+  { num: '02', title: 'Choose', desc: 'Pick what you\'re sending and where.' },
+  { num: '03', title: 'Done', desc: 'Done. Funds arrive in your wallet.' },
 ];
 
 const products = [
-  { icon: ArrowLeftRight, title: 'Swap', desc: 'Transfer any token across 26+ chains', href: '/swap' },
-  { icon: Store, title: 'Merchant', desc: 'Accept crypto payments for your business', href: '/merchant' },
-  { icon: BookOpen, title: 'BlinkBook', desc: 'Build and publish knowledge bases', href: '/book' },
-  { icon: Code, title: 'SDK', desc: 'Integrate cross-chain into your app', href: '#' },
+  { icon: ArrowLeftRight, title: 'Swap', desc: 'Cross-chain token transfers', href: '/swap' },
+  { icon: Store, title: 'Merchant', desc: 'Crypto payments for businesses', href: '/merchant' },
+  { icon: BookOpen, title: 'BlinkBook', desc: 'Documentation platform', href: '/book' },
+  { icon: Code, title: 'SDK', desc: 'Developer tools', href: '#' },
 ];
 
 export default function Home() {
@@ -84,15 +84,15 @@ export default function Home() {
           className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight mb-6"
           variants={fadeUp}
         >
-          <span className="text-blue-gradient">Cross-Chain</span>{' '}
-          <span style={{ color: 'var(--color-text-primary)' }}>Everything</span>
+          <span className="text-blue-gradient">Move anything,</span>{' '}
+          <span style={{ color: 'var(--color-text-primary)' }}>anywhere.</span>
         </motion.h1>
         <motion.p
           className="text-lg sm:text-xl max-w-2xl mx-auto mb-10"
           style={{ color: 'var(--color-text-secondary)' }}
           variants={fadeUp}
         >
-          One app. Every chain. Swap, pay, and build across 26+ blockchains — non-custodial, instant, and simple.
+          Swap tokens across 26+ chains. Non-custodial. Usually under a minute.
         </motion.p>
         <motion.div className="flex flex-col sm:flex-row gap-3 justify-center" variants={fadeUp}>
           <Link
@@ -124,7 +124,7 @@ export default function Home() {
         viewport={{ once: true, margin: '-50px' }}
         variants={stagger}
       >
-        {['26+ Chains', '65+ Tokens', 'Non-Custodial'].map((stat) => (
+        {['26+ Chains', '65+ Tokens'].map((stat) => (
           <motion.div
             key={stat}
             className="flex items-center gap-2 text-sm sm:text-base font-medium"
@@ -254,14 +254,7 @@ export default function Home() {
           Ready to go{' '}
           <span className="text-blue-gradient">cross-chain</span>?
         </motion.h2>
-        <motion.p
-          className="text-base mb-8"
-          style={{ color: 'var(--color-text-secondary)' }}
-          variants={fadeUp}
-        >
-          Join thousands of users swapping across every major blockchain.
-        </motion.p>
-        <motion.div className="flex flex-col sm:flex-row gap-3 justify-center" variants={fadeUp}>
+        <motion.div className="flex flex-col sm:flex-row gap-3 justify-center mt-8" variants={fadeUp}>
           <Link
             href="/signup"
             className="px-8 py-3 rounded-xl text-base font-semibold transition-all hover:scale-[1.02]"

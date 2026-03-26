@@ -5,7 +5,7 @@ import { useWallet } from '@goblink/connect/react';
 import { useToast } from '@/contexts/ToastContext';
 import { generatePaymentUrl, type PaymentRequestData } from '@/lib/payment-requests';
 import { CreditCard, Copy, Check, ExternalLink, QrCode, Share2, Plus, Trash2 } from 'lucide-react';
-import { ProductSuggestion } from '@/components/shared/ProductSuggestion';
+
 
 const SUPPORTED_CHAINS = [
   { id: 'near', name: 'NEAR' },
@@ -345,7 +345,6 @@ export default function PayPage() {
         </div>
       )}
 
-      <ProductSuggestion exclude="pay" />
     </div>
   );
 }

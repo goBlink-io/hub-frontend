@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useWallet } from '@goblink/connect/react';
 import { Clock, CheckCircle, AlertTriangle, Loader2, ExternalLink, ArrowUpDown } from 'lucide-react';
 import { getExplorerTxUrl } from '@/lib/shared';
-import { ProductSuggestion } from '@/components/shared/ProductSuggestion';
+
 
 interface Transaction {
   id: string;
@@ -230,7 +230,6 @@ export default function HistoryPage() {
         </div>
       )}
 
-      <ProductSuggestion exclude="history" />
     </div>
   );
 }

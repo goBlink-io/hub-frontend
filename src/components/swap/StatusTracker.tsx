@@ -10,32 +10,16 @@ interface StatusTrackerProps {
   onReset: () => void;
 }
 
-// Cycling reassurance messages for each status phase
-const REASSURANCE_MESSAGES: Record<string, string[]> = {
-  PENDING_DEPOSIT: [
-    'Waiting for your deposit to arrive...',
-    'Monitoring the source chain for your transaction...',
-    'Your deposit address is ready — funds will be detected automatically.',
-  ],
-  PENDING_QUOTE: [
-    'Preparing the best route for your transfer...',
-    'Calculating optimal execution path...',
-    'Finding the best price across protocols...',
-  ],
-  PROCESSING: [
-    'Executing your transfer...',
-    'Bridging assets to the destination chain...',
-    'Almost there — finalizing on the destination chain...',
-    'Confirming the transaction on-chain...',
-    'Your tokens are on the way...',
-  ],
+const STATUS_MESSAGES: Record<string, string> = {
+  PENDING_DEPOSIT: 'Waiting for your deposit...',
+  PENDING_QUOTE: 'Preparing your transfer...',
+  PROCESSING: 'Bridging to the destination chain...',
 };
 
 export default function StatusTracker({ depositAddress, onReset }: StatusTrackerProps) {
   const [status, setStatus] = useState<SwapStatus>('PENDING_DEPOSIT');
   const [_loading, setLoading] = useState(false); // eslint-disable-line @typescript-eslint/no-unused-vars
   const [error, setError] = useState<string | null>(null);
-  const [reassuranceIdx, setReassuranceIdx] = useState(0);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [dismissedCloseMsg, setDismissedCloseMsg] = useState(false);
   const startTime = useRef(Date.now());
@@ -47,20 +31,6 @@ export default function StatusTracker({ depositAddress, onReset }: StatusTracker
     }, 1000);
     return () => clearInterval(timer);
   }, []);
-
-  // Cycle reassurance messages every 6 seconds
-  useEffect(() => {
-    const messages = REASSURANCE_MESSAGES[status];
-    if (!messages) return;
-
-    const interval = setInterval(() => {
-      setReassuranceIdx((prev) => (prev + 1) % messages.length);
-    }, 6000);
-
-    // Reset index when status changes
-    setReassuranceIdx(0);
-    return () => clearInterval(interval);
-  }, [status]);
 
   useEffect(() => {
     if (!depositAddress) return;
@@ -96,8 +66,6 @@ export default function StatusTracker({ depositAddress, onReset }: StatusTracker
   };
 
   const isTerminal = status === 'SUCCESS' || status === 'FAILED' || status === 'REFUNDED';
-  const reassuranceMessages = REASSURANCE_MESSAGES[status];
-  const currentReassurance = reassuranceMessages ? reassuranceMessages[reassuranceIdx] : null;
 
   // Timeline step definitions
   const steps = [
@@ -193,13 +161,9 @@ export default function StatusTracker({ depositAddress, onReset }: StatusTracker
           {!['SUCCESS', 'FAILED', 'REFUNDED', 'PROCESSING', 'PENDING_DEPOSIT', 'PENDING_QUOTE', 'INCOMPLETE_DEPOSIT'].includes(status) && 'Tracking Transfer'}
         </h4>
 
-        {/* Cycling reassurance text */}
-        {currentReassurance && (
-          <p
-            className="text-body-sm text-center transition-opacity duration-500"
-            style={{ color: 'var(--color-text-secondary)' }}
-          >
-            {currentReassurance}
+        {STATUS_MESSAGES[status] && (
+          <p className="text-body-sm text-center" style={{ color: 'var(--color-text-secondary)' }}>
+            {STATUS_MESSAGES[status]}
           </p>
         )}
 
