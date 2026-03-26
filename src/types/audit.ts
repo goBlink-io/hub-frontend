@@ -209,6 +209,15 @@ export interface TestReport {
 
 // ─── Re-audit / Resubmission Types ──────────────────────────────────────────
 
+export interface AuditFinding {
+  id: string;
+  severity: 'critical' | 'high' | 'medium' | 'low' | 'info';
+  title: string;
+  description: string;
+  location?: string;
+  recommendation?: string;
+}
+
 export interface FindingComparison {
   resolved: AuditFinding[];
   persistent: AuditFinding[];

@@ -6,6 +6,22 @@ import { logAudit, getClientIp } from '@/lib/server/audit';
 
 export const dynamic = 'force-dynamic';
 
+// Rate limiter for transaction queries
+const TX_RATE_WINDOW = 60_000;
+const TX_RATE_MAX = 30; // 30 requests per minute per IP
+const txIpCounts = new Map<string, { count: number; resetAt: number }>();
+
+function isTxRateLimited(ip: string): boolean {
+  const now = Date.now();
+  const entry = txIpCounts.get(ip);
+  if (!entry || now >= entry.resetAt) {
+    txIpCounts.set(ip, { count: 1, resetAt: now + TX_RATE_WINDOW });
+    return false;
+  }
+  entry.count++;
+  return entry.count > TX_RATE_MAX;
+}
+
 // Basic wallet address format validation
 function isValidWalletAddress(address: string): boolean {
   if (!address || address.length < 10 || address.length > 128) return false;
@@ -19,6 +35,11 @@ function isValidWalletAddress(address: string): boolean {
  */
 export async function POST(request: NextRequest) {
   try {
+    const rateLimitIp = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+    if (isTxRateLimited(rateLimitIp)) {
+      return errorResponse('Too many requests', 429);
+    }
+
     const body = await request.json();
     const {
       walletAddress,
@@ -91,12 +112,12 @@ export async function POST(request: NextRequest) {
 
     logger.info('[TRANSACTION_API_CREATE]', { id: result.transaction?.id, walletAddress });
 
-    const ip = getClientIp(request.headers);
+    const auditIp = getClientIp(request.headers);
     logAudit({
-      actor: userId || ip,
+      actor: userId || auditIp,
       action: 'transaction.recorded',
       resourceId: result.transaction?.id,
-      ipAddress: ip,
+      ipAddress: auditIp,
     });
 
     return successResponse(result.transaction, 201);
@@ -112,6 +133,11 @@ export async function POST(request: NextRequest) {
  */
 export async function GET(request: NextRequest) {
   try {
+    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+    if (isTxRateLimited(ip)) {
+      return errorResponse('Too many requests', 429);
+    }
+
     const { searchParams } = new URL(request.url);
     const wallet = searchParams.get('wallet');
     const page = parseInt(searchParams.get('page') || '1', 10);
