@@ -7,5 +7,10 @@ export default async function DashboardPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  return <DashboardContent userEmail={user?.email ?? null} />;
+  return (
+    <>
+      <h1 className="sr-only">Dashboard</h1>
+      <DashboardContent userEmail={user?.email ?? null} />
+    </>
+  );
 }

@@ -46,8 +46,9 @@ export default function AddressInput({
 
   return (
     <>
+      <label htmlFor={id || "recipient-address"} className="text-xs font-medium mb-1 block" style={{ color: 'var(--color-text-secondary)' }}>Recipient Address</label>
       <input
-        id={id}
+        id={id || "recipient-address"}
         ref={inputRef}
         type="text"
         value={value}

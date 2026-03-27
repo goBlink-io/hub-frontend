@@ -70,6 +70,8 @@ export default async function MerchantDashboardPage() {
   const exchangeRate = await getExchangeRate(displayCurrency);
 
   return (
+    <>
+    <h1 className="sr-only">Merchant Dashboard</h1>
     <OverviewContent
       data={{
         totalBalance,
@@ -88,5 +90,6 @@ export default async function MerchantDashboardPage() {
         merchantId: merchant.id,
       }}
     />
+    </>
   );
 }

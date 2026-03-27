@@ -145,7 +145,7 @@ export default function TransactionStoryline({
         <div className="flex items-center gap-2">
           {(fromTokenIcon || fromLogo) && (
             <img src={fromTokenIcon || fromLogo!.icon} alt={fromToken} className="w-6 h-6 rounded-full"
-              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+              width={24} height={24} loading="lazy" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
           )}
           <span className="font-semibold text-sm" style={{ color: 'var(--color-text-primary)' }}>{amountIn} {fromToken}</span>
         </div>
@@ -156,7 +156,7 @@ export default function TransactionStoryline({
           </span>
           {(toTokenIcon || toLogo) && (
             <img src={toTokenIcon || toLogo!.icon} alt={toToken} className="w-6 h-6 rounded-full"
-              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+              width={24} height={24} loading="lazy" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
           )}
         </div>
       </div>

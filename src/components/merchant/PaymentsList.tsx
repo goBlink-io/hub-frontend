@@ -258,7 +258,7 @@ export function PaymentsList({
             {livePayments.map((payment) => (
               <div
                 key={payment.id}
-                className="grid grid-cols-1 md:grid-cols-12 gap-2 md:gap-4 px-6 py-4 items-center transition-all duration-700"
+                className="grid grid-cols-1 md:grid-cols-12 gap-2 md:gap-4 px-6 py-4 items-center transition-all duration-700 cursor-pointer"
                 style={{
                   borderBottom: "1px solid var(--color-border-subtle, rgba(255,255,255,0.05))",
                   minHeight: "44px",

@@ -171,6 +171,8 @@ export function DashboardContent({ userEmail }: DashboardContentProps) {
         </div>
       </section>
 
+      <div className="my-6 border-t" style={{ borderColor: 'rgba(255, 255, 255, 0.05)' }} />
+
       {/* Connected Wallets */}
       <section className="space-y-3">
         <h2
@@ -236,6 +238,8 @@ export function DashboardContent({ userEmail }: DashboardContentProps) {
         )}
       </section>
 
+      <div className="my-6 border-t" style={{ borderColor: 'rgba(255, 255, 255, 0.05)' }} />
+
       {/* Products */}
       <section className="space-y-3">
         <h2
@@ -284,6 +288,8 @@ export function DashboardContent({ userEmail }: DashboardContentProps) {
           ))}
         </div>
       </section>
+
+      <div className="my-6 border-t" style={{ borderColor: 'rgba(255, 255, 255, 0.05)' }} />
 
       {/* Recent Activity */}
       <section className="mt-8">

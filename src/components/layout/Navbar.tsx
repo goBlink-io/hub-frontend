@@ -69,7 +69,7 @@ export function Navbar() {
       <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4">
         {/* Logo */}
         <Link href="/" className="flex items-center">
-          <Logo size="md" />
+          <Logo size="lg" />
         </Link>
 
         {/* Desktop nav links */}

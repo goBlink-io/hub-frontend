@@ -186,6 +186,7 @@ export default function AuditPage() {
 
   return (
     <div className="space-y-6">
+      <h1 className="sr-only">Smart Contract Audit</h1>
       <AuditHero
         auditCount={auditCount}
         onDemo={handleDemo}

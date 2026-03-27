@@ -39,9 +39,9 @@ export default function AmountInput({ value, onChange, token, balances, onPercen
 
   return (
     <div>
+      <label htmlFor={id || "swap-amount"} className="text-xs font-medium mb-1 block" style={{ color: 'var(--color-text-secondary)' }}>Amount</label>
       <input
-        id={id}
-        aria-label="Amount"
+        id={id || "swap-amount"}
         type="text"
         inputMode="decimal"
         value={value}

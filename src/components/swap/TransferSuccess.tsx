@@ -210,8 +210,8 @@ export default function TransferSuccess({
         </div>
       )}
       <p className="text-sm mb-4 inline-flex items-center gap-1.5 justify-center flex-wrap" style={{ color: 'var(--color-text-secondary)' }}>
-        {fromTokenIcon && <img src={fromTokenIcon} alt={fromToken || ''} className="w-5 h-5 rounded-full inline-block" />}
-        {toTokenIcon && <img src={toTokenIcon} alt={toToken} className="w-5 h-5 rounded-full inline-block" />}
+        {fromTokenIcon && <img src={fromTokenIcon} alt={fromToken || ''} className="w-5 h-5 rounded-full inline-block" width={20} height={20} loading="lazy" />}
+        {toTokenIcon && <img src={toTokenIcon} alt={toToken} className="w-5 h-5 rounded-full inline-block" width={20} height={20} loading="lazy" />}
         {amountOut} {toToken} arrived on {chainName} in {elapsedSeconds}s
       </p>
 

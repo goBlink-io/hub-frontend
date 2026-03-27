@@ -257,7 +257,7 @@ export default function TransferModal({ quote, onClose, onComplete, onOutcome }:
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
-      <div className="flex min-h-screen items-end sm:items-center justify-center sm:p-4"
+      <div className="flex min-h-dvh items-end sm:items-center justify-center sm:p-4"
         style={{ animation: closing ? 'modal-exit 0.2s ease-in forwards' : 'modal-enter 0.25s ease-out' }}>
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm"
           style={{ animation: closing ? 'backdrop-exit 0.2s ease-in forwards' : 'backdrop-enter 0.25s ease-out' }}
@@ -290,7 +290,7 @@ export default function TransferModal({ quote, onClose, onComplete, onOutcome }:
                     <p className="text-tiny font-medium mb-2" style={{ color: 'var(--color-text-muted)' }}>You&apos;re sending</p>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        {fromLogo && <img src={fromLogo.icon} alt={fromLogo.name} className="w-8 h-8 rounded-full" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />}
+                        {fromLogo && <img src={fromLogo.icon} alt={fromLogo.name} className="w-8 h-8 rounded-full" width={32} height={32} loading="lazy" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />}
                         <div>
                           <div className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>{originTokenMetadata?.symbol}</div>
                           <div className="text-tiny" style={{ color: 'var(--color-text-muted)' }}>on {fromLogo?.name || fromChain}</div>
@@ -313,7 +313,7 @@ export default function TransferModal({ quote, onClose, onComplete, onOutcome }:
                     <p className="text-tiny font-medium mb-2" style={{ color: 'var(--color-success)' }}>You&apos;ll receive</p>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        {toLogo && <img src={toLogo.icon} alt={toLogo.name} className="w-8 h-8 rounded-full" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />}
+                        {toLogo && <img src={toLogo.icon} alt={toLogo.name} className="w-8 h-8 rounded-full" width={32} height={32} loading="lazy" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />}
                         <div>
                           <div className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>{destinationTokenMetadata?.symbol}</div>
                           <div className="text-tiny" style={{ color: 'var(--color-text-muted)' }}>on {toLogo?.name || toChain}</div>

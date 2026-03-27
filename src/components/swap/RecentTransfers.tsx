@@ -36,7 +36,7 @@ export default function RecentTransfers({ history, onSelect }: RecentTransfersPr
       <div className="space-y-1">
         {recent.map(entry => (
           <button key={entry.id} onClick={() => onSelect(entry.depositAddress)}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-left active:scale-[0.99]"
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-left active:scale-[0.99] cursor-pointer"
             style={{ WebkitTapHighlightColor: 'transparent' }}
             onMouseEnter={(e) => e.currentTarget.style.background = 'var(--color-bg-tertiary)'}
             onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}>

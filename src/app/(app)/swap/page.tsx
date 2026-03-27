@@ -104,6 +104,7 @@ export default function SwapPage() {
 
   return (
     <div className="mx-auto max-w-lg px-4 py-6">
+      <h1 className="sr-only">Swap</h1>
       {view === 'form' && (
         <>
           <ErrorBoundary section="Swap">

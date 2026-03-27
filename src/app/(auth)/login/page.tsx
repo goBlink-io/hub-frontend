@@ -90,6 +90,7 @@ export default function LoginPage() {
         {/* Logo */}
         <div className="flex flex-col items-center gap-2">
           <Logo size="lg" />
+          <h1 className="sr-only">Log In</h1>
           <p
             className="text-sm"
             style={{ color: "var(--color-text-secondary)" }}
