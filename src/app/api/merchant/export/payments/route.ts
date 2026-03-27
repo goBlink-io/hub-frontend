@@ -3,6 +3,16 @@ import { createClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 
+/** Prevent CSV injection — prefix formula-triggering characters */
+function csvSafe(value: string): string {
+  if (!value) return '';
+  if (/^[=+\-@\t\r]/.test(value)) return `'${value}`;
+  if (value.includes(',') || value.includes('"') || value.includes('\n')) {
+    return `"${value.replace(/"/g, '""')}"`;
+  }
+  return value;
+}
+
 export async function GET(request: NextRequest) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -46,19 +56,19 @@ export async function GET(request: NextRequest) {
 
   const rows = payments.map((p) => [
     p.id,
-    p.external_order_id || "",
+    csvSafe(p.external_order_id || ""),
     p.amount,
     p.net_amount || "",
     p.fee_amount || "",
-    p.currency,
+    csvSafe(p.currency),
     p.crypto_amount || "",
-    p.crypto_token || "",
-    p.crypto_chain || "",
-    p.status,
-    p.customer_wallet || "",
+    csvSafe(p.crypto_token || ""),
+    csvSafe(p.crypto_chain || ""),
+    csvSafe(p.status),
+    csvSafe(p.customer_wallet || ""),
     p.created_at,
     p.confirmed_at || "",
-    p.settlement_status || "",
+    csvSafe(p.settlement_status || ""),
     p.settled_at || "",
   ]);
 

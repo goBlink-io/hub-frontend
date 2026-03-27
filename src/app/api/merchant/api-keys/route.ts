@@ -59,8 +59,9 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(result);
   } catch (err) {
+    console.error('[merchant-api-keys-post]', err);
     return NextResponse.json(
-      { error: err instanceof Error ? err.message : "Failed to create API key" },
+      { error: "Internal server error" },
       { status: 500 }
     );
   }
@@ -89,7 +90,8 @@ export async function DELETE(request: NextRequest) {
     .eq("merchant_id", merchant.id);
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error('[merchant-api-keys-delete]', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 
   await logAudit({

@@ -32,7 +32,10 @@ export async function GET(
     .eq("space_id", id)
     .order("position", { ascending: true });
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) {
+    console.error('[pages-get]', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
   return NextResponse.json(data);
 }
 
@@ -100,7 +103,8 @@ export async function POST(
     if (error.code === "23505") {
       return NextResponse.json({ error: "A page with this slug already exists in this space" }, { status: 409 });
     }
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error('[pages-post]', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 
   return NextResponse.json(data, { status: 201 });

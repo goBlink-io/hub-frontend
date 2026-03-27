@@ -57,7 +57,10 @@ export async function POST(request: NextRequest) {
     .select("id")
     .single();
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) {
+    console.error('[merchant-tickets]', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
 
   // Create first message
   await adminSupabase.from("ticket_messages").insert({

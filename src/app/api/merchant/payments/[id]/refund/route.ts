@@ -57,7 +57,8 @@ export async function POST(
     .single();
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error('[merchant-refund]', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 
   // Update payment status

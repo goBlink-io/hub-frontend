@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import { errorResponse, successResponse } from '@/lib/api-response';
 import { isValidNearAccount } from '@/lib/validators';
 import { logger } from '@/lib/logger';
+import { isRateLimited, getClientIp } from '@/lib/rate-limit';
 
 const NEAR_RPC_URL = process.env.NEAR_RPC_URL || 'https://rpc.fastnear.com';
 
@@ -10,6 +11,11 @@ export async function GET(
   { params }: { params: Promise<{ accountId: string }> }
 ) {
   try {
+    const ip = getClientIp(_request);
+    if (isRateLimited(`bal-near:${ip}`, { max: 30, windowMs: 60_000 })) {
+      return errorResponse('Too many requests', 429);
+    }
+
     const { accountId } = await params;
     if (!isValidNearAccount(accountId)) {
       return errorResponse('Invalid NEAR account ID', 400);

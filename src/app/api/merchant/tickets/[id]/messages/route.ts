@@ -84,7 +84,10 @@ export async function POST(
     .select("id")
     .single();
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) {
+    console.error('[merchant-ticket-messages]', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
 
   // Update ticket status
   await adminSupabase

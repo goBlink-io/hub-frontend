@@ -64,8 +64,9 @@ export async function POST(request: NextRequest) {
     .eq("id", merchantId);
 
   if (error) {
+    console.error('[merchant-onboarding]', error);
     return NextResponse.json(
-      { error: { message: error.message } },
+      { error: { message: 'Internal server error' } },
       { status: 500 }
     );
   }

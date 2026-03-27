@@ -6,6 +6,7 @@ import { errorResponse } from '@/lib/api-response';
 import { isValidAssetId, isValidAmount, isValidSlippage, isValidDeadline } from '@/lib/validators';
 import { logger } from '@/lib/logger';
 import { logAudit, getClientIp } from '@/lib/server/audit';
+import { isRateLimited, getClientIp as getRateLimitIp } from '@/lib/rate-limit';
 
 const NATIVE_TO_NEP141_MAP: Record<string, string> = {
   'sui:0x0000000000000000000000000000000000000000000000000000000000000002::sui::SUI': 'nep141:sui.omft.near',
@@ -72,6 +73,11 @@ async function estimateAmountUsd(
 
 export async function POST(request: NextRequest) {
   try {
+    const rateLimitIp = getRateLimitIp(request);
+    if (isRateLimited(`quote:${rateLimitIp}`, { max: 30, windowMs: 60_000 })) {
+      return errorResponse('Too many requests', 429);
+    }
+
     const body = await request.json();
     const { dry, originAsset, destinationAsset, amount, recipient, refundTo, swapType, slippageTolerance, deadline } = body;
 

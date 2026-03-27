@@ -1,9 +1,15 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { getFeeTiers } from '@/lib/server/fees';
+import { isRateLimited, getClientIp } from '@/lib/rate-limit';
 
 export const revalidate = 3600; // Cache for 1 hour
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const ip = getClientIp(request);
+  if (isRateLimited(`fees:${ip}`, { max: 60, windowMs: 60_000 })) {
+    return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+  }
+
   const tiers = getFeeTiers();
 
   return NextResponse.json({

@@ -3,6 +3,7 @@ import { anonSupabase as supabase } from '@/lib/server/db';
 import { decodePaymentRequest } from '@/lib/payment-requests';
 import { logAudit, getClientIp } from '@/lib/server/audit';
 import { createHmac, timingSafeEqual } from 'crypto';
+import { isRateLimited, getClientIp as getRateLimitIp } from '@/lib/rate-limit';
 
 /**
  * Generate a completion token for a payment link.
@@ -23,6 +24,11 @@ export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const rlIp = getRateLimitIp(request);
+  if (isRateLimited(`pay-complete:${rlIp}`, { max: 10, windowMs: 60_000 })) {
+    return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+  }
+
   const { id } = await params;
   const data = decodePaymentRequest(id);
 

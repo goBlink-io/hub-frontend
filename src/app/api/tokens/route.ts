@@ -3,6 +3,7 @@ import * as oneclick from '@/lib/server/oneclick';
 import tokenIcons from '@/data/token-icons.json';
 import { errorResponse } from '@/lib/api-response';
 import { logger } from '@/lib/logger';
+import { isRateLimited, getClientIp } from '@/lib/rate-limit';
 
 // Cache token list for 5 minutes
 export const revalidate = 300;
@@ -109,6 +110,11 @@ const BLOCKCHAIN_ALIASES: Record<string, string> = {
 
 export async function GET(_request: NextRequest) {
   try {
+    const ip = getClientIp(_request);
+    if (isRateLimited(`tokens:${ip}`, { max: 30, windowMs: 60_000 })) {
+      return errorResponse('Too many requests', 429);
+    }
+
     const rawTokens = await oneclick.getTokens();
 
     const nearTokens: Record<string, unknown>[] = [];

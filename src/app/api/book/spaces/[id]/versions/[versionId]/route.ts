@@ -27,7 +27,10 @@ export async function PATCH(
       .eq("space_id", id)
       .select()
       .single();
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    if (error) {
+      console.error('[versions-versionId-patch]', error);
+      return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    }
     return NextResponse.json(data);
   }
 
@@ -51,6 +54,9 @@ export async function DELETE(
   await supabase.from("bb_version_pages").delete().eq("version_id", versionId);
   const { error } = await supabase.from("bb_versions").delete().eq("id", versionId).eq("space_id", id);
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) {
+    console.error('[versions-versionId-delete]', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
   return NextResponse.json({ success: true });
 }

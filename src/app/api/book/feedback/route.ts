@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { z } from "zod";
+import { isRateLimited, getClientIp } from '@/lib/rate-limit';
 
 const feedbackSchema = z.object({
   space_id: z.string().uuid(),
@@ -11,6 +12,11 @@ const feedbackSchema = z.object({
 });
 
 export async function GET(request: Request) {
+  const ip = getClientIp(request);
+  if (isRateLimited(`book-feedback-get:${ip}`, { max: 30, windowMs: 60_000 })) {
+    return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+  }
+
   const { searchParams } = new URL(request.url);
   const spaceId = searchParams.get("space_id");
   if (!spaceId) return NextResponse.json({ error: "space_id required" }, { status: 400 });
@@ -23,7 +29,10 @@ export async function GET(request: Request) {
     .select("page_id, helpful")
     .eq("space_id", spaceId);
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) {
+    console.error('[book-feedback-get]', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
 
   const map = new Map<string, { helpful: number; notHelpful: number }>();
   for (const row of data ?? []) {
@@ -47,6 +56,11 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
+  const ip = getClientIp(request);
+  if (isRateLimited(`book-feedback-post:${ip}`, { max: 10, windowMs: 60_000 })) {
+    return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+  }
+
   const supabase = await createClient();
 
   const body = await request.json();
@@ -67,6 +81,9 @@ export async function POST(request: Request) {
   }
 
   const { error } = await supabase.from("bb_feedback").insert(parsed.data);
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) {
+    console.error('[book-feedback-post]', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
   return NextResponse.json({ success: true }, { status: 201 });
 }

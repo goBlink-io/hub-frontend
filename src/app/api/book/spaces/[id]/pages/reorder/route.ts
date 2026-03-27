@@ -49,6 +49,9 @@ export async function POST(
   const results = await Promise.all(updates);
   const failed = results.find((r: { error: unknown }) => r.error);
 
-  if (failed?.error) return NextResponse.json({ error: failed.error.message }, { status: 500 });
+  if (failed?.error) {
+    console.error('[pages-reorder]', failed.error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
   return NextResponse.json({ success: true });
 }

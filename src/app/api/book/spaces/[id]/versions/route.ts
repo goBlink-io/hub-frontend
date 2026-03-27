@@ -22,7 +22,10 @@ export async function GET(
     .eq("space_id", id)
     .order("created_at", { ascending: false });
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) {
+    console.error('[versions-get]', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
   return NextResponse.json(data);
 }
 
@@ -56,7 +59,10 @@ export async function POST(
     .select()
     .single();
 
-  if (vError) return NextResponse.json({ error: vError.message }, { status: 500 });
+  if (vError) {
+    console.error('[versions-post]', vError);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
 
   // Snapshot all published pages
   const { data: pages } = await supabase
