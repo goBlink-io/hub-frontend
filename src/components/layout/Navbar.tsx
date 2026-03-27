@@ -13,6 +13,7 @@ import {
   Clock,
   Shield,
   ChevronDown,
+  Search,
 } from "lucide-react";
 import type { ReactNode } from "react";
 import { useState, useRef, useEffect } from "react";
@@ -159,6 +160,23 @@ export function Navbar() {
             )}
           </div>
         </div>
+
+        {/* Search shortcut hint */}
+        <button
+          type="button"
+          onClick={() => document.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true }))}
+          className="hidden lg:flex items-center gap-2 px-3 py-1.5 text-xs transition-colors"
+          style={{
+            color: 'var(--color-text-muted)',
+            backgroundColor: 'var(--color-bg-tertiary)',
+            border: '1px solid var(--color-border)',
+            borderRadius: 'var(--radius-md)',
+          }}
+        >
+          <Search size={12} />
+          <span>Search</span>
+          <kbd className="text-[10px] font-mono px-1.5 py-0.5 rounded" style={{ backgroundColor: 'var(--color-bg-primary)', color: 'var(--color-text-tertiary)' }}>⌘K</kbd>
+        </button>
 
         {/* Connect button */}
         <div className="flex items-center">

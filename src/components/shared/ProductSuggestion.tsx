@@ -35,9 +35,9 @@ export function ProductSuggestion({ exclude }: ProductSuggestionProps) {
   }, [exclude]);
 
   return (
-    <div className="mt-8">
+    <div className="mt-8 pt-6 border-t" style={{ borderColor: 'rgba(255, 255, 255, 0.05)' }}>
       <h3 className="text-caption font-semibold mb-3" style={{ color: 'var(--color-text-secondary)' }}>
-        More
+        Also on goBlink
       </h3>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {suggestions.map((product) => (

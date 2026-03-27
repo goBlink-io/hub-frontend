@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { motion, type Variants } from 'framer-motion';
 import {
   ArrowLeftRight, CreditCard, Store, BookOpen,
-  Code, Zap, Shield,
+  Code, Shield,
 } from 'lucide-react';
 import { Logo } from '@/components/shared/Logo';
 
@@ -22,7 +22,7 @@ const features = [
   {
     icon: ArrowLeftRight,
     title: 'Swap',
-    desc: 'Send tokens between chains without bridges or wrapping.',
+    desc: 'Send tokens between chains without bridges or wrapping',
   },
   {
     icon: CreditCard,
@@ -118,21 +118,24 @@ export default function Home() {
 
       {/* Stats Bar */}
       <motion.div
-        className="flex flex-wrap justify-center gap-6 sm:gap-10 mb-16 px-4"
+        className="flex flex-wrap justify-center gap-8 sm:gap-12 mb-16 px-4"
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, margin: '-50px' }}
         variants={stagger}
       >
-        {['26+ Chains', '65+ Tokens'].map((stat) => (
-          <motion.div
-            key={stat}
-            className="flex items-center gap-2 text-sm sm:text-base font-medium"
-            style={{ color: 'var(--color-text-secondary)' }}
-            variants={fadeUp}
-          >
-            <Zap className="h-4 w-4" style={{ color: 'var(--color-primary)' }} />
-            {stat}
+        {[
+          { value: '26+', label: 'Chains' },
+          { value: '65+', label: 'Tokens' },
+          { value: '<60s', label: 'Avg Transfer' },
+        ].map((stat) => (
+          <motion.div key={stat.label} className="text-center" variants={fadeUp}>
+            <div className="text-2xl sm:text-3xl font-bold" style={{ color: 'var(--color-text-primary)' }}>
+              {stat.value}
+            </div>
+            <div className="text-xs uppercase tracking-wider mt-1" style={{ color: 'var(--color-text-muted)' }}>
+              {stat.label}
+            </div>
           </motion.div>
         ))}
       </motion.div>
@@ -188,7 +191,7 @@ export default function Home() {
           {steps.map((s) => (
             <motion.div key={s.num} className="flex flex-col items-center" variants={fadeUp}>
               <div
-                className="w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold mb-4"
+                className="w-14 h-14 rounded-full flex items-center justify-center text-xl font-bold mb-4"
                 style={{ background: 'var(--color-primary-muted)', color: 'var(--color-primary)' }}
               >
                 {s.num}
@@ -331,15 +334,16 @@ export default function Home() {
             </a>
           </div>
         </div>
-        <p className="text-center text-xs mt-4" style={{ color: 'var(--color-text-muted)' }}>
-          Non-custodial · Your keys, your crypto
-        </p>
         <p
           className="text-center text-xs mt-6"
           style={{ color: 'var(--color-text-muted)' }}
         >
           © {new Date().getFullYear()} goBlink. All rights reserved.
         </p>
+        <div className="flex items-center justify-center gap-2 text-xs mt-4" style={{ color: 'var(--color-text-muted)' }}>
+          <Shield size={12} />
+          <span>Non-custodial · Your keys, your crypto</span>
+        </div>
       </footer>
     </div>
   );

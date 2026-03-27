@@ -170,11 +170,11 @@ export default function StatusTracker({ depositAddress, onReset }: StatusTracker
         {/* Elapsed time badge */}
         {!isTerminal && (
           <div
-            className="mt-3 flex items-center gap-1.5 px-3 py-1 rounded-full text-tiny font-medium"
+            className="mt-3 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium"
             style={{ background: 'var(--color-bg-tertiary)', color: 'var(--color-text-muted)' }}
           >
             <Clock className="h-3.5 w-3.5" />
-            {formatElapsed(elapsedSeconds)}
+            <span className="font-mono tabular-nums">{formatElapsed(elapsedSeconds)}</span>
           </div>
         )}
       </div>

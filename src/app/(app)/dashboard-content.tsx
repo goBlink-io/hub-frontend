@@ -153,7 +153,9 @@ export function DashboardContent({ userEmail }: DashboardContentProps) {
                 minHeight: "44px",
               }}
             >
-              {action.icon}
+              <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ background: 'var(--color-primary-subtle)' }}>
+                {action.icon}
+              </div>
               <span
                 className="text-sm font-medium"
                 style={{ color: "var(--color-text-primary)" }}
