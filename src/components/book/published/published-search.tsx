@@ -73,7 +73,7 @@ export function PublishedSearch({ spaceSlug }: { spaceSlug: string }) {
         <Search size={14} />
         <span className="hidden sm:inline">Search...</span>
         <kbd className="ml-2 hidden text-xs sm:inline" style={{ color: "var(--color-text-tertiary)" }}>
-          <span className="text-[10px]">&#8984;</span>K
+          <span className="text-[11px]">&#8984;</span>K
         </kbd>
       </button>
 

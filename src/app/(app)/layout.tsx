@@ -4,6 +4,7 @@ import { Navbar } from "@/components/layout/Navbar";
 import { BottomNav } from "@/components/layout/BottomNav";
 import { PageTransition } from "@/components/shared/PageTransition";
 import { CommandPalette } from "@/components/shared/CommandPalette";
+import { ErrorBoundary } from "@/components/shared/ErrorBoundary";
 
 export default async function AppLayout({
   children,
@@ -54,7 +55,9 @@ export default async function AppLayout({
         className="flex-1 pt-16 pb-20 md:pb-0 relative"
         style={{ zIndex: 1 }}
       >
-        <PageTransition>{children}</PageTransition>
+        <ErrorBoundary section="App">
+          <PageTransition>{children}</PageTransition>
+        </ErrorBoundary>
       </main>
       <BottomNav />
       <CommandPalette />

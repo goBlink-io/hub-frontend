@@ -27,7 +27,7 @@ const SEVERITY_COLORS: Record<string, string> = {
 function SeverityBadge({ severity }: { severity: string }) {
   return (
     <span
-      className="text-[10px] font-bold uppercase px-1.5 py-0.5"
+      className="text-[11px] font-bold uppercase px-1.5 py-0.5"
       style={{
         color: SEVERITY_COLORS[severity] ?? 'var(--color-text-muted)',
         backgroundColor: 'var(--color-bg-tertiary)',
@@ -42,7 +42,7 @@ function SeverityBadge({ severity }: { severity: string }) {
 function CategoryBadge({ category }: { category: string }) {
   return (
     <span
-      className="text-[10px] font-medium px-1.5 py-0.5"
+      className="text-[11px] font-medium px-1.5 py-0.5"
       style={{
         color: 'var(--color-text-secondary)',
         backgroundColor: 'var(--color-bg-tertiary)',
@@ -91,7 +91,7 @@ function TestRow({ test }: { test: TestResult }) {
           <SeverityBadge severity={test.severity} />
           {test.gasUsed != null && (
             <span
-              className="text-[10px] font-mono flex items-center gap-0.5"
+              className="text-[11px] font-mono flex items-center gap-0.5"
               style={{ color: 'var(--color-text-muted)' }}
             >
               <Flame size={10} />

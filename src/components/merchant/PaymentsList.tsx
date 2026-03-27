@@ -300,7 +300,7 @@ export function PaymentsList({
                 <div className="col-span-2 flex items-center gap-1.5">
                   {payment.is_test && (
                     <span
-                      className="text-[10px] font-medium px-1.5 py-0 rounded"
+                      className="text-[11px] font-medium px-1.5 py-0 rounded"
                       style={{
                         backgroundColor: "rgba(245, 158, 11, 0.1)",
                         color: "var(--color-warning)",

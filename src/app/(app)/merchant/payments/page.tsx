@@ -5,6 +5,7 @@ import { getExchangeRate } from "@/lib/merchant/forex";
 import { Download } from "lucide-react";
 import Link from "next/link";
 import type { Metadata } from "next";
+import { Breadcrumbs } from "@/components/shared/Breadcrumbs";
 
 export const metadata: Metadata = { title: "Payments — Merchant" };
 export const dynamic = "force-dynamic";
@@ -68,6 +69,11 @@ export default async function PaymentsPage({
 
   return (
     <div className="space-y-6">
+      <Breadcrumbs items={[
+        { label: "Home", href: "/" },
+        { label: "Merchant", href: "/merchant" },
+        { label: "Payments" },
+      ]} />
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold" style={{ color: "var(--color-text-primary)" }}>

@@ -138,7 +138,7 @@ function CodeBlock({ language, code }: { language: string; code: string }) {
       }}
     >
       <div
-        className="text-[10px] font-semibold uppercase tracking-wider mb-2"
+        className="text-[11px] font-semibold uppercase tracking-wider mb-2"
         style={{ color: 'var(--color-text-muted)' }}
       >
         {language}
@@ -355,7 +355,7 @@ function ParamRow({ name, type, required, description }: {
       <span style={{ color: 'var(--color-text-muted)' }}>{type}</span>
       {required && (
         <span
-          className="text-[10px] font-bold uppercase px-1 py-0.5"
+          className="text-[11px] font-bold uppercase px-1 py-0.5"
           style={{
             backgroundColor: 'rgba(239, 68, 68, 0.1)',
             color: 'var(--color-danger)',
@@ -464,7 +464,7 @@ function RateLimitCard({ label, value, detail }: { label: string; value: string;
     >
       <div className="text-lg font-bold" style={{ color: 'var(--color-text-primary)' }}>{value}</div>
       <div className="text-xs font-semibold" style={{ color: 'var(--color-text-secondary)' }}>{label}</div>
-      <div className="text-[10px]" style={{ color: 'var(--color-text-muted)' }}>{detail}</div>
+      <div className="text-[11px]" style={{ color: 'var(--color-text-muted)' }}>{detail}</div>
     </div>
   );
 }

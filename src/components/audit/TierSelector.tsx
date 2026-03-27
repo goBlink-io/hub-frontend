@@ -38,7 +38,7 @@ export function TierSelector({ selectedTier, onSelect, tiers }: TierSelectorProp
             >
               {isPopular && (
                 <span
-                  className="absolute -top-2.5 left-1/2 -translate-x-1/2 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5"
+                  className="absolute -top-2.5 left-1/2 -translate-x-1/2 text-[11px] font-bold uppercase tracking-wider px-2 py-0.5"
                   style={{
                     backgroundColor: 'var(--color-primary)',
                     color: '#fff',

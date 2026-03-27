@@ -18,7 +18,7 @@ function SeverityBadge({ severity }: { severity: ScamFlag['severity'] }) {
   const style = SEVERITY_STYLES[severity];
   return (
     <span
-      className="text-[10px] font-bold uppercase px-1.5 py-0.5"
+      className="text-[11px] font-bold uppercase px-1.5 py-0.5"
       style={{
         color: style.color,
         backgroundColor: 'var(--color-bg-tertiary)',
@@ -56,7 +56,7 @@ function ScamFlagCard({ flag }: { flag: ScamFlag }) {
         <div className="flex items-center gap-2 shrink-0">
           <SeverityBadge severity={flag.severity} />
           <span
-            className="text-[10px] font-bold tabular-nums px-1.5 py-0.5"
+            className="text-[11px] font-bold tabular-nums px-1.5 py-0.5"
             style={{
               color: style.color,
               backgroundColor: 'var(--color-bg-tertiary)',
@@ -76,7 +76,7 @@ function ScamFlagCard({ flag }: { flag: ScamFlag }) {
       {/* Code snippet */}
       <div className="space-y-1">
         {flag.lineNumber != null && (
-          <span className="text-[10px] font-mono" style={{ color: 'var(--color-text-muted)' }}>
+          <span className="text-[11px] font-mono" style={{ color: 'var(--color-text-muted)' }}>
             Line {flag.lineNumber}
           </span>
         )}
@@ -100,7 +100,7 @@ function ScamFlagCard({ flag }: { flag: ScamFlag }) {
           {flag.redFlags.map((rf, i) => (
             <span
               key={i}
-              className="flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5"
+              className="flex items-center gap-1 text-[11px] font-medium px-1.5 py-0.5"
               style={{
                 color: 'var(--color-danger)',
                 backgroundColor: 'var(--color-bg-tertiary)',

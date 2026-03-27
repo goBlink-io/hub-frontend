@@ -9,6 +9,7 @@ import RecentTransfers from '@/components/swap/RecentTransfers';
 import { useTransactionHistory } from '@/hooks/useTransactionHistory';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { ProductSuggestion } from '@/components/shared/ProductSuggestion';
+import { ErrorBoundary } from '@/components/shared/ErrorBoundary';
 
 const SwapForm = dynamic(() => import('@/components/swap/SwapForm'), {
   ssr: false,
@@ -105,13 +106,18 @@ export default function SwapPage() {
     <div className="mx-auto max-w-lg px-4 py-6">
       {view === 'form' && (
         <>
-          <div className="card-hero p-1">
-            <SwapForm
-              onQuoteReceived={handleQuoteReceived}
-              refreshKey={refreshKey}
-              onSwapInitiated={handleSwapInitiated}
-            />
-          </div>
+          <ErrorBoundary section="Swap">
+            <div className="card-hero p-1">
+              <SwapForm
+                onQuoteReceived={handleQuoteReceived}
+                refreshKey={refreshKey}
+                onSwapInitiated={handleSwapInitiated}
+              />
+            </div>
+          </ErrorBoundary>
+          <p className="text-center text-xs mt-3" style={{ color: 'var(--color-text-muted)' }}>
+            Non-custodial · Powered by NEAR Intents · We never touch your funds
+          </p>
           <div className="mt-4">
             <RecentTransfers history={history} onSelect={handleSelectRecent} />
           </div>

@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { motion, type Variants } from 'framer-motion';
 import {
   ArrowLeftRight, CreditCard, Store, BookOpen,
-  Code, Zap, Shield, Globe,
+  Code, Zap, Shield,
 } from 'lucide-react';
 import { Logo } from '@/components/shared/Logo';
 
@@ -137,6 +137,9 @@ export default function Home() {
         ))}
       </motion.div>
 
+      {/* Divider */}
+      <div className="w-full max-w-5xl mx-auto px-4 mb-12"><div className="border-t" style={{ borderColor: 'rgba(255,255,255,0.05)' }} /></div>
+
       {/* Feature Cards */}
       <h2 className="sr-only">Features</h2>
       <motion.section
@@ -163,6 +166,9 @@ export default function Home() {
           </motion.div>
         ))}
       </motion.section>
+
+      {/* Divider */}
+      <div className="w-full max-w-5xl mx-auto px-4 mb-12"><div className="border-t" style={{ borderColor: 'rgba(255,255,255,0.05)' }} /></div>
 
       {/* How It Works */}
       <motion.section
@@ -198,6 +204,9 @@ export default function Home() {
         </div>
       </motion.section>
 
+      {/* Divider */}
+      <div className="w-full max-w-5xl mx-auto px-4 mb-12"><div className="border-t" style={{ borderColor: 'rgba(255,255,255,0.05)' }} /></div>
+
       {/* Products Grid */}
       <motion.section
         className="max-w-5xl mx-auto px-4 sm:px-6 mb-20"
@@ -217,7 +226,7 @@ export default function Home() {
             <motion.div key={p.title} variants={fadeUp}>
               <Link
                 href={p.href}
-                className="card-standard p-5 flex items-start gap-4 group block"
+                className="card-standard p-5 flex items-start gap-4 group block cursor-pointer"
               >
                 <div
                   className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
@@ -238,6 +247,9 @@ export default function Home() {
           ))}
         </div>
       </motion.section>
+
+      {/* Divider */}
+      <div className="w-full max-w-5xl mx-auto px-4 mb-12"><div className="border-t" style={{ borderColor: 'rgba(255,255,255,0.05)' }} /></div>
 
       {/* CTA */}
       <motion.section
@@ -278,32 +290,50 @@ export default function Home() {
 
       {/* Footer */}
       <footer
-        className="mt-auto px-6 py-8"
+        className="mt-auto px-6 py-8 backdrop-blur-md"
         style={{ borderTop: '1px solid var(--color-border)' }}
       >
         <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-6">
             <Logo size="sm" />
-            <div className="flex gap-4 text-sm" style={{ color: 'var(--color-text-tertiary)' }}>
+            <div className="flex gap-4 text-[11px] uppercase tracking-wide font-semibold" style={{ color: 'var(--color-text-tertiary)' }}>
               <Link href="/swap" className="hover:underline">Swap</Link>
               <Link href="/pay" className="hover:underline">Pay</Link>
               <Link href="/merchant" className="hover:underline">Merchant</Link>
               <Link href="/book" className="hover:underline">Book</Link>
+              <a href="https://docs.goblink.io" target="_blank" rel="noopener noreferrer" className="hover:underline">Docs</a>
             </div>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 text-[11px] uppercase tracking-wide font-semibold" style={{ color: 'var(--color-text-tertiary)' }}>
             <a
               href="https://twitter.com/goBlink_io"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-sm hover:underline"
-              style={{ color: 'var(--color-text-tertiary)' }}
+              className="hover:underline"
             >
               Twitter
             </a>
-            <Globe className="h-4 w-4" style={{ color: 'var(--color-text-tertiary)' }} />
+            <a
+              href="https://discord.gg/goblink"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:underline"
+            >
+              Discord
+            </a>
+            <a
+              href="https://github.com/goblink"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:underline"
+            >
+              GitHub
+            </a>
           </div>
         </div>
+        <p className="text-center text-xs mt-4" style={{ color: 'var(--color-text-muted)' }}>
+          Non-custodial · Your keys, your crypto
+        </p>
         <p
           className="text-center text-xs mt-6"
           style={{ color: 'var(--color-text-muted)' }}

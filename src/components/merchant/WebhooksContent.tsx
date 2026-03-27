@@ -220,7 +220,7 @@ function EndpointsSection({
                       {wh.events.map((event) => (
                         <span
                           key={event}
-                          className="text-[10px] font-medium px-1.5 py-0.5 rounded"
+                          className="text-[11px] font-medium px-1.5 py-0.5 rounded"
                           style={{
                             backgroundColor: "rgba(99,102,241,0.1)",
                             color: "var(--color-primary)",

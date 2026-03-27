@@ -41,6 +41,7 @@ export default function AmountInput({ value, onChange, token, balances, onPercen
     <div>
       <input
         id={id}
+        aria-label="Amount"
         type="text"
         inputMode="decimal"
         value={value}

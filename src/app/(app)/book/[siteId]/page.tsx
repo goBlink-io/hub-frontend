@@ -3,6 +3,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { Plus, ExternalLink, Globe, FileText, Eye, EyeOff } from "lucide-react";
 import type { BBSpace, BBPage } from "@/types/book";
+import { Breadcrumbs } from "@/components/shared/Breadcrumbs";
 
 export default async function SiteOverviewPage({
   params,
@@ -27,6 +28,11 @@ export default async function SiteOverviewPage({
 
   return (
     <div>
+      <Breadcrumbs items={[
+        { label: "Home", href: "/" },
+        { label: "BlinkBook", href: "/book" },
+        { label: typedSpace.name },
+      ]} />
       <div className="mb-8 flex items-start justify-between">
         <div>
           <h1 className="text-2xl font-bold" style={{ color: "var(--color-text-primary)" }}>

@@ -107,7 +107,7 @@ function AuditRow({
               {audit.contractName}
             </span>
             <span
-              className="text-[10px] font-medium uppercase px-1.5 py-0.5 shrink-0"
+              className="text-[11px] font-medium uppercase px-1.5 py-0.5 shrink-0"
               style={{
                 color: 'var(--color-text-muted)',
                 backgroundColor: 'var(--color-bg-tertiary)',
@@ -117,7 +117,7 @@ function AuditRow({
               {CHAIN_LABELS[audit.chain] ?? audit.chain}
             </span>
             <span
-              className="text-[10px] font-medium px-1.5 py-0.5 shrink-0"
+              className="text-[11px] font-medium px-1.5 py-0.5 shrink-0"
               style={{
                 color: 'var(--color-primary)',
                 backgroundColor: 'var(--color-bg-tertiary)',
@@ -128,24 +128,24 @@ function AuditRow({
             </span>
           </div>
           <div className="flex items-center gap-3 mt-1">
-            <span className="text-[10px]" style={{ color: 'var(--color-text-muted)' }}>
+            <span className="text-[11px]" style={{ color: 'var(--color-text-muted)' }}>
               {timeStr}
             </span>
-            <span className="flex items-center gap-1 text-[10px]" style={{ color: 'var(--color-success)' }}>
+            <span className="flex items-center gap-1 text-[11px]" style={{ color: 'var(--color-success)' }}>
               <CheckCircle2 size={10} /> {audit.summary.verified}
             </span>
             {audit.summary.violated > 0 && (
-              <span className="flex items-center gap-1 text-[10px]" style={{ color: 'var(--color-danger)' }}>
+              <span className="flex items-center gap-1 text-[11px]" style={{ color: 'var(--color-danger)' }}>
                 <XCircle size={10} /> {audit.summary.violated}
               </span>
             )}
             {audit.summary.testsPassed > 0 && (
-              <span className="text-[10px]" style={{ color: 'var(--color-text-muted)' }}>
+              <span className="text-[11px]" style={{ color: 'var(--color-text-muted)' }}>
                 Tests: {audit.summary.testsPassed}/{audit.summary.testsPassed + audit.summary.testsFailed}
               </span>
             )}
             {audit.summary.scamFlags > 0 && (
-              <span className="flex items-center gap-1 text-[10px]" style={{ color: 'var(--color-danger)' }}>
+              <span className="flex items-center gap-1 text-[11px]" style={{ color: 'var(--color-danger)' }}>
                 <Skull size={10} /> {audit.summary.scamFlags}
               </span>
             )}
@@ -159,7 +159,7 @@ function AuditRow({
         <div className="flex items-center gap-1 shrink-0">
           <button
             onClick={() => { onDelete(); setConfirmDelete(false); }}
-            className="text-[10px] font-medium px-2 py-1"
+            className="text-[11px] font-medium px-2 py-1"
             style={{
               color: 'var(--color-danger)',
               backgroundColor: 'var(--color-bg-tertiary)',
@@ -170,7 +170,7 @@ function AuditRow({
           </button>
           <button
             onClick={() => setConfirmDelete(false)}
-            className="text-[10px] font-medium px-2 py-1"
+            className="text-[11px] font-medium px-2 py-1"
             style={{
               color: 'var(--color-text-muted)',
               backgroundColor: 'var(--color-bg-tertiary)',

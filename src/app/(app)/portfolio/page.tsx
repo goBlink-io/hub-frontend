@@ -16,6 +16,7 @@ import { PortfolioSkeleton } from '@/components/portfolio/PortfolioSkeleton';
 import { getChainMeta } from '@/lib/chain-meta';
 import { getChainLogo } from '@/lib/chain-logos';
 import { ProductSuggestion } from '@/components/shared/ProductSuggestion';
+import { ErrorBoundary } from '@/components/shared/ErrorBoundary';
 
 type SortKey = 'value' | 'name' | 'chain' | 'change';
 
@@ -138,6 +139,7 @@ export default function PortfolioPage() {
   const hasTokens = tokens.length > 0;
 
   return (
+    <ErrorBoundary section="Portfolio">
     <div className="mx-auto max-w-4xl px-4 py-6 space-y-6 animate-fade-up">
 
       {/* ─── Total Value Header ─── */}
@@ -391,5 +393,6 @@ export default function PortfolioPage() {
 
       <ProductSuggestion exclude="portfolio" />
     </div>
+    </ErrorBoundary>
   );
 }

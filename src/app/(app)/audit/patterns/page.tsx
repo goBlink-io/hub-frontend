@@ -5,6 +5,7 @@ import { Grid3X3, Loader2 } from 'lucide-react';
 import { getPatterns } from '@/lib/audit-api';
 import { ChainBadge } from '@/components/audit/ChainBadge';
 import type { Pattern } from '@/types/audit';
+import { Breadcrumbs } from '@/components/shared/Breadcrumbs';
 
 const CATEGORIES = [
   'All',
@@ -79,6 +80,11 @@ export default function PatternsPage() {
 
   return (
     <div className="space-y-5">
+      <Breadcrumbs items={[
+        { label: "Home", href: "/" },
+        { label: "Audit", href: "/audit" },
+        { label: "Patterns" },
+      ]} />
       {/* Header */}
       <div>
         <h1 className="text-h3" style={{ color: 'var(--color-text-primary)' }}>
@@ -137,7 +143,7 @@ export default function PatternsPage() {
                     {pattern.name}
                   </h3>
                   <span
-                    className="text-[10px] font-bold uppercase px-2 py-0.5 shrink-0"
+                    className="text-[11px] font-bold uppercase px-2 py-0.5 shrink-0"
                     style={{
                       color: sev.color,
                       backgroundColor: sev.bg,

@@ -12,6 +12,8 @@ import {
 } from "lucide-react";
 import { useWallet } from "@goblink/connect/react";
 import { Skeleton } from "@/components/ui/Skeleton";
+import { useTransactionHistory } from "@/hooks/useTransactionHistory";
+import RecentTransfers from "@/components/swap/RecentTransfers";
 
 interface DashboardContentProps {
   userEmail: string | null;
@@ -113,6 +115,7 @@ function DashboardSkeleton() {
 
 export function DashboardContent({ userEmail }: DashboardContentProps) {
   const { wallets, isConnected, address } = useWallet();
+  const { history } = useTransactionHistory();
 
   const displayName = userEmail?.split("@")[0] ?? address?.slice(0, 8) ?? "anon";
 
@@ -144,7 +147,7 @@ export function DashboardContent({ userEmail }: DashboardContentProps) {
             <Link
               key={action.label}
               href={action.href}
-              className="card-hero flex flex-col items-center gap-2 p-4 text-center"
+              className="card-hero flex flex-col items-center gap-2 p-4 text-center cursor-pointer"
               style={{
                 color: "var(--color-primary)",
                 minHeight: "44px",
@@ -246,14 +249,14 @@ export function DashboardContent({ userEmail }: DashboardContentProps) {
             <Link
               key={product.label}
               href={product.href}
-              className="card-standard flex flex-col gap-3 p-5 group"
+              className="card-standard flex flex-col gap-3 p-5 group cursor-pointer"
             >
               <div className="flex items-center justify-between">
                 <div style={{ color: "var(--color-primary)" }}>
                   {product.icon}
                 </div>
                 <span
-                  className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5"
+                  className="text-[11px] font-semibold uppercase tracking-wider px-2 py-0.5"
                   style={{
                     color: "var(--color-text-muted)",
                     backgroundColor: "var(--color-bg-tertiary)",
@@ -280,6 +283,14 @@ export function DashboardContent({ userEmail }: DashboardContentProps) {
             </Link>
           ))}
         </div>
+      </section>
+
+      {/* Recent Activity */}
+      <section className="mt-8">
+        <h2 className="text-lg font-semibold mb-3" style={{ color: 'var(--color-text-primary)' }}>
+          Recent Activity
+        </h2>
+        <RecentTransfers history={history} onSelect={() => {}} />
       </section>
     </div>
   );

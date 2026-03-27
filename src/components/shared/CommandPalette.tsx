@@ -220,7 +220,7 @@ export function CommandPalette() {
                 aria-label="Search commands"
               />
               <kbd
-                className="hidden sm:flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-mono"
+                className="hidden sm:flex items-center gap-1 px-1.5 py-0.5 text-[11px] font-mono"
                 style={{
                   color: "var(--color-text-muted)",
                   backgroundColor: "var(--color-bg-tertiary)",
