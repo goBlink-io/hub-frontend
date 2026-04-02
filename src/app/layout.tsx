@@ -21,23 +21,24 @@ export const metadata: Metadata = {
     template: "%s | goBlink",
   },
   description:
-    "One app. Every chain. Swap, pay, and build across 26+ blockchains with goBlink.",
+    "One app. Every chain. Swap, pay, and build across 12+ blockchains with goBlink.",
   metadataBase: new URL("https://goblink.io"),
   icons: { icon: "/favicon.svg" },
   openGraph: {
     title: "goBlink — Cross-Chain Everything",
     description:
-      "One app. Every chain. Swap, pay, and build across 26+ blockchains.",
+      "One app. Every chain. Swap, pay, and build across 12+ blockchains.",
     url: "https://goblink.io",
     siteName: "goBlink",
     type: "website",
-    images: ["/og.png"],
+    images: ["/og-image.jpg"],
   },
   twitter: {
     card: "summary_large_image",
     title: "goBlink — Cross-Chain Everything",
     description:
-      "One app. Every chain. Swap, pay, and build across 26+ blockchains.",
+      "One app. Every chain. Swap, pay, and build across 12+ blockchains.",
+    images: ["/og-image.jpg"],
   },
 };
 
