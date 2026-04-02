@@ -92,7 +92,7 @@ export default function Home() {
           style={{ color: 'var(--color-text-secondary)' }}
           variants={fadeUp}
         >
-          Swap tokens across 26+ chains. Non-custodial. Usually under a minute.
+          Swap tokens across 12+ chains. Non-custodial. Usually under a minute.
         </motion.p>
         <motion.div className="flex flex-col sm:flex-row gap-3 justify-center" variants={fadeUp}>
           <Link
@@ -125,7 +125,7 @@ export default function Home() {
         variants={stagger}
       >
         {[
-          { value: '26+', label: 'Chains' },
+          { value: '12+', label: 'Chains' },
           { value: '65+', label: 'Tokens' },
           { value: '<60s', label: 'Avg Transfer' },
         ].map((stat) => (
