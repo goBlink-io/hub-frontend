@@ -3,7 +3,8 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
-import { renderTiptapDoc, extractHeadings, TiptapContent } from "@/components/book/published/tiptap-renderer";
+import { renderTiptapDoc, extractHeadings } from "@/components/book/published/tiptap-renderer";
+import { TiptapContent } from "@/components/book/published/tiptap-content";
 import { BookOpen } from "lucide-react";
 import type { BBSpace, BBPage, TiptapDoc } from "@/types/book";
 
