@@ -1,11 +1,16 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
-import { verifySpaceAccess } from "@/lib/book/verify-space-access";
 import { z } from "zod";
+import { verifySpaceAccess } from "@/lib/book/verify-space-access";
+import { getBookContext } from "@/lib/book/book-client";
 
 const updatePageSchema = z.object({
   title: z.string().min(1).max(200).optional(),
-  slug: z.string().min(1).max(200).regex(/^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/).optional(),
+  slug: z
+    .string()
+    .min(1)
+    .max(200)
+    .regex(/^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/)
+    .optional(),
   content: z.object({ type: z.literal("doc"), content: z.array(z.any()) }).optional(),
   parent_id: z.string().uuid().nullable().optional(),
   position: z.number().int().min(0).optional(),
@@ -23,22 +28,22 @@ export async function GET(
   { params }: { params: Promise<{ id: string; pageId: string }> },
 ) {
   const { id, pageId } = await params;
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const ctx = await getBookContext();
+  if (!ctx) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-  const role = await verifySpaceAccess(supabase, id, user.id);
+  const role = await verifySpaceAccess(ctx.bookDb, id, ctx.user.id);
   if (!role) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  const { data, error } = await supabase
+  const { data, error } = await ctx.bookDb
     .from("bb_pages")
     .select("*")
     .eq("id", pageId)
     .eq("space_id", id)
-    .single();
+    .maybeSingle();
 
-  if (error || !data) return NextResponse.json({ error: "Page not found" }, { status: 404 });
+  if (error || !data) {
+    return NextResponse.json({ error: "Page not found" }, { status: 404 });
+  }
   return NextResponse.json(data);
 }
 
@@ -47,37 +52,41 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string; pageId: string }> },
 ) {
   const { id, pageId } = await params;
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const ctx = await getBookContext();
+  if (!ctx) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-  const role = await verifySpaceAccess(supabase, id, user.id);
-  if (!role || role === "viewer") return NextResponse.json({ error: "Not found" }, { status: 404 });
+  const role = await verifySpaceAccess(ctx.bookDb, id, ctx.user.id);
+  if (!role || role === "viewer") {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
 
   const body = await request.json();
   const parsed = updatePageSchema.safeParse(body);
-
   if (!parsed.success) {
-    return NextResponse.json({ error: "Invalid data", details: parsed.error.issues }, { status: 400 });
+    return NextResponse.json(
+      { error: "Invalid data", details: parsed.error.issues },
+      { status: 400 },
+    );
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await ctx.bookDb
     .from("bb_pages")
     .update(parsed.data)
     .eq("id", pageId)
     .eq("space_id", id)
     .select()
-    .single();
+    .maybeSingle();
 
   if (error) {
     if (error.code === "23505") {
-      return NextResponse.json({ error: "A page with this slug already exists in this space" }, { status: 409 });
+      return NextResponse.json(
+        { error: "A page with this slug already exists in this space" },
+        { status: 409 },
+      );
     }
-    console.error('[pages-pageId-patch]', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    console.error("[pages-pageId-patch]", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
-
   return NextResponse.json(data);
 }
 
@@ -86,19 +95,23 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string; pageId: string }> },
 ) {
   const { id, pageId } = await params;
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const ctx = await getBookContext();
+  if (!ctx) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const role = await verifySpaceAccess(ctx.bookDb, id, ctx.user.id);
+  if (!role || role === "viewer") {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
 
-  const role = await verifySpaceAccess(supabase, id, user.id);
-  if (!role || role === "viewer") return NextResponse.json({ error: "Not found" }, { status: 404 });
-
-  const { error } = await supabase.from("bb_pages").delete().eq("id", pageId).eq("space_id", id);
+  const { error } = await ctx.bookDb
+    .from("bb_pages")
+    .delete()
+    .eq("id", pageId)
+    .eq("space_id", id);
 
   if (error) {
-    console.error('[pages-pageId-delete]', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    console.error("[pages-pageId-delete]", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
   return NextResponse.json({ success: true });
 }

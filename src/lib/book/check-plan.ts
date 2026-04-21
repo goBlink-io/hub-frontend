@@ -1,4 +1,12 @@
-import { createClient } from "@/lib/supabase/server";
+/**
+ * Book plan / limit enforcement.
+ *
+ * All reads go to the Book project. Pageview limit uses `bb_analytics_daily`
+ * aggregated rollups (the original implementation referenced a non-existent
+ * `bb_pageviews` table).
+ */
+
+import { getBookAdminClient } from "./book-client";
 
 export type Plan = "free" | "pro" | "team" | "business";
 
@@ -17,12 +25,12 @@ const LIMITS: Record<Plan, PlanLimits> = {
 };
 
 export async function getUserPlan(userId: string): Promise<Plan> {
-  const supabase = await createClient();
+  const supabase = getBookAdminClient();
   const { data } = await supabase
     .from("bb_subscriptions")
     .select("plan, status")
     .eq("user_id", userId)
-    .single();
+    .maybeSingle();
 
   if (!data || data.status === "canceled") return "free";
   return data.plan as Plan;
@@ -37,7 +45,7 @@ export async function enforceLimit(
   const max = LIMITS[plan][limit];
   if (max === Infinity) return true;
 
-  const supabase = await createClient();
+  const supabase = getBookAdminClient();
 
   if (limit === "spaces") {
     const { count } = await supabase
@@ -56,7 +64,10 @@ export async function enforceLimit(
     const { count } = await supabase
       .from("bb_pages")
       .select("*", { count: "exact", head: true })
-      .in("space_id", spaces.map((s) => s.id));
+      .in(
+        "space_id",
+        spaces.map((s) => s.id),
+      );
     return (count ?? 0) < max;
   }
 
@@ -70,15 +81,34 @@ export async function enforceLimit(
   }
 
   if (limit === "pageviews") {
+    // Monthly pageviews across all the user's spaces, aggregated from
+    // bb_analytics_daily. The older code queried a non-existent
+    // bb_pageviews table.
+    const { data: spaces } = await supabase
+      .from("bb_spaces")
+      .select("id")
+      .eq("user_id", userId);
+    if (!spaces?.length) return true;
+
     const startOfMonth = new Date();
     startOfMonth.setDate(1);
     startOfMonth.setHours(0, 0, 0, 0);
-    const { count } = await supabase
-      .from("bb_pageviews")
-      .select("*", { count: "exact", head: true })
-      .eq("user_id", userId)
-      .gte("created_at", startOfMonth.toISOString());
-    return (count ?? 0) < max;
+
+    const { data } = await supabase
+      .from("bb_analytics_daily")
+      .select("count")
+      .in(
+        "space_id",
+        spaces.map((s) => s.id),
+      )
+      .eq("event", "pageview")
+      .gte("date", startOfMonth.toISOString().slice(0, 10));
+
+    const total = (data ?? []).reduce<number>(
+      (sum, row) => sum + (row.count ?? 0),
+      0,
+    );
+    return total < max;
   }
 
   return false;

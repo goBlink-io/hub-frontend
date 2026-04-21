@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/server";
+import { getBookAdminClient } from "@/lib/book/book-client";
 import { Plus, ExternalLink, Globe, FileText, Eye, EyeOff } from "lucide-react";
 import type { BBSpace, BBPage } from "@/types/book";
 import { Breadcrumbs } from "@/components/shared/Breadcrumbs";
@@ -11,13 +11,17 @@ export default async function SiteOverviewPage({
   params: Promise<{ siteId: string }>;
 }) {
   const { siteId } = await params;
-  const supabase = await createClient();
+  const bookDb = getBookAdminClient();
 
-  const { data: space } = await supabase.from("bb_spaces").select("*").eq("id", siteId).single();
+  const { data: space } = await bookDb
+    .from("bb_spaces")
+    .select("*")
+    .eq("id", siteId)
+    .maybeSingle();
   if (!space) notFound();
   const typedSpace = space as BBSpace;
 
-  const { data: pages } = await supabase
+  const { data: pages } = await bookDb
     .from("bb_pages")
     .select("id, title, slug, content, is_published, updated_at")
     .eq("space_id", siteId)

@@ -2,7 +2,7 @@ import { cache } from "react";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
-import { createClient } from "@/lib/supabase/server";
+import { getBookAdminClient } from "@/lib/book/book-client";
 import { renderTiptapDoc, extractHeadings } from "@/components/book/published/tiptap-renderer";
 import { TiptapContent } from "@/components/book/published/tiptap-content";
 import { BookOpen } from "lucide-react";
@@ -11,22 +11,22 @@ import type { BBSpace, BBPage, TiptapDoc } from "@/types/book";
 export const revalidate = 300;
 
 const getSpaceAndPages = cache(async function getSpaceAndPages(slug: string) {
-  const supabase = await createClient();
+  const bookDb = getBookAdminClient();
 
-  let { data: space } = await supabase
+  let { data: space } = await bookDb
     .from("bb_spaces")
     .select("*")
     .eq("slug", slug)
     .eq("is_published", true)
-    .single();
+    .maybeSingle();
 
   if (!space) {
-    const { data: domainSpace } = await supabase
+    const { data: domainSpace } = await bookDb
       .from("bb_spaces")
       .select("*")
       .eq("custom_domain", slug)
       .eq("is_published", true)
-      .single();
+      .maybeSingle();
     space = domainSpace;
   }
 
@@ -34,7 +34,7 @@ const getSpaceAndPages = cache(async function getSpaceAndPages(slug: string) {
 
   const typedSpace = space as BBSpace;
 
-  const { data: pages } = await supabase
+  const { data: pages } = await bookDb
     .from("bb_pages")
     .select("*")
     .eq("space_id", typedSpace.id)
