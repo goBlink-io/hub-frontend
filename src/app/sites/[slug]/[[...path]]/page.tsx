@@ -6,10 +6,31 @@ import { getBookAdminClient } from "@/lib/book/book-client";
 import { renderTiptapDoc, extractHeadings } from "@/components/book/published/tiptap-renderer";
 import { TiptapContent } from "@/components/book/published/tiptap-content";
 import { PageviewTracker } from "@/components/book/published/pageview-tracker";
+import { Paywall } from "@/components/book/published/Paywall";
 import { BookOpen } from "lucide-react";
 import type { BBSpace, BBPage, TiptapDoc } from "@/types/book";
 
 export const revalidate = 300;
+
+/** Cheap "is any gate configured?" check — single pair of head-count queries. */
+async function isPageGated(spaceId: string, pageId: string): Promise<boolean> {
+  const bookDb = getBookAdminClient();
+  const [rules, paid] = await Promise.all([
+    bookDb
+      .from("bb_access_rules")
+      .select("*", { count: "exact", head: true })
+      .eq("space_id", spaceId)
+      .eq("is_active", true)
+      .or(`page_id.is.null,page_id.eq.${pageId}`),
+    bookDb
+      .from("bb_paid_content")
+      .select("*", { count: "exact", head: true })
+      .eq("space_id", spaceId)
+      .eq("is_active", true)
+      .or(`page_id.is.null,page_id.eq.${pageId}`),
+  ]);
+  return (rules.count ?? 0) + (paid.count ?? 0) > 0;
+}
 
 const getSpaceAndPages = cache(async function getSpaceAndPages(slug: string) {
   const bookDb = getBookAdminClient();
@@ -159,8 +180,11 @@ export default async function PublishedSitePage({
 
   if (!currentPage) notFound();
 
-  const html = renderTiptapDoc(currentPage.content as TiptapDoc);
-  const headings = extractHeadings(currentPage.content as TiptapDoc);
+  const gated = await isPageGated(space.id, currentPage.id);
+  const html = gated ? "" : renderTiptapDoc(currentPage.content as TiptapDoc);
+  const headings = gated
+    ? []
+    : extractHeadings(currentPage.content as TiptapDoc);
   const navTree = buildNavTree(allPages);
   const primaryColor = space.brand_primary_color ?? "#3B82F6";
   const logoUrl = space.brand_logo_url ?? space.logo_url;
@@ -222,7 +246,15 @@ export default async function PublishedSitePage({
             >
               {currentPage.title}
             </h1>
-            <TiptapContent html={html} />
+            {gated ? (
+              <Paywall
+                spaceSlug={slug}
+                pageSlug={currentPage.slug}
+                spaceId={space.id}
+              />
+            ) : (
+              <TiptapContent html={html} />
+            )}
             <PageviewTracker spaceSlug={slug} pageId={currentPage.id} />
           </div>
         </main>

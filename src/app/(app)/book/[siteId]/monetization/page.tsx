@@ -1,35 +1,13 @@
-import { DollarSign } from "lucide-react";
 import type { Metadata } from "next";
+import { MonetizationClient } from "./client";
 
 export const metadata: Metadata = { title: "BlinkBook — Monetization" };
 
-export default function MonetizationPage() {
-  const Icon = DollarSign;
-  return (
-    <div className="max-w-3xl">
-      <h1
-        className="mb-6 flex items-center gap-2 text-2xl font-bold"
-        style={{ color: "var(--color-text-primary)" }}
-      >
-        <Icon size={24} />
-        Monetization
-      </h1>
-      <div
-        className="flex flex-col items-center justify-center py-20 text-center"
-        style={{
-          backgroundColor: "var(--color-bg-secondary)",
-          border: "1px solid var(--color-border)",
-          borderRadius: "var(--radius-xl)",
-        }}
-      >
-        <Icon size={48} style={{ color: "var(--color-text-tertiary)" }} className="mb-4" />
-        <p style={{ color: "var(--color-text-secondary)" }}>
-          Monetization management coming soon
-        </p>
-        <p className="mt-1 text-sm" style={{ color: "var(--color-text-tertiary)" }}>
-          This feature is being built as part of the Hub migration.
-        </p>
-      </div>
-    </div>
-  );
+export default async function MonetizationPage({
+  params,
+}: {
+  params: Promise<{ siteId: string }>;
+}) {
+  const { siteId } = await params;
+  return <MonetizationClient siteId={siteId} />;
 }
