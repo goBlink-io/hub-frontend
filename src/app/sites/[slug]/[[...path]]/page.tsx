@@ -5,6 +5,7 @@ import type { Metadata } from "next";
 import { getBookAdminClient } from "@/lib/book/book-client";
 import { renderTiptapDoc, extractHeadings } from "@/components/book/published/tiptap-renderer";
 import { TiptapContent } from "@/components/book/published/tiptap-content";
+import { PageviewTracker } from "@/components/book/published/pageview-tracker";
 import { BookOpen } from "lucide-react";
 import type { BBSpace, BBPage, TiptapDoc } from "@/types/book";
 
@@ -217,6 +218,7 @@ export default async function PublishedSitePage({
               {currentPage.title}
             </h1>
             <TiptapContent html={html} />
+            <PageviewTracker spaceSlug={slug} pageId={currentPage.id} />
           </div>
         </main>
 
