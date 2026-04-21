@@ -1,275 +1,233 @@
-/** Zion Prover audit types */
+/**
+ * Types for the zion-prover audit API.
+ * Mirrors the prover's AuditResponse contract. Keep in sync manually —
+ * the prover is a separate package with no shared types.
+ */
 
-export type VerificationStatus = 'verified' | 'violated' | 'unknown' | 'no-spec';
+export type Severity = "critical" | "high" | "medium" | "low" | "info";
 
-export type AuditChain = 'auto' | 'sui' | 'aptos' | 'evm' | 'solana' | 'near';
+export type PropertyStatus = "verified" | "violated" | "unknown" | "no-spec";
 
-export interface SpecCondition {
-  /** e.g. "amount > 0" */
-  expression: string;
-  /** Human-readable description */
-  description?: string;
-}
+export type ReportFormat = "json" | "md" | "html" | "pdf" | "audit-html";
 
-export interface FunctionResult {
-  name: string;
-  params: string[];
-  requires: SpecCondition[];
-  ensures: SpecCondition[];
-  status: VerificationStatus;
-  /** Optional violation detail */
-  counterexample?: string;
-}
-
-export interface StateVariable {
-  name: string;
-  type: string;
-}
-
-export interface CrossModuleWarning {
-  severity: 'high' | 'medium' | 'low';
-  message: string;
-  modules: string[];
-}
-
-export interface ModuleResult {
-  name: string;
-  chain: string;
-  stateVars: StateVariable[];
-  functions: FunctionResult[];
-  /** Overall module status derived from function statuses */
-  status: VerificationStatus;
-}
+export type SuiExecutionMode = "parse-only" | "package-test" | "devnet-extended";
 
 export interface AuditSummary {
-  totalModules: number;
-  totalSpecs: number;
+  modules: number;
+  functions: number;
+  specsInferred: number;
   verified: number;
   violated: number;
   unknown: number;
 }
 
-export interface AuditResponse {
-  id: string;
-  timestamp: number;
-  chain: string;
-  summary: AuditSummary;
-  modules: ModuleResult[];
-  crossModuleWarnings: CrossModuleWarning[];
-  /** Duration in milliseconds */
-  durationMs: number;
-  /** Test report from Zion test engine */
-  testReport?: TestReport;
-  /** Security score (0-100) */
-  securityScore?: SecurityScore;
-  /** Original source code for code viewer */
-  sourceCode?: string;
-  /** Line-level annotations for code viewer */
-  annotations?: CodeAnnotation[];
-  /** Contract similarity analysis */
-  similarity?: SimilarityResult;
-  /** Gas optimization insights */
-  gasInsights?: GasInsight[];
+export interface AuditSpec {
+  requires: string[];
+  ensures: string[];
 }
 
-export interface AuditOptions {
-  chain: AuditChain;
-  irAnalysis: boolean;
-  patternMatching: boolean;
-  aiSpecs: boolean;
-}
-
-export interface Pattern {
-  id: string;
+export interface AuditFunction {
   name: string;
-  description: string;
-  category: string;
-  severity: 'critical' | 'high' | 'medium' | 'low' | 'info';
-  chains: string[];
+  params: string[];
+  spec: AuditSpec;
+  status: PropertyStatus;
 }
 
-export interface Exploit {
-  id: string;
+export interface AuditModule {
   name: string;
-  date: string;
-  chain: string;
-  category: string;
-  amountUsd: number;
+  functions: AuditFunction[];
+}
+
+export interface AuditFinding {
+  severity: Severity;
+  title: string;
   description: string;
-  /** Link to post-mortem or source */
-  reference?: string;
+  id?: string;
+  status?: string;
+  difficulty?: string;
+  likelihood?: string;
+  impact?: string;
+  category?: string;
+  module?: string;
+  cwe?: string;
+  remediation?: string;
+  exploitRef?: string;
+  location?: { module?: string; function?: string; line?: number };
 }
-
-export interface AuditStats {
-  patterns: number;
-  exploits: number;
-  chains: number;
-  totalLossesUsd: string;
-  auditsPerformed?: number;
-  auditsToday?: number;
-}
-
-// ─── Similarity Types ────────────────────────────────────────────────────────
-
-export interface SimilarityResult {
-  closestMatch: string;
-  similarity: number;
-  matchedFunctions: string[];
-  extraFunctions: string[];
-  missingFunctions: string[];
-  standardSource: string;
-}
-
-// ─── Gas Insight Types ───────────────────────────────────────────────────────
-
-export interface GasInsight {
-  function: string;
-  gasUsed: number;
-  category: 'storage' | 'computation' | 'external-call' | 'loop' | 'memory';
-  suggestion: string;
-  estimatedSaving: string;
-  severity: 'high' | 'medium' | 'low';
-}
-
-// ─── Security Score ──────────────────────────────────────────────────────────
 
 export interface SecurityScoreBreakdown {
-  verification: number;
-  testCoverage: number;
-  patternSafety: number;
-  scamRisk: number;
+  verification?: number;
+  testCoverage?: number;
+  patternSafety?: number;
+  scamRisk?: number;
+  [key: string]: number | undefined;
 }
+
+export type RiskLevel = "Low" | "Medium" | "High" | "Critical" | string;
 
 export interface SecurityScore {
   overall: number;
-  breakdown: SecurityScoreBreakdown;
-  grade: 'A' | 'B' | 'C' | 'D' | 'F';
-  riskLevel: 'Low' | 'Medium' | 'High' | 'Critical';
+  grade: "A" | "B" | "C" | "D" | "F" | string;
+  riskLevel?: RiskLevel;
+  breakdown?: SecurityScoreBreakdown;
+  /** Rich evidence block emitted by the prover. Shape varies by chain. */
+  evidence?: Record<string, unknown>;
 }
 
-// ─── Remediation ─────────────────────────────────────────────────────────────
-
-export interface Remediation {
-  title: string;
-  description: string;
-  fixCode?: string;
-  reference?: string;
-  difficulty: 'easy' | 'medium' | 'hard';
+export interface SuiAudit {
+  executionModeRequested?: SuiExecutionMode;
+  executionModeAchieved?: SuiExecutionMode;
+  devnetAvailable?: boolean;
+  parserFallbackUsed?: boolean;
+  productionVerdict?: string;
+  evidenceVerdict?: string;
+  hardGate?: Record<string, unknown>;
+  packageTestCoverage?: Record<string, unknown>;
+  devnetCoverage?: Record<string, unknown>;
+  notes?: string[];
+  devnetRequiredGeneratedOnlyMethods?: number;
+  [key: string]: unknown;
 }
 
-// ─── Code Annotations ────────────────────────────────────────────────────────
-
-export interface CodeAnnotation {
-  line: number;
-  severity: 'critical' | 'high' | 'medium' | 'low' | 'info';
-  message: string;
-  category: string;
-  remediation?: string;
-}
-
-// ─── Test Report Types ───────────────────────────────────────────────────────
-
-export interface TestResult {
-  name: string;
-  passed: boolean;
-  gasUsed?: number;
-  error?: string;
-  category: string;
-  severity: string;
-  description: string;
-}
-
-export interface ScamFlag {
-  patternId: string;
-  name: string;
-  severity: 'critical' | 'high' | 'medium' | 'low';
-  description: string;
-  matchedCode: string;
-  lineNumber?: number;
-  redFlags: string[];
-  confidence: number;
-  remediation?: Remediation;
-}
-
-export interface TestReport {
-  contractName: string;
-  totalTests: number;
-  passed: number;
-  failed: number;
-  results: TestResult[];
-  matchedPatterns: number;
-  scamFlags: ScamFlag[];
-  patternCoverage: {
-    exploit: number;
-    scam: number;
-    nonEvm: number;
-  };
-  duration: number;
-}
-
-// ─── Re-audit / Resubmission Types ──────────────────────────────────────────
-
-export interface AuditFinding {
-  id: string;
-  severity: 'critical' | 'high' | 'medium' | 'low' | 'info';
-  title: string;
-  description: string;
-  location?: string;
-  recommendation?: string;
-}
-
-export interface FindingComparison {
-  resolved: AuditFinding[];
-  persistent: AuditFinding[];
-  newlyIntroduced: AuditFinding[];
-}
-
-export interface ReauditComparison {
-  originalAuditId: string;
-  originalScore: number;
-  originalGrade: string;
-  currentScore: number;
-  currentGrade: string;
-  scoreDelta: number;
-  findings: FindingComparison;
-  summary: {
-    totalResolved: number;
-    totalPersistent: number;
-    totalNew: number;
-    overallImprovement: boolean;
-  };
-}
-
-export interface ResubmitStatus {
-  auditId: string;
-  originalScore: number;
-  originalGrade: string;
-  resubmissionsRemaining: number;
-  canResubmit: boolean;
-  resubmitHistory: Array<{
-    reauditId: string;
-    timestamp: string;
-    score: number;
-    grade: string;
-  }>;
-}
-
-// ─── Audit Tier Types ─────────────────────────────────────────────────────────
-
-export type AuditTier = 'quick' | 'full' | 'deep';
-
-export interface TierConfig {
-  id: AuditTier;
-  name: string;
-  price: string;
-  description: string;
-  features: string[];
-}
-
-// Extend AuditResponse with resubmission fields
-export interface AuditResponseWithResubmit extends AuditResponse {
+export interface AuditResponse {
+  success: boolean;
+  chain: string;
+  language: string;
+  summary: AuditSummary;
+  modules: AuditModule[];
+  findings: AuditFinding[];
+  /** Lower-severity findings the prover separates from the main list. */
+  informationalFindings?: AuditFinding[];
+  securityScore: SecurityScore;
+  prettyOutput?: string;
+  suiAudit?: SuiAudit;
   auditId: string;
   reauditToken?: string;
   resubmissionsRemaining?: number;
-  reauditComparison?: ReauditComparison;
 }
+
+/** Job-control types exchanged between the prover and our proxy. */
+
+export interface JobCreated {
+  jobId: string;
+  auditId: string;
+  status: "queued";
+  queuePosition?: number;
+  estimatedWaitSeconds?: number;
+  createdAt: string;
+}
+
+export interface JobStatusPending {
+  jobId: string;
+  status: "queued" | "running";
+  queuePosition?: number;
+  startedAt?: string;
+  progress?: string;
+  createdAt?: string;
+}
+
+export interface JobStatusCompleted {
+  jobId: string;
+  status: "completed";
+  completedAt: string;
+  result: AuditResponse;
+}
+
+export interface JobStatusFailed {
+  jobId: string;
+  status: "failed";
+  completedAt?: string;
+  error: { message: string; code?: string };
+}
+
+export type JobStatus =
+  | JobStatusPending
+  | JobStatusCompleted
+  | JobStatusFailed;
+
+export interface ResubmitStatus {
+  auditId: string;
+  originalScore?: number;
+  originalGrade?: SecurityScore["grade"];
+  resubmissionsRemaining: number;
+  canResubmit: boolean;
+  resubmitHistory: Array<{
+    auditId: string;
+    submittedAt: string;
+    score?: number;
+    grade?: SecurityScore["grade"];
+  }>;
+}
+
+export interface GitHubAuditInput {
+  url: string;
+  branch?: string;
+  path?: string;
+  notifyEmail?: string;
+  webhookUrl?: string;
+  suiExecutionMode?: SuiExecutionMode;
+}
+
+export interface ZionStats {
+  patterns: number;
+  exploits: number;
+  totalLosses: number;
+  chainsSupported: number;
+  auditsPerformed: number;
+  auditsToday: number;
+}
+
+export interface ZionPattern {
+  id: string;
+  name: string;
+  category: string;
+  description: string;
+  severity: Severity;
+  propertyCount?: number;
+  /** Chains this pattern applies to, if the prover emits it. */
+  chains?: string[];
+}
+
+export interface ZionExploit {
+  /** Stable ID from the prover, if provided. */
+  id?: string;
+  name: string;
+  chain: string;
+  date: string;
+  category: string;
+  description: string;
+  /** USD loss. Prover variants emit `amount` or `amountUsd`; we accept both. */
+  amount?: number;
+  amountUsd?: number;
+  /** Link to post-mortem / incident write-up. */
+  reference?: string;
+}
+
+/**
+ * Shape of rows we persist in the `zion_audits` table. Defined here
+ * (not in `lib/server/zion-db.ts`) so client components can refer to
+ * these types without pulling a server-only module into the bundle.
+ */
+export type AuditSourceType = "upload" | "github";
+
+export interface AuditSourceMeta {
+  filenames?: string[];
+  totalBytes?: number;
+  githubUrl?: string;
+  githubBranch?: string;
+  githubPath?: string;
+  suiExecutionMode?: string;
+}
+
+/** File extensions the prover accepts. Enforced client- and server-side. */
+export const ZION_ACCEPTED_EXTENSIONS = [
+  ".sol",
+  ".move",
+  ".rs",
+  ".toml",
+  ".json",
+  ".lock",
+  ".zip",
+] as const;
+
+export type ZionAcceptedExtension = (typeof ZION_ACCEPTED_EXTENSIONS)[number];

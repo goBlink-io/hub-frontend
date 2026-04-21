@@ -1,142 +1,123 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { Loader2, Shield } from 'lucide-react';
-
-const AUDIT_PHASES = [
-  { name: 'Detecting chain & language', pct: 10 },
-  { name: 'Building intermediate representation', pct: 25 },
-  { name: 'Pattern matching (105 patterns)', pct: 40 },
-  { name: 'Running formal verification', pct: 55 },
-  { name: 'Generating test cases', pct: 70 },
-  { name: 'Analyzing dependencies', pct: 80 },
-  { name: 'Computing security score', pct: 90 },
-] as const;
+import { useEffect, useState } from "react";
+import { Loader2 } from "lucide-react";
+import type { JobStatus } from "@/types/audit";
 
 interface AuditProgressProps {
-  loading: boolean;
-  error: string | null;
-  onRun: () => void;
-  disabled: boolean;
-  notifyEmail?: string;
-  tierName: string;
+  status?: JobStatus;
+  retrying: boolean;
 }
 
-export function AuditProgress({
-  loading,
-  error,
-  onRun,
-  disabled,
-  notifyEmail,
-  tierName,
-}: AuditProgressProps) {
-  const [progress, setProgress] = useState(0);
-  const [currentPhase, setCurrentPhase] = useState<string | null>(null);
+const REASSURING_MESSAGES = [
+  "Parsing your contract…",
+  "Matching against DeFi patterns…",
+  "Generating formal specifications…",
+  "Running verifier backends…",
+  "Cross-referencing exploit database…",
+  "Scoring findings…",
+  "Assembling the report…",
+];
 
-  // Manage progress phases internally
+export function AuditProgress({ status, retrying }: AuditProgressProps) {
+  const [messageIdx, setMessageIdx] = useState(0);
+
   useEffect(() => {
-    if (!loading) {
-      // When loading stops, jump to 100% briefly then reset
-      if (progress > 0) {
-        setProgress(100);
-        setCurrentPhase('Complete');
-        const resetTimer = setTimeout(() => {
-          setProgress(0);
-          setCurrentPhase(null);
-        }, 500);
-        return () => clearTimeout(resetTimer);
-      }
-      return;
-    }
+    const id = setInterval(() => {
+      setMessageIdx((i) => (i + 1) % REASSURING_MESSAGES.length);
+    }, 3500);
+    return () => clearInterval(id);
+  }, []);
 
-    // Reset on new loading cycle
-    setProgress(0);
-    setCurrentPhase('Initializing audit...');
-
-    let phaseIdx = 0;
-    const interval = setInterval(() => {
-      if (phaseIdx < AUDIT_PHASES.length) {
-        setCurrentPhase(AUDIT_PHASES[phaseIdx].name);
-        setProgress(AUDIT_PHASES[phaseIdx].pct);
-        phaseIdx++;
-      }
-    }, 2500);
-
-    return () => clearInterval(interval);
-  }, [loading]); // eslint-disable-line react-hooks/exhaustive-deps
+  const proverMessage =
+    status && "progress" in status && typeof status.progress === "string"
+      ? status.progress
+      : null;
+  const queuePosition =
+    status && "queuePosition" in status && typeof status.queuePosition === "number"
+      ? status.queuePosition
+      : null;
+  const label =
+    status?.status === "queued"
+      ? "Queued"
+      : status?.status === "running"
+        ? "Running"
+        : "Submitting";
 
   return (
-    <div className="space-y-4">
-      {loading ? (
-        <div className="flex flex-col items-center gap-4 py-6">
-          <Loader2
-            size={32}
-            className="animate-spin"
-            style={{ color: 'var(--color-primary)' }}
-          />
-          <p
-            className="text-sm font-medium"
-            style={{ color: 'var(--color-text-secondary)' }}
-          >
-            {currentPhase || 'Initializing audit...'}
-          </p>
+    <section
+      className="mx-auto max-w-2xl space-y-5 p-6"
+      style={{
+        backgroundColor: "var(--color-bg-secondary)",
+        border: "1px solid var(--color-border)",
+        borderRadius: "var(--radius-lg)",
+      }}
+    >
+      <div className="flex items-center gap-3">
+        <Loader2
+          size={20}
+          className="animate-spin"
+          style={{ color: "var(--color-primary)" }}
+        />
+        <div>
           <div
-            className="w-full h-2 overflow-hidden"
-            style={{
-              backgroundColor: 'var(--color-bg-tertiary)',
-              borderRadius: 'var(--radius-sm)',
-            }}
+            className="text-sm font-medium"
+            style={{ color: "var(--color-text-primary)" }}
           >
-            <div
-              className="h-full transition-all duration-700 ease-out"
-              style={{
-                width: `${progress}%`,
-                backgroundColor: 'var(--color-primary)',
-                borderRadius: 'var(--radius-sm)',
-              }}
-            />
+            {label}
           </div>
-          <span
-            className="text-xs tabular-nums"
-            style={{ color: 'var(--color-text-muted)' }}
+          <div
+            className="text-xs"
+            style={{ color: "var(--color-text-tertiary)" }}
           >
-            {Math.round(progress)}%
-          </span>
+            {proverMessage ?? REASSURING_MESSAGES[messageIdx]}
+          </div>
         </div>
-      ) : (
-        <>
-          <button
-            onClick={onRun}
-            disabled={disabled}
-            className="btn btn-primary w-full h-12 text-sm gap-2"
-          >
-            <Shield size={16} />
-            Run Audit
-          </button>
-          {notifyEmail && tierName === 'Deep Audit' && (
-            <p
-              className="text-xs text-center"
-              style={{ color: 'var(--color-text-muted)' }}
-            >
-              We&apos;ll email your results to {notifyEmail}
-            </p>
-          )}
-        </>
-      )}
+      </div>
 
-      {error && (
+      {queuePosition !== null && queuePosition > 0 && (
         <div
-          className="p-3 text-sm"
+          className="text-xs px-3 py-2"
           style={{
-            backgroundColor: 'rgba(239, 68, 68, 0.08)',
-            border: '1px solid rgba(239, 68, 68, 0.15)',
-            borderRadius: 'var(--radius-md)',
-            color: 'var(--color-danger)',
+            color: "var(--color-text-secondary)",
+            backgroundColor: "var(--color-bg-tertiary)",
+            borderRadius: "var(--radius-md)",
           }}
         >
-          {error}
+          Queue position: {queuePosition}
         </div>
       )}
-    </div>
+
+      <div
+        className="h-1 overflow-hidden rounded-full"
+        style={{ backgroundColor: "var(--color-bg-tertiary)" }}
+      >
+        <div
+          className="h-full animate-pulse"
+          style={{
+            width: "60%",
+            backgroundColor: "var(--color-primary)",
+            opacity: 0.6,
+          }}
+        />
+      </div>
+
+      {retrying && (
+        <div
+          className="text-xs"
+          style={{ color: "var(--color-warning)" }}
+        >
+          Reconnecting…
+        </div>
+      )}
+
+      <p
+        className="text-xs"
+        style={{ color: "var(--color-text-tertiary)" }}
+      >
+        Audits typically take 2&ndash;20 minutes. You can leave this page open —
+        we&apos;ll keep checking in the background.
+      </p>
+    </section>
   );
 }
