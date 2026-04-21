@@ -63,9 +63,14 @@ export async function generateMetadata({
   const description =
     currentPage.meta_description ?? space.meta_description ?? space.description ?? `Documentation for ${space.name}`;
 
+  const shouldNoindex = Boolean(currentPage.noindex);
+
   return {
     title,
     description,
+    robots: shouldNoindex
+      ? { index: false, follow: false, nocache: true }
+      : undefined,
     openGraph: { title, description, siteName: space.name, type: "article" },
     twitter: { card: "summary_large_image", title, description },
   };
