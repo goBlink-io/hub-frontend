@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { AlertTriangle, RefreshCw } from "lucide-react";
 import Link from "next/link";
+import { reportError } from "@/lib/error-reporting";
 
 export default function GlobalError({
   error,
@@ -12,10 +13,7 @@ export default function GlobalError({
   reset: () => void;
 }) {
   useEffect(() => {
-    // Surface to stdout (captured by Vercel / container logs) and any
-    // future Sentry integration will automatically pick up unhandled
-    // errors via its ErrorBoundary. Keep console.error as baseline.
-    console.error("[app error]", error);
+    reportError(error, { digest: error.digest, boundary: "app" });
   }, [error]);
 
   return (

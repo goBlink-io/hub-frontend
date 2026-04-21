@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { reportError } from "@/lib/error-reporting";
 
 /**
  * global-error.tsx is the last-resort error boundary, invoked when the
@@ -14,7 +15,7 @@ export default function GlobalError({
   reset: () => void;
 }) {
   useEffect(() => {
-    console.error("[global error]", error);
+    reportError(error, { digest: error.digest, boundary: "global" });
   }, [error]);
 
   return (
