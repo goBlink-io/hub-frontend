@@ -1,15 +1,34 @@
 /**
- * Editor sidebar — shows page tree with drag-and-drop reordering.
- * Requires @dnd-kit/core, @dnd-kit/sortable, @dnd-kit/utilities.
+ * Editor sidebar — page tree for a space.
  *
- * Until dependencies are installed, this renders a simple list fallback.
+ * Drag-and-drop reordering via @dnd-kit. For v1 we treat the tree as a
+ * flat ordered list (indent is purely visual, based on parent_id set by
+ * other code paths). Dropping a page updates `position` on every page
+ * in the space via POST /api/book/spaces/:id/pages/reorder.
  */
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { BookOpen, Menu, X, Plus, FileText } from "lucide-react";
+import { BookOpen, FileText, Menu, Plus, X } from "lucide-react";
+import {
+  DndContext,
+  KeyboardSensor,
+  PointerSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  arrayMove,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import type { BBPage } from "@/types/book";
 
 interface EditorSidebarProps {
@@ -22,13 +41,18 @@ export function EditorSidebar({ activePageId }: EditorSidebarProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [creating, setCreating] = useState(false);
 
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
+
   const fetchPages = useCallback(async () => {
     const res = await fetch(`/api/book/spaces/${params.siteId}/pages`);
     if (res.ok) setPages(await res.json());
   }, [params.siteId]);
 
   useEffect(() => {
-    fetchPages();
+    void fetchPages();
   }, [fetchPages]);
 
   useEffect(() => {
@@ -43,11 +67,45 @@ export function EditorSidebar({ activePageId }: EditorSidebarProps) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ title: "Untitled" }),
       });
-      if (res.ok) fetchPages();
+      if (res.ok) void fetchPages();
     } finally {
       setCreating(false);
     }
   };
+
+  const handleDragEnd = useCallback(
+    async (e: DragEndEvent) => {
+      const { active, over } = e;
+      if (!over || active.id === over.id) return;
+      const oldIndex = pages.findIndex((p) => p.id === active.id);
+      const newIndex = pages.findIndex((p) => p.id === over.id);
+      if (oldIndex === -1 || newIndex === -1) return;
+
+      const reordered = arrayMove(pages, oldIndex, newIndex);
+      // Optimistic update.
+      setPages(reordered);
+
+      const payload = reordered.map((p, idx) => ({
+        id: p.id,
+        parent_id: p.parent_id ?? null,
+        position: idx,
+      }));
+      try {
+        const res = await fetch(
+          `/api/book/spaces/${params.siteId}/pages/reorder`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ pages: payload }),
+          },
+        );
+        if (!res.ok) void fetchPages();
+      } catch {
+        void fetchPages();
+      }
+    },
+    [pages, params.siteId, fetchPages],
+  );
 
   const sidebarContent = (
     <>
@@ -116,25 +174,25 @@ export function EditorSidebar({ activePageId }: EditorSidebarProps) {
             </button>
           </div>
         ) : (
-          pages.map((page) => {
-            const isActive = page.id === activePageId;
-            return (
-              <Link
-                key={page.id}
-                href={`/book/${params.siteId}/editor/${page.id}`}
-                className="flex items-center gap-2 rounded-md px-3 py-1.5 text-sm transition"
-                style={{
-                  color: isActive ? "var(--color-text-primary)" : "var(--color-text-secondary)",
-                  backgroundColor: isActive ? "var(--color-bg-secondary)" : "transparent",
-                  marginLeft: `${(page.parent_id ? 16 : 0) + 4}px`,
-                  marginRight: "4px",
-                }}
-              >
-                <FileText size={14} style={{ color: "var(--color-text-tertiary)" }} />
-                <span className="truncate">{page.title}</span>
-              </Link>
-            );
-          })
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext
+              items={pages.map((p) => p.id)}
+              strategy={verticalListSortingStrategy}
+            >
+              {pages.map((page) => (
+                <SortablePageRow
+                  key={page.id}
+                  page={page}
+                  siteId={params.siteId}
+                  active={page.id === activePageId}
+                />
+              ))}
+            </SortableContext>
+          </DndContext>
         )}
       </div>
     </>
@@ -190,5 +248,53 @@ export function EditorSidebar({ activePageId }: EditorSidebarProps) {
         {sidebarContent}
       </aside>
     </>
+  );
+}
+
+function SortablePageRow({
+  page,
+  siteId,
+  active,
+}: {
+  page: BBPage;
+  siteId: string;
+  active: boolean;
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: page.id });
+  const style: React.CSSProperties = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    color: active ? "var(--color-text-primary)" : "var(--color-text-secondary)",
+    backgroundColor: active ? "var(--color-bg-secondary)" : "transparent",
+    marginLeft: `${(page.parent_id ? 16 : 0) + 4}px`,
+    marginRight: "4px",
+    opacity: isDragging ? 0.5 : 1,
+  };
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      {...listeners}
+      className="flex cursor-grab items-center gap-2 rounded-md px-3 py-1.5 text-sm transition active:cursor-grabbing"
+    >
+      <FileText size={14} style={{ color: "var(--color-text-tertiary)" }} />
+      <Link
+        href={`/book/${siteId}/editor/${page.id}`}
+        className="flex-1 truncate"
+        onClick={(e) => {
+          if (isDragging) e.preventDefault();
+        }}
+      >
+        {page.title}
+      </Link>
+    </div>
   );
 }

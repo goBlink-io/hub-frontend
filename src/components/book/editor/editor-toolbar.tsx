@@ -7,8 +7,8 @@
 
 import Link from "next/link";
 import {
-  ArrowLeft, Undo2, Redo2, Eye, EyeOff, ExternalLink,
-  Check, Loader2, AlertCircle, Download,
+  ArrowLeft, Eye, EyeOff, ExternalLink,
+  Check, Loader2, AlertCircle,
 } from "lucide-react";
 
 type SaveStatus = "saved" | "saving" | "unsaved";
