@@ -65,6 +65,9 @@ importers:
       bcryptjs:
         specifier: ^3.0.3
         version: 3.0.3
+      bs58:
+        specifier: ^6.0.0
+        version: 6.0.0
       ethers:
         specifier: ^6.16.0
         version: 6.16.0(bufferutil@4.1.0)(utf-8-validate@6.0.6)
@@ -74,6 +77,9 @@ importers:
       isomorphic-dompurify:
         specifier: ^3.7.1
         version: 3.7.1(@noble/hashes@2.0.1)
+      jose:
+        specifier: ^6.2.2
+        version: 6.2.2
       jwt-decode:
         specifier: ^4.0.0
         version: 4.0.0
@@ -104,6 +110,9 @@ importers:
       starknet:
         specifier: ^8.9.2
         version: 8.9.2
+      tweetnacl:
+        specifier: ^1.0.3
+        version: 1.0.3
       viem:
         specifier: ^2.47.6
         version: 2.47.6(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@6.0.6)(zod@4.3.6)

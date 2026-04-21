@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { Mail, Eye, EyeOff, Chrome } from "lucide-react";
 import { Logo } from "@/components/shared/Logo";
 import { Button } from "@/components/ui/button";
-import { ConnectButton } from "@goblink/connect/react";
+import { WalletSignIn } from "@/components/auth/WalletSignIn";
 import { createClient } from "@/lib/supabase/client";
 
 function isValidEmail(email: string): boolean {
@@ -262,9 +262,9 @@ export default function LoginPage() {
           />
         </div>
 
-        {/* Wallet connect */}
+        {/* Wallet connect (auto sign-in via SIWE-style handshake) */}
         <div className="flex justify-center">
-          <ConnectButton theme="dark" label="Connect Wallet" />
+          <WalletSignIn redirectTo="/" />
         </div>
 
         {/* Sign up link */}
