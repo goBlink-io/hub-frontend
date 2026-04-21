@@ -10,8 +10,14 @@ import { isRateLimited, getClientIp as getRateLimitIp } from '@/lib/rate-limit';
  * HMAC(link_id, secret) — only the creator (who knows the link ID at creation time) can derive this.
  */
 function generateCompletionToken(linkId: string): string {
-  const secret = process.env.SESSION_SECRET || process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!secret) throw new Error('SESSION_SECRET or SUPABASE_SERVICE_ROLE_KEY must be set for HMAC token generation');
+  // Must match /api/pay/shorten's signing scheme exactly. Dedicated
+  // secret — no DB-credential fallback.
+  const secret = process.env.SESSION_SECRET;
+  if (!secret) {
+    throw new Error(
+      'SESSION_SECRET must be set for payment completion-token HMAC signing',
+    );
+  }
   return createHmac('sha256', secret).update(linkId).digest('hex').slice(0, 32);
 }
 

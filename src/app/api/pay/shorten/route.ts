@@ -28,8 +28,16 @@ function getClientIp(request: NextRequest): string {
 }
 
 function generateCompletionToken(linkId: string): string {
-  const secret = process.env.SESSION_SECRET || process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!secret) throw new Error('SESSION_SECRET or SUPABASE_SERVICE_ROLE_KEY must be set for HMAC token generation');
+  // HMAC key must be a dedicated signing secret — conflating it with
+  // SUPABASE_SERVICE_ROLE_KEY (a DB admin credential) is a security
+  // smell: rotating the DB key would silently invalidate every
+  // outstanding completion token.
+  const secret = process.env.SESSION_SECRET;
+  if (!secret) {
+    throw new Error(
+      'SESSION_SECRET must be set for payment completion-token HMAC signing',
+    );
+  }
   return createHmac('sha256', secret).update(linkId).digest('hex').slice(0, 32);
 }
 

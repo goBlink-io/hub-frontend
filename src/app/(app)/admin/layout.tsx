@@ -48,6 +48,16 @@ export default async function AdminLayout({
           >
             Audits
           </Link>
+          <Link
+            href="/admin/users"
+            className="px-3 h-9 inline-flex items-center"
+            style={{
+              color: "var(--color-text-secondary)",
+              borderRadius: "var(--radius-sm)",
+            }}
+          >
+            Users
+          </Link>
         </nav>
       </header>
       {children}
