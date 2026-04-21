@@ -1,19 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { getMerchantContext } from "@/lib/server/merchant-client";
 import { getExchangeRate } from "@/lib/merchant/forex";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const ctx = await getMerchantContext();
+  if (!ctx) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { data: merchant } = await supabase
+  const { data: merchant } = await ctx.merchantDb
     .from("merchants")
     .select("*")
-    .eq("user_id", user.id)
-    .single();
+    .eq("user_id", ctx.user.id)
+    .maybeSingle();
 
   if (!merchant) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
@@ -22,7 +21,7 @@ export async function GET(request: NextRequest) {
   const todayStart = new Date();
   todayStart.setUTCHours(0, 0, 0, 0);
 
-  const { data: recentPayments } = await supabase
+  const { data: recentPayments } = await ctx.merchantDb
     .from("payments")
     .select("id, external_order_id, amount, currency, status, created_at, is_test")
     .eq("merchant_id", merchant.id)
@@ -30,7 +29,7 @@ export async function GET(request: NextRequest) {
     .order("created_at", { ascending: false })
     .limit(10);
 
-  const { data: todayPayments } = await supabase
+  const { data: todayPayments } = await ctx.merchantDb
     .from("payments")
     .select("net_amount")
     .eq("merchant_id", merchant.id)
@@ -38,14 +37,14 @@ export async function GET(request: NextRequest) {
     .eq("is_test", isTest)
     .gte("confirmed_at", todayStart.toISOString());
 
-  const { count: pendingCount } = await supabase
+  const { count: pendingCount } = await ctx.merchantDb
     .from("payments")
     .select("*", { count: "exact", head: true })
     .eq("merchant_id", merchant.id)
     .eq("is_test", isTest)
     .in("status", ["pending", "processing"]);
 
-  const { data: allConfirmed } = await supabase
+  const { data: allConfirmed } = await ctx.merchantDb
     .from("payments")
     .select("net_amount")
     .eq("merchant_id", merchant.id)
@@ -53,11 +52,11 @@ export async function GET(request: NextRequest) {
     .eq("is_test", isTest);
 
   const todayRevenue = todayPayments?.reduce(
-    (sum, p) => sum + (Number(p.net_amount) || 0), 0
+    (sum, p) => sum + (Number(p.net_amount) || 0), 0,
   ) ?? 0;
 
   const totalBalance = allConfirmed?.reduce(
-    (sum, p) => sum + (Number(p.net_amount) || 0), 0
+    (sum, p) => sum + (Number(p.net_amount) || 0), 0,
   ) ?? 0;
 
   const displayCurrency = merchant.display_currency || "USD";
