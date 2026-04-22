@@ -7,19 +7,19 @@
 const isDev = process.env.NODE_ENV === 'development';
 
 export const logger = {
-  info: (...args: any[]) => {
+  info: (...args: unknown[]) => {
     if (isDev) console.log('[INFO]', ...args);
   },
 
-  error: (...args: any[]) => {
+  error: (...args: unknown[]) => {
     console.error('[ERROR]', ...args);
   },
 
-  warn: (...args: any[]) => {
+  warn: (...args: unknown[]) => {
     console.warn('[WARN]', ...args);
   },
 
-  debug: (...args: any[]) => {
+  debug: (...args: unknown[]) => {
     if (isDev) console.debug('[DEBUG]', ...args);
   },
 };

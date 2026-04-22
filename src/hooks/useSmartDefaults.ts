@@ -66,7 +66,11 @@ export function useSmartDefaults() {
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
+    // Hydrate from localStorage after mount — intentional setState in effect
+    // to avoid SSR/client mismatch.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setPattern(loadPattern());
+     
     setHydrated(true);
   }, []);
 

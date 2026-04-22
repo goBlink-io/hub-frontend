@@ -18,6 +18,7 @@ export default function AnalyticsPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true);
     fetch(`/api/book/spaces/${params.siteId}/analytics?period=${period}`)
       .then((r) => r.json())

@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { Mail, Eye, EyeOff, Chrome } from "lucide-react";
 import { Logo } from "@/components/shared/Logo";
 import { Button } from "@/components/ui/button";
-import { ConnectButton } from "@goblink/connect/react";
+import { WalletSignIn } from "@/components/auth/WalletSignIn";
 import { createClient } from "@/lib/supabase/client";
 
 function isValidEmail(email: string): boolean {
@@ -121,6 +121,7 @@ export default function SignupPage() {
         {/* Logo */}
         <div className="flex flex-col items-center gap-2">
           <Logo size="lg" />
+          <h1 className="sr-only">Sign Up</h1>
           <p
             className="text-sm"
             style={{ color: "var(--color-text-secondary)" }}
@@ -346,7 +347,7 @@ export default function SignupPage() {
 
         {/* Wallet connect */}
         <div className="flex justify-center">
-          <ConnectButton theme="dark" label="Connect Wallet" />
+          <WalletSignIn redirectTo="/" />
         </div>
 
         {/* Login link */}

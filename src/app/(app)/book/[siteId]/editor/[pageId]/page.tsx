@@ -5,8 +5,6 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   ArrowLeft,
-  Undo2,
-  Redo2,
   Eye,
   EyeOff,
   ExternalLink,
@@ -20,22 +18,7 @@ import {
 import { tiptapToMarkdown } from "@/lib/book/tiptap-to-markdown";
 import type { TiptapDoc, BBPage, BBSpace } from "@/types/book";
 import { useToast } from "@/contexts/ToastContext";
-
-/*
- * TODO: Install Tiptap packages to enable the block editor.
- * Required packages:
- *   @tiptap/core @tiptap/react @tiptap/starter-kit @tiptap/pm
- *   @tiptap/extension-placeholder @tiptap/extension-image
- *   @tiptap/extension-table @tiptap/extension-table-row
- *   @tiptap/extension-table-cell @tiptap/extension-table-header
- *   @tiptap/extension-link @tiptap/extension-code-block-lowlight
- *   @tiptap/extension-underline @tiptap/extension-blockquote
- *   @tiptap/extension-heading @tiptap/extension-horizontal-rule
- *   @tiptap/extension-bubble-menu
- *   lowlight
- *
- * Until installed, the editor renders a JSON textarea fallback.
- */
+import { BlockEditor } from "@/components/book/editor/block-editor";
 
 type SaveStatus = "saved" | "saving" | "unsaved";
 
@@ -51,8 +34,9 @@ export default function EditorPage() {
   const [saveStatus, setSaveStatus] = useState<SaveStatus>("saved");
   const [title, setTitle] = useState("");
   const [isPublished, setIsPublished] = useState(false);
-  const [contentJson, setContentJson] = useState("");
+  const [doc, setDoc] = useState<TiptapDoc | null>(null);
   const saveTimerRef = useRef<ReturnType<typeof setTimeout>>(null);
+  const latestDocRef = useRef<TiptapDoc | null>(null);
 
   // SEO fields
   const [seoOpen, setSeoOpen] = useState(false);
@@ -82,7 +66,13 @@ export default function EditorPage() {
       setSlug(pageData.slug);
       setMetaTitle(pageData.meta_title ?? "");
       setMetaDescription(pageData.meta_description ?? "");
-      setContentJson(JSON.stringify(pageData.content, null, 2));
+      const initialDoc: TiptapDoc =
+        (pageData.content as TiptapDoc | null) ?? {
+          type: "doc",
+          content: [],
+        };
+      setDoc(initialDoc);
+      latestDocRef.current = initialDoc;
       setLoading(false);
     }
     load();
@@ -107,6 +97,7 @@ export default function EditorPage() {
 
   const debouncedSave = useCallback(
     (content: TiptapDoc) => {
+      latestDocRef.current = content;
       setSaveStatus("unsaved");
       if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
       saveTimerRef.current = setTimeout(() => {
@@ -114,6 +105,13 @@ export default function EditorPage() {
       }, 1000);
     },
     [save],
+  );
+
+  const handleEditorChange = useCallback(
+    (content: TiptapDoc) => {
+      debouncedSave(content);
+    },
+    [debouncedSave],
   );
 
   const handleTitleChange = useCallback(
@@ -135,20 +133,7 @@ export default function EditorPage() {
     toast(newValue ? 'Published!' : 'Unpublished', 'success');
   }, [isPublished, save, toast]);
 
-  const handleContentChange = useCallback(
-    (rawJson: string) => {
-      setContentJson(rawJson);
-      try {
-        const parsed = JSON.parse(rawJson) as TiptapDoc;
-        debouncedSave(parsed);
-      } catch {
-        /* invalid JSON — don't save yet */
-      }
-    },
-    [debouncedSave],
-  );
-
-  if (loading || !page || !space) {
+  if (loading || !page || !space || !doc) {
     return (
       <div className="flex h-[60vh] items-center justify-center">
         <Loader2 size={24} className="animate-spin" style={{ color: "var(--color-primary)" }} />
@@ -228,17 +213,16 @@ export default function EditorPage() {
           <button
             type="button"
             onClick={() => {
-              try {
-                const parsed = JSON.parse(contentJson) as TiptapDoc;
-                const markdown = tiptapToMarkdown(parsed);
-                const blob = new Blob([markdown], { type: "text/markdown" });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement("a");
-                a.href = url;
-                a.download = `${slug || "page"}.md`;
-                a.click();
-                URL.revokeObjectURL(url);
-              } catch { /* invalid JSON */ }
+              const current = latestDocRef.current ?? doc;
+              if (!current) return;
+              const markdown = tiptapToMarkdown(current);
+              const blob = new Blob([markdown], { type: "text/markdown" });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement("a");
+              a.href = url;
+              a.download = `${slug || "page"}.md`;
+              a.click();
+              URL.revokeObjectURL(url);
             }}
             className="rounded p-1.5 transition"
             style={{ color: "var(--color-text-tertiary)" }}
@@ -253,27 +237,7 @@ export default function EditorPage() {
       {/* Editor content */}
       <div className="flex-1 overflow-y-auto">
         <div className="mx-auto max-w-3xl px-6 py-8">
-          {/* TODO: Replace with Tiptap BlockEditor once packages are installed */}
-          <div className="mb-4 rounded-lg px-3 py-2 text-xs" style={{
-            backgroundColor: "rgba(245,158,11,0.1)",
-            border: "1px solid rgba(245,158,11,0.2)",
-            color: "var(--color-warning)",
-          }}>
-            Tiptap editor will render here once @tiptap packages are installed. Using JSON fallback.
-          </div>
-          <textarea
-            value={contentJson}
-            onChange={(e) => handleContentChange(e.target.value)}
-            className="min-h-[500px] w-full resize-none font-mono text-sm outline-none"
-            style={{
-              backgroundColor: "var(--color-bg-secondary)",
-              border: "1px solid var(--color-border)",
-              borderRadius: "var(--radius-lg)",
-              color: "var(--color-text-primary)",
-              padding: "16px",
-            }}
-            spellCheck={false}
-          />
+          <BlockEditor initialContent={doc} onUpdate={handleEditorChange} />
         </div>
 
         {/* SEO Panel */}

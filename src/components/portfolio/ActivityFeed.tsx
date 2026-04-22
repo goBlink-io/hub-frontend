@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useWallet } from '@goblink/connect/react';
 import {
   Clock, CheckCircle, AlertTriangle, Loader2,
-  ExternalLink, ArrowDownLeft, ArrowUpRight, Repeat,
+  ExternalLink, ArrowUpRight, Repeat,
   ChevronDown,
 } from 'lucide-react';
 import { getExplorerTxUrl } from '@/lib/shared';
@@ -58,7 +58,6 @@ export function ActivityFeed({ chainFilter }: ActivityFeedProps) {
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [typeFilter, setTypeFilter] = useState<TxType>('all');
 
   const walletAddresses = address || '';
 

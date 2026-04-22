@@ -1,12 +1,17 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { z } from "zod";
 import { verifySpaceAccess } from "@/lib/book/verify-space-access";
 import { enforceLimit, getRequiredPlan } from "@/lib/book/check-plan";
-import { z } from "zod";
+import { getBookContext } from "@/lib/book/book-client";
 
 const createPageSchema = z.object({
   title: z.string().min(1).max(200).optional().default("Untitled"),
-  slug: z.string().min(1).max(200).regex(/^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/).optional(),
+  slug: z
+    .string()
+    .min(1)
+    .max(200)
+    .regex(/^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/)
+    .optional(),
   content: z.object({ type: z.literal("doc"), content: z.array(z.any()) }).optional(),
   parent_id: z.string().uuid().nullable().optional(),
   position: z.number().int().min(0).optional(),
@@ -18,21 +23,22 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const ctx = await getBookContext();
+  if (!ctx) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-  const role = await verifySpaceAccess(supabase, id, user.id);
+  const role = await verifySpaceAccess(ctx.bookDb, id, ctx.user.id);
   if (!role) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  const { data, error } = await supabase
+  const { data, error } = await ctx.bookDb
     .from("bb_pages")
     .select("*")
     .eq("space_id", id)
     .order("position", { ascending: true });
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) {
+    console.error("[pages-get]", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
   return NextResponse.json(data);
 }
 
@@ -41,21 +47,15 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const ctx = await getBookContext();
+  if (!ctx) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const role = await verifySpaceAccess(ctx.bookDb, id, ctx.user.id);
+  if (role !== "owner" && role !== "admin" && role !== "editor") {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
 
-  const { data: space } = await supabase
-    .from("bb_spaces")
-    .select("id")
-    .eq("id", id)
-    .eq("user_id", user.id)
-    .single();
-
-  if (!space) return NextResponse.json({ error: "Space not found" }, { status: 404 });
-
-  const canCreate = await enforceLimit(user.id, "pages");
+  const canCreate = await enforceLimit(ctx.user.id, "pages");
   if (!canCreate) {
     return NextResponse.json(
       { error: "upgrade_required", plan: getRequiredPlan("pages") },
@@ -65,24 +65,31 @@ export async function POST(
 
   const body = await request.json();
   const parsed = createPageSchema.safeParse(body);
-
   if (!parsed.success) {
-    return NextResponse.json({ error: "Invalid data", details: parsed.error.issues }, { status: 400 });
+    return NextResponse.json(
+      { error: "Invalid data", details: parsed.error.issues },
+      { status: 400 },
+    );
   }
 
   const { title, content, parent_id, position, is_published } = parsed.data;
-  const slug = parsed.data.slug ?? (title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "untitled");
+  const slug =
+    parsed.data.slug ??
+    (title
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "") || "untitled");
 
   let pos = position;
   if (pos === undefined) {
-    const { count } = await supabase
+    const { count } = await ctx.bookDb
       .from("bb_pages")
       .select("*", { count: "exact", head: true })
       .eq("space_id", id);
     pos = count ?? 0;
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await ctx.bookDb
     .from("bb_pages")
     .insert({
       space_id: id,
@@ -98,9 +105,13 @@ export async function POST(
 
   if (error) {
     if (error.code === "23505") {
-      return NextResponse.json({ error: "A page with this slug already exists in this space" }, { status: 409 });
+      return NextResponse.json(
+        { error: "A page with this slug already exists in this space" },
+        { status: 409 },
+      );
     }
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error("[pages-post]", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 
   return NextResponse.json(data, { status: 201 });

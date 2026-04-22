@@ -1,23 +1,21 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
-import { adminSupabase } from "@/lib/server/db";
+import { getMerchantContext } from "@/lib/server/merchant-client";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const ctx = await getMerchantContext();
+  if (!ctx) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { data: merchant } = await supabase
+  const { data: merchant } = await ctx.merchantDb
     .from("merchants")
     .select("id")
-    .eq("user_id", user.id)
-    .single();
+    .eq("user_id", ctx.user.id)
+    .maybeSingle();
 
   if (!merchant) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  const { data: refunds } = await adminSupabase
+  const { data: refunds } = await ctx.merchantDb
     .from("refunds")
     .select("*, payments(external_order_id, amount, currency)")
     .eq("merchant_id", merchant.id)

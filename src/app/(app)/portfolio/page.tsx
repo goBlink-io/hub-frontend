@@ -3,8 +3,7 @@
 import { useState, useMemo } from 'react';
 import { useWallet } from '@goblink/connect/react';
 import {
-  PieChart, Wallet, RefreshCw, Search, SlidersHorizontal,
-  ArrowUpDown, TrendingUp, TrendingDown,
+  PieChart, Wallet, RefreshCw, Search,
 } from 'lucide-react';
 import { usePortfolio, formatUsd } from '@/hooks/usePortfolio';
 import { ChainDonut } from '@/components/portfolio/ChainDonut';
@@ -16,11 +15,12 @@ import { PortfolioSkeleton } from '@/components/portfolio/PortfolioSkeleton';
 import { getChainMeta } from '@/lib/chain-meta';
 import { getChainLogo } from '@/lib/chain-logos';
 import { ProductSuggestion } from '@/components/shared/ProductSuggestion';
+import { ErrorBoundary } from '@/components/shared/ErrorBoundary';
 
 type SortKey = 'value' | 'name' | 'chain' | 'change';
 
 export default function PortfolioPage() {
-  const { getAddress, isConnected } = useWallet();
+  const { getAddress } = useWallet();
   const {
     totalValueUsd, tokens, chainBreakdown,
     loading, error, refresh, connectedChains,
@@ -103,7 +103,7 @@ export default function PortfolioPage() {
       <div className="mx-auto max-w-lg px-4 py-6">
         <div className="card p-12 text-center animate-fade-up">
           <Wallet className="h-12 w-12 mx-auto mb-4 opacity-30" style={{ color: 'var(--color-text-muted)' }} />
-          <h2 className="text-h3 mb-2">Portfolio</h2>
+          <h1 className="text-h3 mb-2">Portfolio</h1>
           <p className="text-body-sm" style={{ color: 'var(--color-text-muted)' }}>
             Connect a wallet to view your portfolio
           </p>
@@ -138,6 +138,7 @@ export default function PortfolioPage() {
   const hasTokens = tokens.length > 0;
 
   return (
+    <ErrorBoundary section="Portfolio">
     <div className="mx-auto max-w-4xl px-4 py-6 space-y-6 animate-fade-up">
 
       {/* ─── Total Value Header ─── */}
@@ -391,5 +392,6 @@ export default function PortfolioPage() {
 
       <ProductSuggestion exclude="portfolio" />
     </div>
+    </ErrorBoundary>
   );
 }

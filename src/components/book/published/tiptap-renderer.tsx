@@ -121,7 +121,3 @@ export function extractHeadings(doc: TiptapDoc): { id: string; text: string; lev
   walk(doc.content);
   return headings;
 }
-
-export function TiptapContent({ html }: { html: string }) {
-  return <div className="bb-content" dangerouslySetInnerHTML={{ __html: html }} />;
-}

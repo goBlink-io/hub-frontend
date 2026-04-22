@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { getMerchantAdminClient } from "@/lib/server/merchant-client";
 import { MerchantTestModeProvider } from "@/contexts/MerchantTestModeContext";
 import { MerchantNav } from "@/components/merchant/MerchantNav";
 import { TestModeBar } from "@/components/merchant/TestModeBar";
@@ -9,20 +10,21 @@ export default async function MerchantLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const supabase = await createClient();
+  const blink = await createClient();
   const {
     data: { user },
-  } = await supabase.auth.getUser();
+  } = await blink.auth.getUser();
 
   if (!user) {
     redirect("/login");
   }
 
-  const { data: merchant } = await supabase
+  const merchantDb = getMerchantAdminClient();
+  const { data: merchant } = await merchantDb
     .from("merchants")
     .select("onboarding_completed")
     .eq("user_id", user.id)
-    .single();
+    .maybeSingle();
 
   // If no merchant record or onboarding not completed, send to onboarding
   // But allow the onboarding page itself to render

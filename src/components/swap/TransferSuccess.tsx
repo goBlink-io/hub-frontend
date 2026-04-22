@@ -1,10 +1,9 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { Trophy, Share2, Check, Link as LinkIcon, Bookmark, X } from 'lucide-react';
+import { Share2, Check, Link as LinkIcon, Bookmark, X } from 'lucide-react';
 import { generateTransferUrl } from '@/lib/transfer-links';
 import { useUserProfile } from '@/hooks/useUserProfile';
-import { formatElapsed } from '@/lib/transfer-links';
 
 interface TransferSuccessProps {
   amountOut: string;
@@ -59,6 +58,7 @@ export default function TransferSuccess({
     if (typeof window === 'undefined') return;
     const already = localStorage.getItem('goblink_first_swap_completed');
     if (!already) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsFirstSwap(true);
       localStorage.setItem('goblink_first_swap_completed', 'true');
     }
@@ -71,8 +71,9 @@ export default function TransferSuccess({
 
   useEffect(() => {
     const burstColors = ['#3b82f6', '#8b5cf6', '#22c55e', '#f59e0b', '#ef4444', '#ec4899', '#06b6d4'];
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setConfettiBurst(
-      Array.from({ length: 40 }, (_, i) => ({
+      Array.from({ length: 15 }, (_, i) => ({
         id: i,
         x: (Math.random() - 0.5) * 300,
         y: (Math.random() - 0.5) * 300,
@@ -90,8 +91,9 @@ export default function TransferSuccess({
 
   useEffect(() => {
     const colors = ['#2563EB', '#7C3AED', '#22C55E', '#EAB308', '#F97316', '#EC4899'];
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setParticles(
-      Array.from({ length: 24 }, (_, i) => ({
+      Array.from({ length: 8 }, (_, i) => ({
         id: i,
         x: Math.random() * 100,
         color: colors[Math.floor(Math.random() * colors.length)],
@@ -100,8 +102,6 @@ export default function TransferSuccess({
       }))
     );
   }, []);
-
-  const estimatedSavings = null; // Removed — no reliable comparison data
 
   const handleCopyLink = () => {
     if (!fromChain || !fromToken || !amountIn) return;
@@ -200,7 +200,7 @@ export default function TransferSuccess({
       </div>
 
       <div className="text-xl font-bold mb-1" style={{ color: 'var(--color-text-primary)' }}>
-        Done!
+        Transfer complete
       </div>
 
       {isFirstSwap && (
@@ -208,26 +208,14 @@ export default function TransferSuccess({
           className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold mb-3"
           style={{ background: 'rgba(59,130,246,0.12)', color: 'var(--color-primary)', border: '1px solid rgba(59,130,246,0.25)' }}
         >
-          🎉 Your first cross-chain swap!
+          🎉 First transfer complete!
         </div>
       )}
       <p className="text-sm mb-4 inline-flex items-center gap-1.5 justify-center flex-wrap" style={{ color: 'var(--color-text-secondary)' }}>
-        {fromTokenIcon && <img src={fromTokenIcon} alt={fromToken || ''} className="w-5 h-5 rounded-full inline-block" />}
-        {toTokenIcon && <img src={toTokenIcon} alt={toToken} className="w-5 h-5 rounded-full inline-block" />}
+        {fromTokenIcon && <img src={fromTokenIcon} alt={fromToken || ''} className="w-5 h-5 rounded-full inline-block" width={20} height={20} loading="lazy" />}
+        {toTokenIcon && <img src={toTokenIcon} alt={toToken} className="w-5 h-5 rounded-full inline-block" width={20} height={20} loading="lazy" />}
         {amountOut} {toToken} arrived on {chainName} in {elapsedSeconds}s
       </p>
-
-      {estimatedSavings && (
-        <div
-          className="flex items-center justify-center gap-2 mb-5 px-4 py-2.5 rounded-lg"
-          style={{ background: 'rgba(34,197,94,0.12)' }}
-        >
-          <Trophy className="h-4 w-4 flex-shrink-0" style={{ color: 'var(--color-success)' }} />
-          <span className="text-sm font-medium" style={{ color: 'var(--color-success)' }}>
-            You saved ~${estimatedSavings} vs manual bridging
-          </span>
-        </div>
-      )}
 
       <div className="flex flex-col sm:flex-row gap-2 justify-center flex-wrap">
         {recipientAddress && !isAlreadySaved && !addressSaved && !labelEditing && (

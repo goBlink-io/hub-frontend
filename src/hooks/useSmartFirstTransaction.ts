@@ -86,13 +86,15 @@ export function useSmartFirstTransaction(
   const [records, setRecords] = useState<TransferRecord[]>([]);
   const [dismissed, setDismissed] = useState(false);
 
-  // Load on mount
+  // Load on mount — hydration from localStorage must happen post-mount.
   useEffect(() => {
+     
     setRecords(loadRecords());
   }, []);
 
   // Reset dismissed state when chain/token changes
   useEffect(() => {
+     
     setDismissed(false);
   }, [fromChain, toChain, fromToken]);
 
@@ -114,8 +116,11 @@ export function useSmartFirstTransaction(
     }
 
     // 2. Welcome back (7+ days since last transfer)
+    // Date.now() is fine to read here — nudge recomputes on every dep change.
+    // eslint-disable-next-line react-hooks/purity
+    const now = Date.now();
     const lastTransfer = Math.max(...successfulRecords.map(r => r.timestamp));
-    if (Date.now() - lastTransfer > WELCOME_BACK_MS) {
+    if (now - lastTransfer > WELCOME_BACK_MS) {
       return {
         type: 'welcome-back',
         message: "Welcome back! It's been a while — consider a quick test transfer to warm up.",

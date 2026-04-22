@@ -3,6 +3,7 @@ import { createTransaction, getTransactionsByWallet } from '@/lib/server/transac
 import { errorResponse, successResponse } from '@/lib/api-response';
 import { logger } from '@/lib/logger';
 import { logAudit, getClientIp } from '@/lib/server/audit';
+import { isRateLimited, getClientIp as getRateLimitIp } from '@/lib/rate-limit';
 
 export const dynamic = 'force-dynamic';
 
@@ -19,6 +20,11 @@ function isValidWalletAddress(address: string): boolean {
  */
 export async function POST(request: NextRequest) {
   try {
+    const rateLimitIp = getRateLimitIp(request);
+    if (isRateLimited(`transactions-post:${rateLimitIp}`, { max: 30, windowMs: 60_000 })) {
+      return errorResponse('Too many requests', 429);
+    }
+
     const body = await request.json();
     const {
       walletAddress,
@@ -91,12 +97,12 @@ export async function POST(request: NextRequest) {
 
     logger.info('[TRANSACTION_API_CREATE]', { id: result.transaction?.id, walletAddress });
 
-    const ip = getClientIp(request.headers);
+    const auditIp = getClientIp(request.headers);
     logAudit({
-      actor: userId || ip,
+      actor: userId || auditIp,
       action: 'transaction.recorded',
       resourceId: result.transaction?.id,
-      ipAddress: ip,
+      ipAddress: auditIp,
     });
 
     return successResponse(result.transaction, 201);
@@ -112,6 +118,11 @@ export async function POST(request: NextRequest) {
  */
 export async function GET(request: NextRequest) {
   try {
+    const ip = getRateLimitIp(request);
+    if (isRateLimited(`transactions-get:${ip}`, { max: 30, windowMs: 60_000 })) {
+      return errorResponse('Too many requests', 429);
+    }
+
     const { searchParams } = new URL(request.url);
     const wallet = searchParams.get('wallet');
     const page = parseInt(searchParams.get('page') || '1', 10);

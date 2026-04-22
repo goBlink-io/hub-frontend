@@ -11,7 +11,28 @@ interface QuotePreviewProps {
 }
 
 export default function QuotePreview({ quote, onReset, onSwapInitiated }: QuotePreviewProps) {
-  const { quote: quoteData, quoteRequest, originTokenMetadata, destinationTokenMetadata, fromChain, toChain: _toChain, feeInfo } = quote as Record<string, any>;
+  const {
+    quote: quoteData,
+    quoteRequest,
+    destinationTokenMetadata,
+    fromChain,
+    toChain: _toChain,
+    feeInfo,
+  } = quote as unknown as {
+    quote: {
+      amountInFormatted: string;
+      amountInUsd?: string;
+      amountOutFormatted: string;
+      amountOutUsd?: string;
+      minAmountOut: string;
+      timeEstimate?: number;
+    };
+    quoteRequest: { slippageTolerance: number } & Record<string, unknown>;
+    destinationTokenMetadata?: { symbol?: string; decimals: number };
+    fromChain: string;
+    toChain: string;
+    feeInfo?: { estimatedUsd?: string; percent?: string };
+  };
   const [isConfirming, setIsConfirming] = useState(false);
   const [confirmationStep, setConfirmationStep] = useState<string>('');
   const [error, setError] = useState<string | null>(null);

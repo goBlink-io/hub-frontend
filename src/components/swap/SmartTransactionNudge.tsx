@@ -1,7 +1,7 @@
 'use client';
 
 import type { Nudge } from '@/hooks/useSmartFirstTransaction';
-import { Hand, Globe, Zap, Smile, Lightbulb, X } from 'lucide-react';
+import { Hand, Globe, Zap, Smile, Lightbulb } from 'lucide-react';
 
 interface SmartTransactionNudgeProps {
   nudge: Nudge;

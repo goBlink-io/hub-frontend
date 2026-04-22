@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getTransaction, updateTransactionStatus } from '@/lib/server/transactions';
 import { errorResponse, successResponse } from '@/lib/api-response';
 import { logger } from '@/lib/logger';
+import { isRateLimited, getClientIp } from '@/lib/rate-limit';
 
 export const dynamic = 'force-dynamic';
 
@@ -14,6 +15,11 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const ip = getClientIp(request);
+    if (isRateLimited(`tx-get:${ip}`, { max: 30, windowMs: 60_000 })) {
+      return errorResponse('Too many requests', 429);
+    }
+
     const { id } = await params;
 
     if (!id) {

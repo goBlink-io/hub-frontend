@@ -2,13 +2,13 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useWallet } from '@goblink/connect/react';
-import { sendNearTransaction, sendSuiTransaction } from '@/lib/transactions';
-import { isEvmChain, isNativeToken, EVM_CHAINS, getExplorerTxUrl } from '@/lib/shared';
+import { sendNearTransaction } from '@/lib/transactions';
+import { getExplorerTxUrl } from '@/lib/shared';
 import { getChainLogo } from '@/lib/chain-logos';
 import { formatTokenAmount } from '@/lib/format';
-import { X, ArrowDown, Check, Loader2, AlertTriangle, Copy, Shield, Trophy, ChevronDown, HelpCircle } from 'lucide-react';
+import { X, ArrowDown, Check, Loader2, AlertTriangle, Copy, Shield } from 'lucide-react';
+import Link from 'next/link';
 import TransactionStoryline from './TransactionStoryline';
-import ConfidenceScore from './ConfidenceScore';
 import TransferSuccess from './TransferSuccess';
 
 type ModalStep = 'preview' | 'confirming' | 'tracking';
@@ -31,8 +31,51 @@ interface TransactionData {
 }
 
 export default function TransferModal({ quote, onClose, onComplete, onOutcome }: TransferModalProps) {
-  const { quote: quoteData, quoteRequest, originTokenMetadata, destinationTokenMetadata, fromChain, toChain, feeInfo, source, paymentRequestId } = quote as Record<string, any>;
+  const {
+    quote: quoteData,
+    quoteRequest,
+    originTokenMetadata,
+    destinationTokenMetadata,
+    fromChain,
+    toChain,
+    feeInfo,
+    source,
+    paymentRequestId,
+  } = quote as unknown as {
+    quote: {
+      amountInFormatted: string;
+      amountInUsd?: string;
+      amountOutFormatted?: string;
+      amountOutUsd?: string;
+      minAmountOut: string;
+      timeEstimate?: number | string;
+    };
+    quoteRequest: {
+      originAsset: string;
+      destinationAsset: string;
+      recipient: string;
+      refundTo?: string;
+      amount: string;
+      swapType?: string;
+      slippageTolerance?: number;
+    };
+    originTokenMetadata?: { symbol?: string; decimals: number; icon?: string };
+    destinationTokenMetadata?: { symbol?: string; decimals: number; icon?: string };
+    fromChain: string;
+    toChain: string;
+    feeInfo?: { bps?: number | string; estimatedUsd?: string; percent?: string };
+    source?: string;
+    paymentRequestId?: string;
+  };
   const { getAddress } = useWallet();
+
+  const [closing, setClosing] = useState(false);
+  const handleClose = useCallback(() => {
+    setClosing(true);
+    setTimeout(() => {
+      onClose();
+    }, 200);
+  }, [onClose]);
 
   const [step, setStep] = useState<ModalStep>('preview');
   const [confirmationStep, setConfirmationStep] = useState('');
@@ -42,7 +85,8 @@ export default function TransferModal({ quote, onClose, onComplete, onOutcome }:
   const [copied, setCopied] = useState(false);
   const [showManualDeposit, setShowManualDeposit] = useState(false);
   const [trackingStartedAt, setTrackingStartedAt] = useState(0);
-  const [howItWorksOpen, setHowItWorksOpen] = useState(false);
+  const [dismissedCloseMsg, setDismissedCloseMsg] = useState(false);
+  const [trackingElapsed, setTrackingElapsed] = useState(0);
 
   const startTracking = () => {
     setTrackingStartedAt(Date.now());
@@ -115,6 +159,15 @@ export default function TransferModal({ quote, onClose, onComplete, onOutcome }:
     } catch { /* retry */ }
     return false;
   }, [outcomeLogged, fromChain, toChain, originTokenMetadata, destinationTokenMetadata, onOutcome]);
+
+  // Track elapsed seconds during tracking step
+  useEffect(() => {
+    if (step !== 'tracking' || !trackingStartedAt) return;
+    const timer = setInterval(() => {
+      setTrackingElapsed(Math.floor((Date.now() - trackingStartedAt) / 1000));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [step, trackingStartedAt]);
 
   useEffect(() => {
     if (step !== 'tracking' || !depositAddress) return;
@@ -239,8 +292,11 @@ export default function TransferModal({ quote, onClose, onComplete, onOutcome }:
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
-      <div className="flex min-h-screen items-end sm:items-center justify-center sm:p-4">
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" onClick={step !== 'confirming' ? onClose : undefined} />
+      <div className="flex min-h-dvh items-end sm:items-center justify-center sm:p-4"
+        style={{ animation: closing ? 'modal-exit 0.2s ease-in forwards' : 'modal-enter 0.25s ease-out' }}>
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm"
+          style={{ animation: closing ? 'backdrop-exit 0.2s ease-in forwards' : 'backdrop-enter 0.25s ease-out' }}
+          onClick={step !== 'confirming' ? handleClose : undefined} />
 
         <div className="relative rounded-t-2xl sm:rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto"
           style={{ background: 'var(--color-bg-secondary)', border: '1px solid var(--color-border)' }}>
@@ -253,7 +309,7 @@ export default function TransferModal({ quote, onClose, onComplete, onOutcome }:
               {step === 'tracking' && 'Transfer Status'}
             </h2>
             {step !== 'confirming' && (
-              <button onClick={onClose} className="p-1.5 rounded-lg transition-colors" style={{ color: 'var(--color-text-muted)' }} aria-label="Close transfer modal">
+              <button onClick={handleClose} className="p-1.5 rounded-lg transition-colors" style={{ color: 'var(--color-text-muted)' }} aria-label="Close transfer modal">
                 <X className="h-5 w-5" />
               </button>
             )}
@@ -269,7 +325,7 @@ export default function TransferModal({ quote, onClose, onComplete, onOutcome }:
                     <p className="text-tiny font-medium mb-2" style={{ color: 'var(--color-text-muted)' }}>You&apos;re sending</p>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        {fromLogo && <img src={fromLogo.icon} alt={fromLogo.name} className="w-8 h-8 rounded-full" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />}
+                        {fromLogo && <img src={fromLogo.icon} alt={fromLogo.name} className="w-8 h-8 rounded-full" width={32} height={32} loading="lazy" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />}
                         <div>
                           <div className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>{originTokenMetadata?.symbol}</div>
                           <div className="text-tiny" style={{ color: 'var(--color-text-muted)' }}>on {fromLogo?.name || fromChain}</div>
@@ -292,7 +348,7 @@ export default function TransferModal({ quote, onClose, onComplete, onOutcome }:
                     <p className="text-tiny font-medium mb-2" style={{ color: 'var(--color-success)' }}>You&apos;ll receive</p>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        {toLogo && <img src={toLogo.icon} alt={toLogo.name} className="w-8 h-8 rounded-full" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />}
+                        {toLogo && <img src={toLogo.icon} alt={toLogo.name} className="w-8 h-8 rounded-full" width={32} height={32} loading="lazy" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />}
                         <div>
                           <div className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>{destinationTokenMetadata?.symbol}</div>
                           <div className="text-tiny" style={{ color: 'var(--color-text-muted)' }}>on {toLogo?.name || toChain}</div>
@@ -328,8 +384,7 @@ export default function TransferModal({ quote, onClose, onComplete, onOutcome }:
                 <div className="flex items-start gap-3 p-3.5 rounded-xl" style={{ background: 'rgba(59,130,246,0.06)', border: '1px solid rgba(59,130,246,0.15)' }}>
                   <Shield className="h-4 w-4 flex-shrink-0 mt-0.5" style={{ color: 'var(--color-primary)' }} />
                   <p className="text-tiny" style={{ color: 'var(--color-text-secondary)' }}>
-                    <span className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>Safety guarantee: </span>
-                    If anything goes wrong, your {originTokenMetadata?.symbol || 'tokens'} are automatically returned to you.
+                    If the transfer can&apos;t complete, your {originTokenMetadata?.symbol || 'tokens'} will be returned to your wallet.
                   </p>
                 </div>
 
@@ -358,48 +413,6 @@ export default function TransferModal({ quote, onClose, onComplete, onOutcome }:
                   <div className="p-3 rounded-xl flex items-start gap-2" role="alert" aria-live="polite" style={{ background: 'var(--error-bg)', border: '1px solid var(--color-danger)' }}>
                     <AlertTriangle className="h-4 w-4 mt-0.5 flex-shrink-0" style={{ color: 'var(--color-danger)' }} />
                     <p className="text-body-sm" style={{ color: 'var(--error-text)' }}>{error}</p>
-                  </div>
-                )}
-
-                <ConfidenceScore
-                  timeEstimate={quoteData.timeEstimate ? Math.max(60, parseInt(quoteData.timeEstimate, 10)) : null}
-                  fromChain={fromChain} toChain={toChain}
-                  fromToken={originTokenMetadata?.symbol || ''} toToken={destinationTokenMetadata?.symbol || ''}
-                  amountUsd={feeInfo?.estimatedUsd ? parseFloat(feeInfo.estimatedUsd) / (feeInfo.bps / 10000) : null}
-                  quoteAvailable={true}
-                />
-
-                {/* How it works */}
-                {!showManualDeposit && (
-                  <div className="rounded-xl overflow-hidden" style={{ border: '1px solid var(--color-border)' }}>
-                    <button type="button" onClick={() => setHowItWorksOpen(o => !o)}
-                      className="w-full flex items-center justify-between px-4 py-3 transition-colors hover:opacity-80"
-                      style={{ background: 'var(--color-bg-tertiary)' }}>
-                      <div className="flex items-center gap-2">
-                        <HelpCircle className="h-4 w-4 flex-shrink-0" style={{ color: 'var(--color-primary)' }} />
-                        <span className="text-body-sm font-medium" style={{ color: 'var(--color-text-secondary)' }}>What happens after I click confirm?</span>
-                      </div>
-                      <ChevronDown className="h-4 w-4 flex-shrink-0 transition-transform duration-200"
-                        style={{ color: 'var(--color-text-tertiary)', transform: howItWorksOpen ? 'rotate(180deg)' : 'rotate(0deg)' }} />
-                    </button>
-                    {howItWorksOpen && (
-                      <div className="px-4 pb-4 pt-1" style={{ background: 'var(--color-bg-tertiary)' }}>
-                        <ol className="space-y-2.5">
-                          <li className="flex gap-3">
-                            <span className="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-tiny font-bold mt-0.5" style={{ background: 'var(--color-primary)', color: '#fff' }}>1</span>
-                            <p className="text-body-sm" style={{ color: 'var(--color-text-secondary)' }}>goBlink creates a <strong style={{ color: 'var(--color-text-primary)' }}>one-time deposit address</strong> for your transfer.</p>
-                          </li>
-                          <li className="flex gap-3">
-                            <span className="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-tiny font-bold mt-0.5" style={{ background: 'var(--color-primary)', color: '#fff' }}>2</span>
-                            <p className="text-body-sm" style={{ color: 'var(--color-text-secondary)' }}>Your wallet sends <strong style={{ color: 'var(--color-text-primary)' }}>{quoteData.amountInFormatted} {originTokenMetadata?.symbol}</strong> there.</p>
-                          </li>
-                          <li className="flex gap-3">
-                            <span className="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-tiny font-bold mt-0.5" style={{ background: 'var(--color-primary)', color: '#fff' }}>3</span>
-                            <p className="text-body-sm" style={{ color: 'var(--color-text-secondary)' }}><strong style={{ color: 'var(--color-text-primary)' }}>~{destinationTokenMetadata?.symbol} arrives in your wallet</strong> — usually within 60 seconds.</p>
-                          </li>
-                        </ol>
-                      </div>
-                    )}
                   </div>
                 )}
 
@@ -441,10 +454,24 @@ export default function TransferModal({ quote, onClose, onComplete, onOutcome }:
                   />
                 )}
 
-                {isComplete && (
-                  <div className="flex items-center gap-2.5 px-4 py-3 rounded-xl" style={{ background: 'rgba(59,130,246,0.07)', border: '1px solid rgba(59,130,246,0.15)' }}>
-                    <Trophy className="h-4 w-4 flex-shrink-0" style={{ color: 'var(--color-primary)' }} />
-                    <p className="text-tiny font-medium" style={{ color: 'var(--color-text-secondary)' }}>Multiple routes competed for your transfer — you got the best available rate.</p>
+                {/* Safe to close message */}
+                {trackingElapsed >= 30 && !isComplete && !dismissedCloseMsg && (
+                  <div
+                    className="p-3 rounded-xl flex items-center justify-between"
+                    style={{ background: 'var(--info-bg)', border: '1px solid rgba(59,130,246,0.15)' }}
+                  >
+                    <p className="text-body-sm" style={{ color: 'var(--info-text)' }}>
+                      You can safely close this modal — we&apos;ll complete your transfer in the background.
+                      Check your <Link href="/history" style={{ color: 'var(--color-primary)', textDecoration: 'underline' }}>transfer history</Link> anytime.
+                    </p>
+                    <button
+                      onClick={() => setDismissedCloseMsg(true)}
+                      className="ml-3 flex-shrink-0"
+                      style={{ color: 'var(--color-text-muted)' }}
+                      aria-label="Dismiss"
+                    >
+                      <X size={14} />
+                    </button>
                   </div>
                 )}
 
@@ -454,7 +481,7 @@ export default function TransferModal({ quote, onClose, onComplete, onOutcome }:
                   fromToken={originTokenMetadata?.symbol || '?'} toToken={destinationTokenMetadata?.symbol || '?'}
                   amountIn={quoteData.amountInFormatted}
                   amountOut={transaction?.amountOut && destinationTokenMetadata?.decimals ? formatAtomicAmount(transaction.amountOut, destinationTokenMetadata.decimals) : (quoteData.amountOutFormatted || null)}
-                  timeEstimate={Math.max(60, quoteData.timeEstimate ? parseInt(quoteData.timeEstimate, 10) : 60)}
+                  timeEstimate={Math.max(60, quoteData.timeEstimate ? parseInt(String(quoteData.timeEstimate), 10) : 60)}
                   depositTxHash={transaction?.depositTxHash || null}
                   fulfillmentTxHash={transaction?.fulfillmentTxHash || null}
                   fromLogo={fromLogo} toLogo={toLogo}
@@ -463,7 +490,7 @@ export default function TransferModal({ quote, onClose, onComplete, onOutcome }:
                   startedAt={trackingStartedAt}
                 />
 
-                <button onClick={onClose}
+                <button onClick={handleClose}
                   className={`btn w-full py-3 text-body-sm ${isComplete ? 'btn-primary' : 'btn-secondary'}`}>
                   {isComplete ? 'Done' : 'Close'}
                 </button>

@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { motion, type Variants } from 'framer-motion';
 import {
   ArrowLeftRight, CreditCard, Store, BookOpen,
-  Code, Zap, Shield, Globe,
+  Code, Shield,
 } from 'lucide-react';
 import { Logo } from '@/components/shared/Logo';
 
@@ -22,31 +22,31 @@ const features = [
   {
     icon: ArrowLeftRight,
     title: 'Swap',
-    desc: 'Cross-chain transfers in seconds. Any token, any chain — one click.',
+    desc: 'Send tokens between chains without bridges or wrapping',
   },
   {
     icon: CreditCard,
     title: 'Pay',
-    desc: 'Create payment links anyone can use. No wallet required for senders.',
+    desc: 'Payment links that accept crypto from any chain.',
   },
   {
     icon: Code,
     title: 'Build',
-    desc: 'SDK, Merchant tools, and BlinkBook — build on top of cross-chain rails.',
+    desc: 'SDKs and merchant tools for developers.',
   },
 ];
 
 const steps = [
-  { num: '01', title: 'Connect', desc: 'Link any wallet — EVM, Solana, NEAR, Sui, and more.' },
-  { num: '02', title: 'Choose', desc: 'Pick source and destination token + chain. We find the best route.' },
-  { num: '03', title: 'Done', desc: 'Funds arrive in seconds. Non-custodial, always.' },
+  { num: '01', title: 'Connect', desc: 'Connect your wallet.' },
+  { num: '02', title: 'Choose', desc: 'Pick what you\'re sending and where.' },
+  { num: '03', title: 'Done', desc: 'Done. Funds arrive in your wallet.' },
 ];
 
 const products = [
-  { icon: ArrowLeftRight, title: 'Swap', desc: 'Transfer any token across 26+ chains', href: '/swap' },
-  { icon: Store, title: 'Merchant', desc: 'Accept crypto payments for your business', href: '/merchant' },
-  { icon: BookOpen, title: 'BlinkBook', desc: 'Build and publish knowledge bases', href: '/book' },
-  { icon: Code, title: 'SDK', desc: 'Integrate cross-chain into your app', href: '#' },
+  { icon: ArrowLeftRight, title: 'Swap', desc: 'Cross-chain token transfers', href: '/swap' },
+  { icon: Store, title: 'Merchant', desc: 'Crypto payments for businesses', href: '/merchant' },
+  { icon: BookOpen, title: 'BlinkBook', desc: 'Documentation platform', href: '/book' },
+  { icon: Code, title: 'SDK', desc: 'Developer tools', href: '#' },
 ];
 
 export default function Home() {
@@ -84,15 +84,15 @@ export default function Home() {
           className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight mb-6"
           variants={fadeUp}
         >
-          <span className="text-blue-gradient">Cross-Chain</span>{' '}
-          <span style={{ color: 'var(--color-text-primary)' }}>Everything</span>
+          <span className="text-blue-gradient">Move anything,</span>{' '}
+          <span style={{ color: 'var(--color-text-primary)' }}>anywhere.</span>
         </motion.h1>
         <motion.p
           className="text-lg sm:text-xl max-w-2xl mx-auto mb-10"
           style={{ color: 'var(--color-text-secondary)' }}
           variants={fadeUp}
         >
-          One app. Every chain. Swap, pay, and build across 26+ blockchains — non-custodial, instant, and simple.
+          Swap tokens across 12+ chains. Non-custodial. Usually under a minute.
         </motion.p>
         <motion.div className="flex flex-col sm:flex-row gap-3 justify-center" variants={fadeUp}>
           <Link
@@ -118,26 +118,33 @@ export default function Home() {
 
       {/* Stats Bar */}
       <motion.div
-        className="flex flex-wrap justify-center gap-6 sm:gap-10 mb-16 px-4"
+        className="flex flex-wrap justify-center gap-8 sm:gap-12 mb-16 px-4"
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, margin: '-50px' }}
         variants={stagger}
       >
-        {['26+ Chains', '65+ Tokens', 'Non-Custodial'].map((stat) => (
-          <motion.div
-            key={stat}
-            className="flex items-center gap-2 text-sm sm:text-base font-medium"
-            style={{ color: 'var(--color-text-secondary)' }}
-            variants={fadeUp}
-          >
-            <Zap className="h-4 w-4" style={{ color: 'var(--color-primary)' }} />
-            {stat}
+        {[
+          { value: '12+', label: 'Chains' },
+          { value: '65+', label: 'Tokens' },
+          { value: '<60s', label: 'Avg Transfer' },
+        ].map((stat) => (
+          <motion.div key={stat.label} className="text-center" variants={fadeUp}>
+            <div className="text-2xl sm:text-3xl font-bold" style={{ color: 'var(--color-text-primary)' }}>
+              {stat.value}
+            </div>
+            <div className="text-xs uppercase tracking-wider mt-1" style={{ color: 'var(--color-text-muted)' }}>
+              {stat.label}
+            </div>
           </motion.div>
         ))}
       </motion.div>
 
+      {/* Divider */}
+      <div className="w-full max-w-5xl mx-auto px-4 mb-12"><div className="border-t" style={{ borderColor: 'rgba(255,255,255,0.05)' }} /></div>
+
       {/* Feature Cards */}
+      <h2 className="sr-only">Features</h2>
       <motion.section
         className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 max-w-5xl mx-auto px-4 sm:px-6 mb-20"
         initial="hidden"
@@ -149,7 +156,7 @@ export default function Home() {
           <motion.div key={f.title} className="card-standard p-6" variants={fadeUp}>
             <div
               className="w-10 h-10 rounded-lg flex items-center justify-center mb-4"
-              style={{ background: 'rgba(59,130,246,0.1)' }}
+              style={{ background: 'var(--color-primary-subtle)' }}
             >
               <f.icon className="h-5 w-5" style={{ color: 'var(--color-primary)' }} />
             </div>
@@ -163,9 +170,12 @@ export default function Home() {
         ))}
       </motion.section>
 
+      {/* Divider */}
+      <div className="w-full max-w-5xl mx-auto px-4 mb-12"><div className="border-t" style={{ borderColor: 'rgba(255,255,255,0.05)' }} /></div>
+
       {/* How It Works */}
       <motion.section
-        className="max-w-4xl mx-auto px-4 sm:px-6 mb-20 text-center"
+        className="max-w-5xl mx-auto px-4 sm:px-6 mb-20 text-center"
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, margin: '-50px' }}
@@ -181,8 +191,8 @@ export default function Home() {
           {steps.map((s) => (
             <motion.div key={s.num} className="flex flex-col items-center" variants={fadeUp}>
               <div
-                className="w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold mb-4"
-                style={{ background: 'rgba(59,130,246,0.15)', color: 'var(--color-primary)' }}
+                className="w-14 h-14 rounded-full flex items-center justify-center text-xl font-bold mb-4"
+                style={{ background: 'var(--color-primary-muted)', color: 'var(--color-primary)' }}
               >
                 {s.num}
               </div>
@@ -196,6 +206,9 @@ export default function Home() {
           ))}
         </div>
       </motion.section>
+
+      {/* Divider */}
+      <div className="w-full max-w-5xl mx-auto px-4 mb-12"><div className="border-t" style={{ borderColor: 'rgba(255,255,255,0.05)' }} /></div>
 
       {/* Products Grid */}
       <motion.section
@@ -216,11 +229,11 @@ export default function Home() {
             <motion.div key={p.title} variants={fadeUp}>
               <Link
                 href={p.href}
-                className="card-standard p-5 flex items-start gap-4 group block"
+                className="card-standard p-5 flex items-start gap-4 group block cursor-pointer"
               >
                 <div
                   className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
-                  style={{ background: 'rgba(59,130,246,0.1)' }}
+                  style={{ background: 'var(--color-primary-subtle)' }}
                 >
                   <p.icon className="h-5 w-5" style={{ color: 'var(--color-primary)' }} />
                 </div>
@@ -238,9 +251,12 @@ export default function Home() {
         </div>
       </motion.section>
 
+      {/* Divider */}
+      <div className="w-full max-w-5xl mx-auto px-4 mb-12"><div className="border-t" style={{ borderColor: 'rgba(255,255,255,0.05)' }} /></div>
+
       {/* CTA */}
       <motion.section
-        className="card-hero mx-4 sm:mx-6 mb-20 px-6 py-14 text-center max-w-4xl lg:mx-auto w-auto"
+        className="card-hero mx-4 sm:mx-6 mb-20 px-6 py-14 text-center max-w-5xl lg:mx-auto w-auto"
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, margin: '-50px' }}
@@ -253,14 +269,7 @@ export default function Home() {
           Ready to go{' '}
           <span className="text-blue-gradient">cross-chain</span>?
         </motion.h2>
-        <motion.p
-          className="text-base mb-8"
-          style={{ color: 'var(--color-text-secondary)' }}
-          variants={fadeUp}
-        >
-          Join thousands of users swapping across every major blockchain.
-        </motion.p>
-        <motion.div className="flex flex-col sm:flex-row gap-3 justify-center" variants={fadeUp}>
+        <motion.div className="flex flex-col sm:flex-row gap-3 justify-center mt-8" variants={fadeUp}>
           <Link
             href="/signup"
             className="px-8 py-3 rounded-xl text-base font-semibold transition-all hover:scale-[1.02]"
@@ -284,30 +293,45 @@ export default function Home() {
 
       {/* Footer */}
       <footer
-        className="mt-auto px-6 py-8"
+        className="mt-auto px-6 py-8 backdrop-blur-md"
         style={{ borderTop: '1px solid var(--color-border)' }}
       >
         <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-6">
             <Logo size="sm" />
-            <div className="flex gap-4 text-sm" style={{ color: 'var(--color-text-tertiary)' }}>
+            <div className="flex gap-4 text-[11px] uppercase tracking-wide font-semibold" style={{ color: 'var(--color-text-tertiary)' }}>
               <Link href="/swap" className="hover:underline">Swap</Link>
               <Link href="/pay" className="hover:underline">Pay</Link>
               <Link href="/merchant" className="hover:underline">Merchant</Link>
               <Link href="/book" className="hover:underline">Book</Link>
+              <a href="https://docs.goblink.io" target="_blank" rel="noopener noreferrer" className="hover:underline">Docs</a>
             </div>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 text-[11px] uppercase tracking-wide font-semibold" style={{ color: 'var(--color-text-tertiary)' }}>
             <a
               href="https://twitter.com/goBlink_io"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-sm hover:underline"
-              style={{ color: 'var(--color-text-tertiary)' }}
+              className="hover:underline"
             >
               Twitter
             </a>
-            <Globe className="h-4 w-4" style={{ color: 'var(--color-text-tertiary)' }} />
+            <a
+              href="https://discord.gg/goblink"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:underline"
+            >
+              Discord
+            </a>
+            <a
+              href="https://github.com/goblink"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:underline"
+            >
+              GitHub
+            </a>
           </div>
         </div>
         <p
@@ -316,6 +340,10 @@ export default function Home() {
         >
           © {new Date().getFullYear()} goBlink. All rights reserved.
         </p>
+        <div className="flex items-center justify-center gap-2 text-xs mt-4" style={{ color: 'var(--color-text-muted)' }}>
+          <Shield size={12} />
+          <span>Non-custodial · Your keys, your crypto</span>
+        </div>
       </footer>
     </div>
   );

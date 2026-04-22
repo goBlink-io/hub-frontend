@@ -4,9 +4,15 @@ import { errorResponse, successResponse } from '@/lib/api-response';
 import { isValidTxHash } from '@/lib/validators';
 import { logger } from '@/lib/logger';
 import { logAudit, getClientIp } from '@/lib/server/audit';
+import { isRateLimited, getClientIp as getRateLimitIp } from '@/lib/rate-limit';
 
 export async function POST(request: NextRequest) {
   try {
+    const ip = getRateLimitIp(request);
+    if (isRateLimited(`deposit-submit:${ip}`, { max: 10, windowMs: 60_000 })) {
+      return errorResponse('Too many requests', 429);
+    }
+
     const { txHash, depositAddress } = await request.json();
 
     // Input validation

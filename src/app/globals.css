@@ -13,6 +13,8 @@
   --color-primary: #3b82f6;
   --color-primary-hover: #2563eb;
   --color-accent-glow: rgba(59, 130, 246, 0.2);
+  --color-primary-subtle: rgba(59, 130, 246, 0.1);
+  --color-primary-muted: rgba(59, 130, 246, 0.15);
 
   /* Semantic */
   --color-success: #10b981;
@@ -23,8 +25,8 @@
   /* Text */
   --color-text-primary: #f1f1f3;
   --color-text-secondary: #8b8ca7;
-  --color-text-tertiary: #5e5f7a;
-  --color-text-muted: #4a4b65;
+  --color-text-tertiary: #7e7f9e;
+  --color-text-muted: #7a7b95;
 
   /* Border */
   --color-border: #1e1f2e;
@@ -147,6 +149,18 @@ select {
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+
+  .animate-spin {
+    animation: none !important;
+  }
+
+  .animate-pulse {
+    animation: none !important;
+  }
+
+  .animate-bounce {
+    animation: none !important;
+  }
 }
 
 /* ─── Safe Area ─── */
@@ -259,6 +273,17 @@ select {
   border: none;
 }
 
+.btn:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+/* Global press feedback for all buttons */
+button:active:not(:disabled),
+[role="button"]:active:not(:disabled) {
+  transform: scale(0.98);
+  transition: transform 100ms ease;
+}
+
 .btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
@@ -312,6 +337,27 @@ select {
   animation: fade-up 0.3s ease-out;
 }
 
+/* Modal enter/exit animations */
+@keyframes modal-enter {
+  from { opacity: 0; transform: scale(0.95) translateY(8px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+@keyframes modal-exit {
+  from { opacity: 1; transform: scale(1) translateY(0); }
+  to { opacity: 0; transform: scale(0.95) translateY(8px); }
+}
+
+@keyframes backdrop-enter {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes backdrop-exit {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
 /* Hide scrollbar for horizontal chip scrollers */
 .scrollbar-none {
   -ms-overflow-style: none;
@@ -348,7 +394,7 @@ select {
   background: linear-gradient(135deg, rgba(18, 19, 26, 0.8), rgba(26, 27, 38, 0.6));
   backdrop-filter: blur(12px);
   border: 1px solid rgba(59, 130, 246, 0.15);
-  box-shadow: 0 0 30px rgba(59, 130, 246, 0.05), 0 8px 32px rgba(0, 0, 0, 0.4);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 0 30px rgba(59, 130, 246, 0.05), 0 8px 32px rgba(0, 0, 0, 0.4);
   border-radius: var(--radius-xl);
   transition: all 0.2s ease;
 }
@@ -364,7 +410,7 @@ select {
   background: var(--color-bg-secondary);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03), 0 4px 16px rgba(0, 0, 0, 0.3);
   transition: all 0.2s ease;
 }
 
@@ -390,6 +436,29 @@ select {
 }
 
 /* ─── Blue Gradient Text ─── */
+
+/* Price tick animations */
+@keyframes tick-up {
+  0% { color: var(--color-text-primary); }
+  20% { color: var(--color-success); }
+  100% { color: var(--color-text-primary); }
+}
+@keyframes tick-down {
+  0% { color: var(--color-text-primary); }
+  20% { color: var(--color-danger); }
+  100% { color: var(--color-text-primary); }
+}
+.tick-up { animation: tick-up 600ms ease-out; }
+.tick-down { animation: tick-down 600ms ease-out; }
+
+/* Stat card */
+.card-stat {
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 1rem 1.25rem;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
 
 .text-blue-gradient {
   background: linear-gradient(135deg, #3b82f6, #60a5fa, #3b82f6);

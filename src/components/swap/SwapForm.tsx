@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { Token } from '@/lib/shared';
+import { SUPPORTED_CHAINS } from '@/lib/chains';
 import { useWallet } from '@goblink/connect/react';
 import { useToast } from '@/contexts/ToastContext';
 import { getTokenBalance } from '@/lib/balances';
@@ -9,6 +10,10 @@ import TokenSelector from '@/components/swap/TokenSelector';
 import AddressBook from '@/components/swap/AddressBook';
 import NoWalletCard from '@/components/swap/NoWalletCard';
 import SmartTransactionNudge from '@/components/swap/SmartTransactionNudge';
+import ChainSelector from '@/components/swap/ChainSelector';
+import AmountInput from '@/components/swap/AmountInput';
+import AddressInput from '@/components/swap/AddressInput';
+import SwapCTA from '@/components/swap/SwapCTA';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { useSmartFirstTransaction } from '@/hooks/useSmartFirstTransaction';
 import { useSmartDefaults } from '@/hooks/useSmartDefaults';
@@ -49,22 +54,6 @@ interface SwapFormProps {
   initialValues?: SwapFormInitialValues;
 }
 
-// Available chains for selection
-const SUPPORTED_CHAINS = [
-  { id: 'aptos', name: 'Aptos', type: 'aptos' as const },
-  { id: 'arbitrum', name: 'Arbitrum', type: 'evm' as const },
-  { id: 'base', name: 'Base', type: 'evm' as const },
-  { id: 'bsc', name: 'BNB Chain', type: 'evm' as const },
-  { id: 'ethereum', name: 'Ethereum', type: 'evm' as const },
-  { id: 'near', name: 'NEAR', type: 'near' as const },
-  { id: 'optimism', name: 'Optimism', type: 'evm' as const },
-  { id: 'polygon', name: 'Polygon', type: 'evm' as const },
-  { id: 'solana', name: 'Solana', type: 'solana' as const },
-  { id: 'starknet', name: 'Starknet', type: 'starknet' as const },
-  { id: 'sui', name: 'Sui', type: 'sui' as const },
-  { id: 'tron', name: 'Tron', type: 'tron' as const },
-] as const;
-
 import { filterTokens } from '@/lib/token-filters';
 
 export default function SwapForm({ onQuoteReceived, refreshKey, initialValues }: SwapFormProps) {
@@ -95,6 +84,7 @@ export default function SwapForm({ onQuoteReceived, refreshKey, initialValues }:
   const [refundTo, setRefundTo] = useState('');
   const [formError, setFormError] = useState<string | null>(null);
   const [addressBookOpen, setAddressBookOpen] = useState(false);
+  const [quoteSlowWarning, setQuoteSlowWarning] = useState(false);
 
   const getChainIdFromType = (chainType: string | null): string => {
     const ct = (chainType || '').toLowerCase();
@@ -229,13 +219,10 @@ export default function SwapForm({ onQuoteReceived, refreshKey, initialValues }:
   }, [tokens, fromChain]);
 
   // For the FROM selector: hide tokens with zero balance when wallet is connected and balances are ready.
-  // This removes the noise of 60+ tokens the user can't actually send.
   const displayFromTokens = useMemo(() => {
     const addr = fromAddress();
-    // Not connected or balances still loading → show everything (don't flash an empty list)
     if (!addr || loadingBalances || Object.keys(balances).length === 0) return fromTokens;
     const withBalance = fromTokens.filter(t => parseFloat(balances[t.assetId] || '0') > 0);
-    // Safety: if somehow all are zero (e.g., fresh wallet), show full list
     return withBalance.length > 0 ? withBalance : fromTokens;
   }, [fromTokens, balances, loadingBalances]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -254,13 +241,6 @@ export default function SwapForm({ onQuoteReceived, refreshKey, initialValues }:
     if (price <= 0) return 0;
     return parseFloat(amount) * price;
   }, [amount, selectedFromToken]);
-  // Detect if user is on their usual route
-  const isUsualRoute = useMemo(() => {
-    const suggested = getSuggestedRoute();
-    if (!suggested) return false;
-    return suggested.fromChain === fromChain && suggested.toChain === toChain;
-  }, [fromChain, toChain, getSuggestedRoute]);
-
   const { nudge, dismiss: dismissNudge } = useSmartFirstTransaction(
     fromChain,
     toChain,
@@ -299,7 +279,7 @@ export default function SwapForm({ onQuoteReceived, refreshKey, initialValues }:
 
   // Smart auto-select: after balances load, pick the token with the highest USD value
   useEffect(() => {
-    if (userSelectedFromToken.current) return; // user chose manually — don't override
+    if (userSelectedFromToken.current) return;
     if (loadingBalances || Object.keys(balances).length === 0) return;
     if (fromTokens.length === 0) return;
 
@@ -317,7 +297,6 @@ export default function SwapForm({ onQuoteReceived, refreshKey, initialValues }:
       }
     }
 
-    // Only switch if we found a token with actual balance
     if (bestValue > 0) {
       setOriginAsset(bestToken.assetId);
     }
@@ -355,7 +334,7 @@ export default function SwapForm({ onQuoteReceived, refreshKey, initialValues }:
     };
     setBalances({});
     fetchBalances();
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- fromAddress is a stable useCallback; call it inside the effect, depend on its deps
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fromChain, getAddress, fromTokens, refreshKey]);
 
   // Fetch destination chain balances
@@ -386,7 +365,7 @@ export default function SwapForm({ onQuoteReceived, refreshKey, initialValues }:
     };
     setToBalances({});
     fetchToBalances();
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- toAddress is a stable useCallback; call it inside the effect, depend on its deps
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [toChain, getAddress, toTokens, refreshKey]);
 
   const convertToSmallestUnit = (amount: string, decimals: number): string => {
@@ -406,6 +385,7 @@ export default function SwapForm({ onQuoteReceived, refreshKey, initialValues }:
       return;
     }
     setLoading(true);
+    const slowTimer = setTimeout(() => setQuoteSlowWarning(true), 8000);
     try {
       const originToken = fromTokens.find(t => t.assetId === originAsset) || tokens.find(t => t.assetId === originAsset);
       const destinationToken = toTokens.find(t => t.assetId === destinationAsset) || tokens.find(t => t.assetId === destinationAsset);
@@ -414,14 +394,14 @@ export default function SwapForm({ onQuoteReceived, refreshKey, initialValues }:
 
       const amountInSmallestUnit = convertToSmallestUnit(amount, originToken.decimals);
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 15000); // 15s timeout
+      const timeoutId = setTimeout(() => controller.abort(), 15000);
       
       const response = await fetch('/api/quote', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          originAsset: (originToken as any).defuseAssetId || originAsset,
-          destinationAsset: (destinationToken as any).defuseAssetId || destinationAsset,
+          originAsset: (originToken as Token & { defuseAssetId?: string }).defuseAssetId || originAsset,
+          destinationAsset: (destinationToken as Token & { defuseAssetId?: string }).defuseAssetId || destinationAsset,
           amount: amountInSmallestUnit,
           recipient,
           refundTo,
@@ -460,18 +440,21 @@ export default function SwapForm({ onQuoteReceived, refreshKey, initialValues }:
       };
       toast('Quote ready — review and confirm below', 'success');
       onQuoteReceived(enrichedData);
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error as Error & { name?: string };
       let errorMessage = 'Unable to get a quote right now. Please try again.';
       
-      if (error.name === 'AbortError') {
+      if (err.name === 'AbortError') {
         errorMessage = 'Request timed out. Please check your connection and try again.';
-      } else if (error.message) {
-        errorMessage = error.message;
+      } else if (err.message) {
+        errorMessage = err.message;
       }
       
       setFormError(errorMessage);
       toast(errorMessage, 'error');
     } finally {
+      clearTimeout(slowTimer);
+      setQuoteSlowWarning(false);
       setLoading(false);
     }
   };
@@ -491,6 +474,16 @@ export default function SwapForm({ onQuoteReceived, refreshKey, initialValues }:
     return `${address.slice(0, 8)}...${address.slice(-6)}`;
   };
 
+  // Derived values for CTA
+  const isDisabled = loading || !originAsset || !destinationAsset || !amount || !recipient || !refundTo;
+  const disabledReason = !originAsset ? 'Select a token to send'
+    : !destinationAsset ? 'Select a token to receive'
+    : !amount ? 'Enter an amount'
+    : !recipient ? 'Enter a receiving address'
+    : !refundTo ? 'Connect wallet on sending chain'
+    : null;
+  const showTip = !!(originAsset && destinationAsset && amount && recipient && refundTo);
+
   if (tokensLoading) {
     return (
       <div className="card p-5 sm:p-6">
@@ -509,20 +502,12 @@ export default function SwapForm({ onQuoteReceived, refreshKey, initialValues }:
     <div className="card p-5 sm:p-6">
       <div className="flex items-center justify-between mb-5">
         <h2 className="text-h3">Transfer</h2>
-        {isUsualRoute && (
-          <span
-            className="text-tiny font-medium px-2 py-0.5 rounded-full"
-            style={{ background: 'var(--info-bg)', color: 'var(--info-text)' }}
-          >
-            ★ Your usual route
-          </span>
-        )}
       </div>
 
       {/* From Section */}
       <div className="mb-4">
         <div className="flex items-center justify-between mb-2">
-          <label className="text-caption font-medium" style={{ color: 'var(--color-text-secondary)' }}>You send</label>
+          <label htmlFor="swap-from-chain" className="text-caption font-medium" style={{ color: 'var(--color-text-secondary)' }}>You send</label>
           <div className="text-tiny" style={{ color: 'var(--color-text-muted)' }}>
             {fromAddress() ? (
               <span className="flex items-center gap-1">
@@ -542,51 +527,21 @@ export default function SwapForm({ onQuoteReceived, refreshKey, initialValues }:
           </div>
         </div>
 
-        <div className="mb-2">
-          <select value={fromChain} onChange={(e) => setFromChain(e.target.value)}
-            className="input w-full h-11 text-body-sm font-semibold">
-            {SUPPORTED_CHAINS.map((chain) => (
-              <option key={chain.id} value={chain.id}>{chain.name}</option>
-            ))}
-          </select>
-        </div>
+        <ChainSelector value={fromChain} onChange={setFromChain} id="swap-from-chain" />
 
         <TokenSelector tokens={displayFromTokens} selectedToken={originAsset}
           onSelect={(assetId) => { userSelectedFromToken.current = true; setOriginAsset(assetId); }}
           balances={balances} loadingBalances={loadingBalances} label="Token" placeholder="Select a token..."
           emptyMessage={fromAddress() ? "No tokens with balance on this chain" : undefined} />
 
-        <div>
-          <input type="text" inputMode="decimal" value={amount} onChange={(e) => { const v = e.target.value; if (v === '' || /^\d*\.?\d*$/.test(v)) setAmount(v); }}
-            placeholder="0.0" className="input w-full h-12 text-h4 mb-2" />
-          
-          {originAsset && balances[originAsset] && parseFloat(balances[originAsset]) > 0 && (
-            <div className="flex gap-1.5">
-              {[25, 50, 75, 100].map((pct) => (
-                <button key={pct} type="button"
-                  onClick={() => {
-                    const sel = fromTokens.find(t => t.assetId === originAsset);
-                    if (!sel) return;
-                    const bal = parseFloat(balances[originAsset] || '0');
-                    let amt = bal * (pct / 100);
-                    if (pct === 100) {
-                      const natives = ['NEAR', 'SUI', 'SOL', 'ETH', 'BNB', 'MATIC', 'BERA', 'MON', 'APT', 'STRK', 'TON', 'TRX'];
-                      if (natives.includes(sel.symbol)) {
-                        const reserves: Record<string, number> = { NEAR: 0.1, SUI: 0.01, SOL: 0.001, ETH: 0.01, BNB: 0.002, MATIC: 0.1, BERA: 0.01, MON: 0.01, APT: 0.01, STRK: 0.01, TON: 0.05, TRX: 5 };
-                        const reserve = reserves[sel.symbol] || 0;
-                        amt = bal > reserve ? bal - reserve : bal;
-                      }
-                    }
-                    setAmount(amt.toFixed(6).replace(/\.?0+$/, ''));
-                  }}
-                  className="flex-1 h-11 text-tiny font-semibold rounded-lg transition-all active:scale-95"
-                  style={{ background: 'var(--color-bg-tertiary)', color: 'var(--color-text-secondary)' }}>
-                  {pct}%
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
+        <AmountInput
+          value={amount}
+          onChange={setAmount}
+          token={selectedFromToken}
+          balances={balances}
+          onPercentClick={setAmount}
+          id="swap-amount"
+        />
       </div>
 
       {/* Flip — hidden when destination is locked */}
@@ -606,7 +561,7 @@ export default function SwapForm({ onQuoteReceived, refreshKey, initialValues }:
       {/* To Section */}
       <div className="mb-4">
         <div className="flex items-center justify-between mb-2">
-          <label className="text-caption font-medium" style={{ color: 'var(--color-text-secondary)' }}>
+          <label htmlFor="swap-to-chain" className="text-caption font-medium" style={{ color: 'var(--color-text-secondary)' }}>
             {initialValues?.lockDest ? 'Recipient receives' : 'You receive'}
           </label>
           {!initialValues?.lockDest && (
@@ -649,14 +604,7 @@ export default function SwapForm({ onQuoteReceived, refreshKey, initialValues }:
           </div>
         ) : (
           <>
-            <div className="mb-2">
-              <select value={toChain} onChange={(e) => setToChain(e.target.value)}
-                className="input w-full h-11 text-body-sm font-semibold">
-                {SUPPORTED_CHAINS.map((chain) => (
-                  <option key={chain.id} value={chain.id}>{chain.name}</option>
-                ))}
-              </select>
-            </div>
+            <ChainSelector value={toChain} onChange={setToChain} id="swap-to-chain" />
 
             <TokenSelector tokens={toTokens} selectedToken={destinationAsset} onSelect={setDestinationAsset}
               balances={toBalances} loadingBalances={loadingToBalances} label="Token" placeholder="Select a token..." />
@@ -684,7 +632,7 @@ export default function SwapForm({ onQuoteReceived, refreshKey, initialValues }:
       {/* Receiving Address */}
       <div className="mb-4">
         <div className="flex items-center justify-between mb-1.5">
-          <label className="flex items-baseline gap-2 text-caption font-medium" style={{ color: 'var(--color-text-secondary)' }}>
+          <label htmlFor="swap-recipient" className="flex items-baseline gap-2 text-caption font-medium" style={{ color: 'var(--color-text-secondary)' }}>
             Receiving Address
             {!initialValues?.lockDest && !toAddress() && (
               <span className="text-tiny" style={{ color: 'var(--color-warning)' }}>(enter manually)</span>
@@ -702,32 +650,30 @@ export default function SwapForm({ onQuoteReceived, refreshKey, initialValues }:
             </button>
           )}
         </div>
-        {initialValues?.lockDest ? (
-          <div
-            className="p-3 rounded-xl font-mono text-xs break-all"
-            style={{ background: 'var(--color-bg-tertiary)', border: '1px solid var(--color-border)', color: 'var(--color-text-secondary)' }}
-          >
-            {recipient}
-          </div>
-        ) : (
-          <>
-            <input ref={recipientRef} type="text" value={recipient} onChange={(e) => setRecipient(e.target.value)}
-              placeholder={toAddress() ? "Auto-filled from wallet" : "Enter receiving address"}
-              className="input w-full h-11 font-mono text-body-sm" />
-            {toAddress() && recipient === toAddress() && (
-              <p className="text-tiny mt-1" style={{ color: 'var(--color-text-muted)' }}>Sending to your wallet on {toChain}</p>
-            )}
-          </>
-        )}
+        <AddressInput
+          id="swap-recipient"
+          value={recipient}
+          onChange={setRecipient}
+          placeholder={toAddress() ? "Auto-filled from wallet" : "Enter receiving address"}
+          autoFilled={!!(toAddress() && recipient === toAddress())}
+          chainName={toChain}
+          locked={initialValues?.lockDest}
+          inputRef={recipientRef}
+        />
       </div>
 
       {/* Return Address */}
       <div className="mb-5">
-        <label className="flex items-baseline gap-2 text-caption font-medium mb-1.5" style={{ color: 'var(--color-text-secondary)' }}>
+        <label htmlFor="swap-refund" className="flex items-baseline gap-2 text-caption font-medium mb-1.5" style={{ color: 'var(--color-text-secondary)' }}>
           Return Address <span className="text-tiny" style={{ color: 'var(--color-text-tertiary)' }}>(auto)</span>
         </label>
-        <input type="text" value={refundTo} readOnly placeholder="Connect wallet on sending chain"
-          className="input w-full h-11 font-mono text-body-sm opacity-60 cursor-not-allowed" />
+        <AddressInput
+          id="swap-refund"
+          value={refundTo}
+          onChange={setRefundTo}
+          placeholder="Connect wallet on sending chain"
+          readOnly
+        />
         <p className="text-tiny mt-1" style={{ color: 'var(--color-text-tertiary)' }}>
           Funds returned here if transfer can&apos;t complete
         </p>
@@ -742,45 +688,16 @@ export default function SwapForm({ onQuoteReceived, refreshKey, initialValues }:
         />
       )}
 
-      {/* Error */}
-      {formError && (
-        <div className="mb-4 p-3 rounded-xl text-body-sm" role="alert" aria-live="polite" style={{ background: 'var(--error-bg)', color: 'var(--error-text)', border: '1px solid var(--color-danger)' }}>
-          {formError}
-        </div>
-      )}
-
       {/* CTA */}
-      {(() => {
-        const isDisabled = loading || !originAsset || !destinationAsset || !amount || !recipient || !refundTo;
-        const disabledReason = !originAsset ? 'Select a token to send'
-          : !destinationAsset ? 'Select a token to receive'
-          : !amount ? 'Enter an amount'
-          : !recipient ? 'Enter a receiving address'
-          : !refundTo ? 'Connect wallet on sending chain'
-          : null;
-
-        return (
-          <>
-            <button onClick={handleGetQuote}
-              disabled={isDisabled}
-              className="btn btn-primary w-full h-12 text-body-sm">
-              {loading ? 'Getting Preview...' : 'Preview Transfer'}
-            </button>
-            {isDisabled && !loading && disabledReason && (
-              <p className="text-center text-tiny mt-2" style={{ color: 'var(--color-text-tertiary)' }}>
-                {disabledReason}
-              </p>
-            )}
-          </>
-        );
-      })()}
-
-      {/* Tip — only show when CTA is enabled (no double messaging) */}
-      {!!(originAsset && destinationAsset && amount && recipient && refundTo) && (
-        <div className="mt-4 p-3 rounded-xl text-body-sm" style={{ background: 'var(--info-bg)', color: 'var(--info-text)' }}>
-          <strong>Tip:</strong> Connect wallets on both chains to auto-fill addresses.
-        </div>
-      )}
+      <SwapCTA
+        loading={loading}
+        disabled={isDisabled}
+        disabledReason={disabledReason}
+        onSubmit={handleGetQuote}
+        formError={formError}
+        showTip={showTip}
+        quoteSlowWarning={quoteSlowWarning}
+      />
 
       {/* Address Book modal */}
       <AddressBook

@@ -1,4 +1,4 @@
-import { adminSupabase } from "@/lib/server/db";
+import { getMerchantAdminClient } from "@/lib/server/merchant-client";
 
 /**
  * Supported fiat currencies with symbols and names.
@@ -36,7 +36,7 @@ export const SUPPORTED_CURRENCIES: Record<
 export async function getExchangeRate(targetCurrency: string): Promise<number | null> {
   if (targetCurrency === "USD") return 1;
 
-  const { data } = await adminSupabase
+  const { data } = await getMerchantAdminClient()
     .from("exchange_rates")
     .select("rate")
     .eq("base_currency", "USD")
@@ -131,7 +131,7 @@ export async function refreshExchangeRates(): Promise<{
     const rate = rates[currency];
     if (rate === undefined) continue;
 
-    const { error } = await adminSupabase.from("exchange_rates").upsert(
+    const { error } = await getMerchantAdminClient().from("exchange_rates").upsert(
       {
         base_currency: "USD",
         target_currency: currency,

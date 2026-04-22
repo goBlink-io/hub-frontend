@@ -1,24 +1,26 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
-import { adminSupabase } from "@/lib/server/db";
+import { createRateLimiter } from "@/lib/server/rate-limit";
+import { getMerchantContext } from "@/lib/server/merchant-client";
 
 export const dynamic = "force-dynamic";
 
-export async function GET() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+const createLimiter = createRateLimiter({ windowMs: 60 * 60_000, max: 20 });
 
-  const { data: merchant } = await supabase
+export async function GET() {
+  const ctx = await getMerchantContext();
+  if (!ctx) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const { data: merchant } = await ctx.merchantDb
     .from("merchants")
     .select("id")
-    .eq("user_id", user.id)
-    .single();
+    .eq("user_id", ctx.user.id)
+    .maybeSingle();
 
   if (!merchant) return NextResponse.json([], { status: 200 });
 
-  const { data: tickets } = await adminSupabase
-    .from("support_tickets")
+  // Schema table is `tickets` (see Merchant schema).
+  const { data: tickets } = await ctx.merchantDb
+    .from("tickets")
     .select("id, subject, status, priority, created_at, updated_at")
     .eq("merchant_id", merchant.id)
     .order("created_at", { ascending: false });
@@ -27,15 +29,22 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const ctx = await getMerchantContext();
+  if (!ctx) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { data: merchant } = await supabase
+  const limit = createLimiter.check(ctx.user.id);
+  if (limit.limited) {
+    return NextResponse.json(
+      { error: "Too many ticket creations" },
+      { status: 429, headers: { "Retry-After": String(limit.retryAfterSec) } },
+    );
+  }
+
+  const { data: merchant } = await ctx.merchantDb
     .from("merchants")
     .select("id")
-    .eq("user_id", user.id)
-    .single();
+    .eq("user_id", ctx.user.id)
+    .maybeSingle();
 
   if (!merchant) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
@@ -43,27 +52,33 @@ export async function POST(request: NextRequest) {
   const { subject, message, priority } = body;
 
   if (!subject || !message) {
-    return NextResponse.json({ error: "Subject and message are required" }, { status: 400 });
+    return NextResponse.json(
+      { error: "Subject and message are required" },
+      { status: 400 },
+    );
   }
 
-  const { data: ticket, error } = await adminSupabase
-    .from("support_tickets")
+  const { data: ticket, error } = await ctx.merchantDb
+    .from("tickets")
     .insert({
       merchant_id: merchant.id,
       subject,
+      description: message,
       status: "open",
-      priority: priority || "normal",
+      priority: priority || "medium",
     })
     .select("id")
     .single();
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) {
+    console.error("[merchant-tickets]", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
 
-  // Create first message
-  await adminSupabase.from("ticket_messages").insert({
+  await ctx.merchantDb.from("ticket_messages").insert({
     ticket_id: ticket.id,
     sender_type: "merchant",
-    sender_id: user.id,
+    sender_id: ctx.user.id,
     message,
   });
 

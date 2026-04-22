@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import QuotePreview from '@/components/swap/QuotePreview';
 import StatusTracker from '@/components/swap/StatusTracker';
@@ -9,6 +9,7 @@ import RecentTransfers from '@/components/swap/RecentTransfers';
 import { useTransactionHistory } from '@/hooks/useTransactionHistory';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { ProductSuggestion } from '@/components/shared/ProductSuggestion';
+import { ErrorBoundary } from '@/components/shared/ErrorBoundary';
 
 const SwapForm = dynamic(() => import('@/components/swap/SwapForm'), {
   ssr: false,
@@ -40,12 +41,18 @@ export default function SwapPage() {
     setView('modal');
   }, []);
 
-  const handleSwapInitiated = useCallback((depAddr: string, txHash?: string) => {
+  const handleSwapInitiated = useCallback((depAddr: string, _txHash?: string) => {
     setDepositAddress(depAddr);
     setView('tracking');
 
     if (quote) {
-      const q = quote as Record<string, any>;
+      const q = quote as {
+        fromChain?: string;
+        toChain?: string;
+        originTokenMetadata?: { symbol?: string };
+        destinationTokenMetadata?: { symbol?: string };
+        quote?: { amountInFormatted?: string };
+      };
       addEntry({
         fromChain: q.fromChain || '',
         toChain: q.toChain || '',
@@ -75,6 +82,26 @@ export default function SwapPage() {
     setQuote(null);
   }, []);
 
+  // Push history state when view changes (Fix 8: browser back button)
+  useEffect(() => {
+    if (view !== 'form') {
+      window.history.pushState({ swapView: view }, '');
+    }
+  }, [view]);
+
+  useEffect(() => {
+    const handlePopState = (event: PopStateEvent) => {
+      if (event.state?.swapView) {
+        handleReset();
+      } else if (view !== 'form') {
+        handleReset();
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [view, handleReset]);
+
   const handleOutcome = useCallback((result: { status: string; fulfillmentTxHash?: string }) => {
     if (depositAddress) {
       updateStatus(depositAddress, result.status === 'success' ? 'completed' : result.status);
@@ -82,16 +109,22 @@ export default function SwapPage() {
   }, [depositAddress, updateStatus]);
 
   return (
-    <div className="mx-auto max-w-lg px-4 py-6">
+    <div className="mx-auto max-w-lg px-4 py-8 sm:py-12">
+      <h1 className="sr-only">Swap</h1>
       {view === 'form' && (
         <>
-          <div className="card-hero p-1">
-            <SwapForm
-              onQuoteReceived={handleQuoteReceived}
-              refreshKey={refreshKey}
-              onSwapInitiated={handleSwapInitiated}
-            />
-          </div>
+          <ErrorBoundary section="Swap">
+            <div className="card-hero p-1">
+              <SwapForm
+                onQuoteReceived={handleQuoteReceived}
+                refreshKey={refreshKey}
+                onSwapInitiated={handleSwapInitiated}
+              />
+            </div>
+          </ErrorBoundary>
+          <p className="text-center text-xs mt-3" style={{ color: 'var(--color-text-muted)' }}>
+            Non-custodial · Powered by NEAR Intents · We never touch your funds
+          </p>
           <div className="mt-4">
             <RecentTransfers history={history} onSelect={handleSelectRecent} />
           </div>

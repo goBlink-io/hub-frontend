@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useWallet } from '@goblink/connect/react';
 import { Clock, CheckCircle, AlertTriangle, Loader2, ExternalLink, ArrowUpDown } from 'lucide-react';
 import { getExplorerTxUrl } from '@/lib/shared';
-import { ProductSuggestion } from '@/components/shared/ProductSuggestion';
+
 
 interface Transaction {
   id: string;
@@ -21,6 +21,19 @@ interface Transaction {
   deposit_tx_hash: string | null;
   fulfillment_tx_hash: string | null;
   created_at: string;
+}
+
+function getMostCommonRoute(txns: Transaction[]): string {
+  if (txns.length === 0) return '—';
+  const routes = txns.map(t => `${t.from_chain} → ${t.to_chain}`);
+  const counts = new Map<string, number>();
+  for (const r of routes) counts.set(r, (counts.get(r) ?? 0) + 1);
+  let max = 0;
+  let best = '—';
+  for (const [route, count] of counts) {
+    if (count > max) { max = count; best = route; }
+  }
+  return best;
 }
 
 function StatusBadge({ status }: { status: string }) {
@@ -135,6 +148,36 @@ export default function HistoryPage() {
         </div>
       ) : (
         <div className="space-y-2">
+          {/* Summary Stats */}
+          {transactions.length > 0 && (
+            <div className="card p-4 sm:p-5 mb-4">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <div>
+                  <p className="text-tiny font-medium" style={{ color: 'var(--color-text-muted)' }}>Total Transfers</p>
+                  <p className="text-h4 font-bold" style={{ color: 'var(--color-text-primary)' }}>{transactions.length}</p>
+                </div>
+                <div>
+                  <p className="text-tiny font-medium" style={{ color: 'var(--color-text-muted)' }}>Completed</p>
+                  <p className="text-h4 font-bold" style={{ color: 'var(--color-success)' }}>
+                    {transactions.filter(h => h.status.toLowerCase() === 'completed' || h.status.toLowerCase() === 'success').length}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-tiny font-medium" style={{ color: 'var(--color-text-muted)' }}>Chains Used</p>
+                  <p className="text-h4 font-bold" style={{ color: 'var(--color-primary)' }}>
+                    {new Set([...transactions.map(h => h.from_chain), ...transactions.map(h => h.to_chain)]).size}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-tiny font-medium" style={{ color: 'var(--color-text-muted)' }}>Most Common Route</p>
+                  <p className="text-body-sm font-bold" style={{ color: 'var(--color-text-primary)' }}>
+                    {getMostCommonRoute(transactions)}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
           {transactions.map(tx => (
             <div key={tx.id} className="card p-4">
               <div className="flex items-center justify-between mb-2">
@@ -187,7 +230,6 @@ export default function HistoryPage() {
         </div>
       )}
 
-      <ProductSuggestion exclude="history" />
     </div>
   );
 }

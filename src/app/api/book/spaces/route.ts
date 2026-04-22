@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
-import { enforceLimit, getRequiredPlan } from "@/lib/book/check-plan";
 import { z } from "zod";
+import { enforceLimit, getRequiredPlan } from "@/lib/book/check-plan";
+import { ensureBookUser, getBookContext } from "@/lib/book/book-client";
 
 const createSpaceSchema = z.object({
   name: z.string().min(1).max(100),
@@ -20,48 +20,38 @@ const createSpaceSchema = z.object({
 });
 
 export async function GET() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const ctx = await getBookContext();
+  if (!ctx) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  const { data, error } = await supabase
+  const { data, error } = await ctx.bookDb
     .from("bb_spaces")
     .select("*")
-    .eq("user_id", user.id)
+    .eq("user_id", ctx.user.id)
     .order("updated_at", { ascending: false });
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error("[spaces-get]", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 
   return NextResponse.json(data);
 }
 
 export async function POST(request: Request) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const ctx = await getBookContext();
+  if (!ctx) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const body = await request.json();
   const parsed = createSpaceSchema.safeParse(body);
-
   if (!parsed.success) {
-    return NextResponse.json({ error: "Invalid data", details: parsed.error.issues }, { status: 400 });
+    return NextResponse.json(
+      { error: "Invalid data", details: parsed.error.issues },
+      { status: 400 },
+    );
   }
-
   const { name, slug, description, theme } = parsed.data;
 
-  const canCreate = await enforceLimit(user.id, "spaces");
+  const canCreate = await enforceLimit(ctx.user.id, "spaces");
   if (!canCreate) {
     return NextResponse.json(
       { error: "upgrade_required", plan: getRequiredPlan("spaces") },
@@ -69,16 +59,23 @@ export async function POST(request: Request) {
     );
   }
 
-  const { data: existing } = await supabase.from("bb_spaces").select("id").eq("slug", slug).single();
+  // First write for this user — make sure bb_users row exists so the
+  // bb_spaces.user_id → bb_users.id FK holds.
+  await ensureBookUser(ctx.user);
 
+  const { data: existing } = await ctx.bookDb
+    .from("bb_spaces")
+    .select("id")
+    .eq("slug", slug)
+    .maybeSingle();
   if (existing) {
     return NextResponse.json({ error: "This slug is already taken" }, { status: 409 });
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await ctx.bookDb
     .from("bb_spaces")
     .insert({
-      user_id: user.id,
+      user_id: ctx.user.id,
       name,
       slug,
       description: description ?? null,
@@ -88,7 +85,8 @@ export async function POST(request: Request) {
     .single();
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error("[spaces-post]", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 
   return NextResponse.json(data, { status: 201 });

@@ -1,18 +1,27 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { getMerchantContext } from "@/lib/server/merchant-client";
 
 export const dynamic = "force-dynamic";
 
-export async function GET(request: NextRequest) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+/** Prevent CSV injection — prefix formula-triggering characters */
+function csvSafe(value: string): string {
+  if (!value) return '';
+  if (/^[=+\-@\t\r]/.test(value)) return `'${value}`;
+  if (value.includes(',') || value.includes('"') || value.includes('\n')) {
+    return `"${value.replace(/"/g, '""')}"`;
+  }
+  return value;
+}
 
-  const { data: merchant } = await supabase
+export async function GET(request: NextRequest) {
+  const ctx = await getMerchantContext();
+  if (!ctx) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const { data: merchant } = await ctx.merchantDb
     .from("merchants")
     .select("id")
-    .eq("user_id", user.id)
-    .single();
+    .eq("user_id", ctx.user.id)
+    .maybeSingle();
 
   if (!merchant) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
@@ -21,7 +30,7 @@ export async function GET(request: NextRequest) {
   const endDate = params.get("end");
   const isTest = params.get("is_test") === "true";
 
-  let query = supabase
+  let query = ctx.merchantDb
     .from("payments")
     .select("id, external_order_id, amount, net_amount, fee_amount, currency, crypto_amount, crypto_token, crypto_chain, status, customer_wallet, created_at, confirmed_at, settlement_status, settled_at")
     .eq("merchant_id", merchant.id)
@@ -46,19 +55,19 @@ export async function GET(request: NextRequest) {
 
   const rows = payments.map((p) => [
     p.id,
-    p.external_order_id || "",
+    csvSafe(p.external_order_id || ""),
     p.amount,
     p.net_amount || "",
     p.fee_amount || "",
-    p.currency,
+    csvSafe(p.currency),
     p.crypto_amount || "",
-    p.crypto_token || "",
-    p.crypto_chain || "",
-    p.status,
-    p.customer_wallet || "",
+    csvSafe(p.crypto_token || ""),
+    csvSafe(p.crypto_chain || ""),
+    csvSafe(p.status),
+    csvSafe(p.customer_wallet || ""),
     p.created_at,
     p.confirmed_at || "",
-    p.settlement_status || "",
+    csvSafe(p.settlement_status || ""),
     p.settled_at || "",
   ]);
 

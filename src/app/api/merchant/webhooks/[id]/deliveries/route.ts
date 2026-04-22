@@ -1,29 +1,26 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
-import { adminSupabase } from "@/lib/server/db";
+import { getMerchantContext } from "@/lib/server/merchant-client";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const ctx = await getMerchantContext();
+  if (!ctx) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  // Verify ownership
-  const { data: webhook } = await adminSupabase
+  const { data: webhook } = await ctx.merchantDb
     .from("webhook_endpoints")
     .select("id, merchants!inner(user_id)")
     .eq("id", id)
-    .single();
+    .maybeSingle();
 
   if (!webhook) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   const merchant = webhook.merchants as unknown as { user_id: string };
-  if (merchant.user_id !== user.id) {
+  if (merchant.user_id !== ctx.user.id) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
@@ -32,7 +29,7 @@ export async function GET(
   const limit = Math.min(parseInt(searchParams.get("limit") || "20", 10), 50);
   const offset = (page - 1) * limit;
 
-  const { data: deliveries, count } = await adminSupabase
+  const { data: deliveries, count } = await ctx.merchantDb
     .from("webhook_deliveries")
     .select("*", { count: "exact" })
     .eq("webhook_endpoint_id", id)

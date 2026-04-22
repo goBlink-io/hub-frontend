@@ -258,7 +258,7 @@ export function PaymentsList({
             {livePayments.map((payment) => (
               <div
                 key={payment.id}
-                className="grid grid-cols-1 md:grid-cols-12 gap-2 md:gap-4 px-6 py-4 items-center transition-all duration-700"
+                className="grid grid-cols-1 md:grid-cols-12 gap-2 md:gap-4 px-6 py-4 items-center transition-all duration-700 cursor-pointer"
                 style={{
                   borderBottom: "1px solid var(--color-border-subtle, rgba(255,255,255,0.05))",
                   minHeight: "44px",
@@ -300,7 +300,7 @@ export function PaymentsList({
                 <div className="col-span-2 flex items-center gap-1.5">
                   {payment.is_test && (
                     <span
-                      className="text-[10px] font-medium px-1.5 py-0 rounded"
+                      className="text-[11px] font-medium px-1.5 py-0 rounded"
                       style={{
                         backgroundColor: "rgba(245, 158, 11, 0.1)",
                         color: "var(--color-warning)",

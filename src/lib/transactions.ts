@@ -10,15 +10,138 @@ export interface TransactionParams {
   decimals: number;
 }
 
+// Narrow shapes for wallet/provider objects passed in from chain-specific hooks.
+// We only describe the methods we actually call — everything else on the real
+// objects is irrelevant to this module.
+
+interface NearSigningWallet {
+  signAndSendTransaction(tx: unknown): Promise<{
+    transaction?: { hash?: string };
+    hash?: string;
+  }>;
+}
+
+interface EvmSignedTx {
+  hash: string;
+  wait(): Promise<unknown>;
+}
+
+interface EvmSigner {
+  getAddress(): Promise<string>;
+  sendTransaction(tx: { to: string; value: string | bigint }): Promise<EvmSignedTx>;
+}
+
+export interface EvmProvider {
+  getSigner(): Promise<EvmSigner>;
+}
+
+interface SolanaLatestBlockhash {
+  blockhash: string;
+}
+
+export interface SolanaConnection {
+  getLatestBlockhash(): Promise<SolanaLatestBlockhash>;
+  sendRawTransaction(raw: Uint8Array | Buffer): Promise<string>;
+  confirmTransaction(signature: string): Promise<unknown>;
+}
+
+interface SolanaSignedTx {
+  serialize(): Uint8Array | Buffer;
+}
+
+// wallet.publicKey is a PublicKey instance from @solana/web3.js (duck-typed here).
+export interface SolanaWallet {
+  publicKey: unknown;
+  signTransaction(tx: unknown): Promise<SolanaSignedTx>;
+}
+
+interface SuiCoinObject {
+  coinObjectId: string;
+  balance: string;
+}
+
+interface SuiCoinsPage {
+  data: SuiCoinObject[];
+  hasNextPage: boolean;
+  nextCursor?: string | null;
+}
+
+export interface SuiClient {
+  getCoins(args: {
+    owner: string;
+    coinType: string;
+    cursor?: string | null;
+  }): Promise<SuiCoinsPage>;
+}
+
+export interface SuiAccount {
+  address: string;
+}
+
+export type SuiSignAndExecute = (args: {
+  transaction: unknown;
+}) => Promise<{ digest: string }>;
+
+export type AptosSignAndSubmit = (args: {
+  payload: {
+    type: string;
+    function: string;
+    type_arguments: string[];
+    arguments: unknown[];
+  };
+}) => Promise<{ hash: string }>;
+
+export interface StarknetAccount {
+  execute(call: {
+    contractAddress: string;
+    entrypoint: string;
+    calldata: unknown;
+  }): Promise<{ transaction_hash: string }>;
+}
+
+interface TonMessage {
+  address: string;
+  amount: string;
+  payload?: string;
+}
+
+export interface TonConnectUI {
+  sendTransaction(tx: {
+    validUntil: number;
+    messages: TonMessage[];
+  }): Promise<{ boc: string }>;
+}
+
+export type TronSignTransaction = (tx: unknown) => Promise<unknown>;
+
+interface TronWeb {
+  transactionBuilder: {
+    sendTrx(to: string, amount: number, from: string): Promise<unknown>;
+  };
+  trx: {
+    sendRawTransaction(signed: unknown): Promise<{
+      txid?: string;
+      transaction?: { txID?: string };
+    }>;
+  };
+  contract(): {
+    at(address: string): Promise<{
+      transfer(to: string, amount: string): { send(): Promise<string> };
+    }>;
+  };
+}
+
 // Lazy-init a NearConnector for transaction signing.
 // Connection is managed by BlinkConnect — this only accesses the existing wallet.
 let _nearConnector: NearConnector | null = null;
 function getNearSigningConnector(): NearConnector {
   if (!_nearConnector) {
+    // NearConnector constructor options type is narrower than the runtime
+    // accepts; cast via unknown so we only widen at this single boundary.
     _nearConnector = new NearConnector({
       networkId: 'mainnet',
       network: 'mainnet',
-    } as any);
+    } as unknown as ConstructorParameters<typeof NearConnector>[0]);
   }
   return _nearConnector;
 }
@@ -31,16 +154,17 @@ export async function sendNearTransaction(params: TransactionParams): Promise<st
   const { tokenAddress, recipientAddress, amount } = params;
 
   const connector = getNearSigningConnector();
-  const wallet = await connector.wallet().catch(() => null);
-  if (!wallet) {
+  const rawWallet = await connector.wallet().catch(() => null);
+  if (!rawWallet) {
     throw new Error('NEAR wallet not connected — connect via BlinkConnect first');
   }
+  const wallet = rawWallet as unknown as NearSigningWallet;
 
   try {
 
     // Check if it's a native NEAR transfer or NEP-141 token transfer
     const isNativeNear = tokenAddress === 'wrap.near' || tokenAddress === 'near';
-    
+
     if (isNativeNear) {
       // For native NEAR, use simple transfer
       const transaction = {
@@ -55,7 +179,7 @@ export async function sendNearTransaction(params: TransactionParams): Promise<st
         ],
       };
 
-      const result = await (wallet as any).signAndSendTransaction(transaction);
+      const result = await wallet.signAndSendTransaction(transaction);
       return result?.transaction?.hash || result?.hash || 'unknown';
     } else {
       // For NEP-141 tokens, call ft_transfer on the token contract
@@ -78,7 +202,7 @@ export async function sendNearTransaction(params: TransactionParams): Promise<st
         ],
       };
 
-      const result = await (wallet as any).signAndSendTransaction(transaction);
+      const result = await wallet.signAndSendTransaction(transaction);
       return result?.transaction?.hash || result?.hash || 'unknown';
     }
   } catch (error) {
@@ -92,7 +216,7 @@ export async function sendNearTransaction(params: TransactionParams): Promise<st
  */
 export async function sendEvmTransaction(
   params: TransactionParams,
-  provider: any
+  provider: EvmProvider
 ): Promise<string> {
   const { tokenAddress, recipientAddress, amount } = params;
 
@@ -105,7 +229,7 @@ export async function sendEvmTransaction(
     void signer.getAddress(); // Validates signer is available
 
     // Check if it's a native token transfer or ERC-20
-    const isNativeToken = tokenAddress === '0x0000000000000000000000000000000000000000' || 
+    const isNativeToken = tokenAddress === '0x0000000000000000000000000000000000000000' ||
                           tokenAddress.toLowerCase() === 'eth';
 
     if (isNativeToken) {
@@ -114,7 +238,7 @@ export async function sendEvmTransaction(
         to: recipientAddress,
         value: amount,
       });
-      
+
       await tx.wait();
       return tx.hash;
     } else {
@@ -123,10 +247,16 @@ export async function sendEvmTransaction(
       const erc20Abi = [
         'function transfer(address to, uint256 amount) returns (bool)',
       ];
-      
-      const contract = new ethers.Contract(tokenAddress, erc20Abi, signer);
-      const tx = await contract.transfer(recipientAddress, amount);
-      
+
+      // ethers.Contract's signer param is typed as its own ContractRunner;
+      // our narrow EvmSigner is shape-compatible at runtime.
+      const contract = new ethers.Contract(
+        tokenAddress,
+        erc20Abi,
+        signer as unknown as ConstructorParameters<typeof ethers.Contract>[2]
+      );
+      const tx = (await contract.transfer(recipientAddress, amount)) as EvmSignedTx;
+
       await tx.wait();
       return tx.hash;
     }
@@ -141,8 +271,8 @@ export async function sendEvmTransaction(
  */
 export async function sendSolanaTransaction(
   params: TransactionParams,
-  connection: any,
-  wallet: any
+  connection: SolanaConnection,
+  wallet: SolanaWallet
 ): Promise<string> {
   const { tokenAddress, recipientAddress, amount } = params;
 
@@ -153,6 +283,7 @@ export async function sendSolanaTransaction(
   try {
     const { PublicKey, Transaction, SystemProgram } = await import('@solana/web3.js');
     const recipientPubkey = new PublicKey(recipientAddress);
+    const fromPubkey = wallet.publicKey as InstanceType<typeof PublicKey>;
 
     // Check if it's native SOL or SPL token
     const isNativeSol = tokenAddress === 'native' || tokenAddress === 'sol';
@@ -161,30 +292,30 @@ export async function sendSolanaTransaction(
       // Native SOL transfer
       const transaction = new Transaction().add(
         SystemProgram.transfer({
-          fromPubkey: wallet.publicKey,
+          fromPubkey,
           toPubkey: recipientPubkey,
           lamports: BigInt(amount),
         })
       );
 
-      transaction.feePayer = wallet.publicKey;
+      transaction.feePayer = fromPubkey;
       transaction.recentBlockhash = (await connection.getLatestBlockhash()).blockhash;
 
       const signed = await wallet.signTransaction(transaction);
       const signature = await connection.sendRawTransaction(signed.serialize());
       await connection.confirmTransaction(signature);
-      
+
       return signature;
     } else {
       // SPL token transfer
       const { getAssociatedTokenAddress, createTransferInstruction } = await import('@solana/spl-token');
       const tokenMint = new PublicKey(tokenAddress);
-      
+
       const fromTokenAccount = await getAssociatedTokenAddress(
         tokenMint,
-        wallet.publicKey
+        fromPubkey
       );
-      
+
       const toTokenAccount = await getAssociatedTokenAddress(
         tokenMint,
         recipientPubkey
@@ -194,18 +325,18 @@ export async function sendSolanaTransaction(
         createTransferInstruction(
           fromTokenAccount,
           toTokenAccount,
-          wallet.publicKey,
+          fromPubkey,
           BigInt(amount)
         )
       );
 
-      transaction.feePayer = wallet.publicKey;
+      transaction.feePayer = fromPubkey;
       transaction.recentBlockhash = (await connection.getLatestBlockhash()).blockhash;
 
       const signed = await wallet.signTransaction(transaction);
       const signature = await connection.sendRawTransaction(signed.serialize());
       await connection.confirmTransaction(signature);
-      
+
       return signature;
     }
   } catch (error) {
@@ -219,9 +350,9 @@ export async function sendSolanaTransaction(
  */
 export async function sendSuiTransaction(
   params: TransactionParams,
-  suiClient: any,
-  currentAccount: any,
-  signAndExecuteTransaction: any
+  suiClient: SuiClient,
+  currentAccount: SuiAccount,
+  signAndExecuteTransaction: SuiSignAndExecute
 ): Promise<string> {
   const { tokenAddress, recipientAddress, amount } = params;
 
@@ -251,10 +382,10 @@ export async function sendSuiTransaction(
     } else {
       // Custom Sui token transfer (USDC, wETH, USDT, etc.)
       // Paginate through ALL coin objects — getCoins returns max 50 per page
-      const allCoinObjects: { coinObjectId: string; balance: string }[] = [];
+      const allCoinObjects: SuiCoinObject[] = [];
       let cursor: string | null | undefined = null;
       do {
-        const page: { data: { coinObjectId: string; balance: string }[]; hasNextPage: boolean; nextCursor?: string | null } = await suiClient.getCoins({
+        const page: SuiCoinsPage = await suiClient.getCoins({
           owner: currentAccount.address,
           coinType: tokenAddress,
           cursor,
@@ -279,7 +410,7 @@ export async function sendSuiTransaction(
       if (allCoinObjects.length > 1) {
         txb.mergeCoins(
           primaryCoin,
-          allCoinObjects.slice(1).map((c: { coinObjectId: string }) => txb.object(c.coinObjectId))
+          allCoinObjects.slice(1).map((c) => txb.object(c.coinObjectId))
         );
       }
 
@@ -305,7 +436,7 @@ export async function sendSuiTransaction(
  */
 export async function sendAptosTransaction(
   params: TransactionParams,
-  signAndSubmitTransaction: any
+  signAndSubmitTransaction: AptosSignAndSubmit
 ): Promise<string> {
   const { tokenAddress, recipientAddress, amount } = params;
 
@@ -348,7 +479,7 @@ export async function sendAptosTransaction(
  */
 export async function sendStarknetTransaction(
   params: TransactionParams,
-  account: any
+  account: StarknetAccount
 ): Promise<string> {
   const { tokenAddress, recipientAddress, amount } = params;
 
@@ -381,7 +512,7 @@ export async function sendStarknetTransaction(
  */
 export async function sendTonTransaction(
   params: TransactionParams,
-  tonConnectUI: any
+  tonConnectUI: TonConnectUI
 ): Promise<string> {
   const { recipientAddress, amount, tokenAddress } = params;
 
@@ -437,7 +568,7 @@ export async function sendTonTransaction(
  */
 export async function sendTronTransaction(
   params: TransactionParams,
-  signTransaction: any,
+  signTransaction: TronSignTransaction,
   address: string
 ): Promise<string> {
   const { tokenAddress, recipientAddress, amount } = params;
@@ -450,7 +581,7 @@ export async function sendTronTransaction(
     const isNativeTrx = tokenAddress === 'native' || tokenAddress === 'trx';
 
     // Access TronWeb from window (injected by TronLink)
-    const tronWeb = (window as any).tronWeb;
+    const tronWeb = (window as unknown as { tronWeb?: TronWeb }).tronWeb;
     if (!tronWeb) {
       throw new Error('TronWeb not available. Please install TronLink.');
     }
@@ -472,24 +603,26 @@ export async function sendTronTransaction(
   }
 }
 
+export interface ChainContext {
+  evmProvider?: EvmProvider;
+  solanaConnection?: SolanaConnection;
+  solanaWallet?: SolanaWallet;
+  suiClient?: SuiClient;
+  suiAccount?: SuiAccount;
+  suiSignAndExecute?: SuiSignAndExecute;
+  aptosSignAndSubmit?: AptosSignAndSubmit;
+  starknetAccount?: StarknetAccount;
+  tonConnectUI?: TonConnectUI;
+  tronSignTransaction?: TronSignTransaction;
+  tronAddress?: string;
+}
+
 /**
  * Main function to send a transaction based on chain type
  */
 export async function sendTransaction(
   params: TransactionParams,
-  chainContext?: {
-    evmProvider?: any;
-    solanaConnection?: any;
-    solanaWallet?: any;
-    suiClient?: any;
-    suiAccount?: any;
-    suiSignAndExecute?: any;
-    aptosSignAndSubmit?: any;
-    starknetAccount?: any;
-    tonConnectUI?: any;
-    tronSignTransaction?: any;
-    tronAddress?: string;
-  }
+  chainContext?: ChainContext
 ): Promise<string> {
   const chain = params.chain.toLowerCase();
 

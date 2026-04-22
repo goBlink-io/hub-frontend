@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
 import { z } from "zod";
+import { isRateLimited, getClientIp } from "@/lib/rate-limit";
+import { getBookAdminClient } from "@/lib/book/book-client";
 
 const feedbackSchema = z.object({
   space_id: z.string().uuid(),
@@ -11,19 +12,25 @@ const feedbackSchema = z.object({
 });
 
 export async function GET(request: Request) {
+  const ip = getClientIp(request);
+  if (isRateLimited(`book-feedback-get:${ip}`, { max: 30, windowMs: 60_000 })) {
+    return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+  }
+
   const { searchParams } = new URL(request.url);
   const spaceId = searchParams.get("space_id");
   if (!spaceId) return NextResponse.json({ error: "space_id required" }, { status: 400 });
 
-  const supabase = await createClient();
-
-  // Aggregate feedback per page
-  const { data, error } = await supabase
+  const bookDb = getBookAdminClient();
+  const { data, error } = await bookDb
     .from("bb_feedback")
     .select("page_id, helpful")
     .eq("space_id", spaceId);
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) {
+    console.error("[book-feedback-get]", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
 
   const map = new Map<string, { helpful: number; notHelpful: number }>();
   for (const row of data ?? []) {
@@ -38,16 +45,20 @@ export async function GET(request: Request) {
     helpful_count: counts.helpful,
     not_helpful_count: counts.notHelpful,
     total: counts.helpful + counts.notHelpful,
-    helpful_pct: counts.helpful + counts.notHelpful > 0
-      ? Math.round((counts.helpful / (counts.helpful + counts.notHelpful)) * 100)
-      : 0,
+    helpful_pct:
+      counts.helpful + counts.notHelpful > 0
+        ? Math.round((counts.helpful / (counts.helpful + counts.notHelpful)) * 100)
+        : 0,
   }));
 
   return NextResponse.json(summaries);
 }
 
 export async function POST(request: Request) {
-  const supabase = await createClient();
+  const ip = getClientIp(request);
+  if (isRateLimited(`book-feedback-post:${ip}`, { max: 10, windowMs: 60_000 })) {
+    return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+  }
 
   const body = await request.json();
   const parsed = feedbackSchema.safeParse(body);
@@ -55,18 +66,22 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid data" }, { status: 400 });
   }
 
-  // Check for duplicate (same fingerprint + page)
+  const bookDb = getBookAdminClient();
+
   if (parsed.data.user_fingerprint) {
-    const { data: existing } = await supabase
+    const { data: existing } = await bookDb
       .from("bb_feedback")
       .select("id")
       .eq("page_id", parsed.data.page_id)
       .eq("user_fingerprint", parsed.data.user_fingerprint)
-      .single();
+      .maybeSingle();
     if (existing) return NextResponse.json({ error: "Already voted" }, { status: 409 });
   }
 
-  const { error } = await supabase.from("bb_feedback").insert(parsed.data);
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  const { error } = await bookDb.from("bb_feedback").insert(parsed.data);
+  if (error) {
+    console.error("[book-feedback-post]", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
   return NextResponse.json({ success: true }, { status: 201 });
 }

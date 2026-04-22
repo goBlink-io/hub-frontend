@@ -53,7 +53,7 @@ export function OnboardingWizard({
   merchantId,
   businessName: initialName,
   currentCurrency,
-  currentTimezone,
+  currentTimezone: _currentTimezone,
   alreadyCompleted,
 }: OnboardingWizardProps) {
   const router = useRouter();
@@ -180,10 +180,11 @@ export function OnboardingWizard({
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium" style={{ color: "var(--color-text-secondary)" }}>
+                <label htmlFor="merchant-business-name" className="text-sm font-medium" style={{ color: "var(--color-text-secondary)" }}>
                   Business Name
                 </label>
                 <input
+                  id="merchant-business-name"
                   value={businessName}
                   onChange={(e) => setBusinessName(e.target.value)}
                   placeholder="Your Business Name"
@@ -198,10 +199,11 @@ export function OnboardingWizard({
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium" style={{ color: "var(--color-text-secondary)" }}>
+                <label htmlFor="merchant-display-currency" className="text-sm font-medium" style={{ color: "var(--color-text-secondary)" }}>
                   Display Currency
                 </label>
                 <select
+                  id="merchant-display-currency"
                   value={displayCurrency}
                   onChange={(e) => setDisplayCurrency(e.target.value)}
                   className="w-full rounded-lg px-3 py-2.5 text-sm"
@@ -233,10 +235,11 @@ export function OnboardingWizard({
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium" style={{ color: "var(--color-text-secondary)" }}>
+                <label htmlFor="merchant-settlement-chain" className="text-sm font-medium" style={{ color: "var(--color-text-secondary)" }}>
                   Settlement Chain
                 </label>
                 <select
+                  id="merchant-settlement-chain"
                   value={settlementChain}
                   onChange={(e) => {
                     setSettlementChain(e.target.value);
@@ -260,10 +263,11 @@ export function OnboardingWizard({
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium" style={{ color: "var(--color-text-secondary)" }}>
+                <label htmlFor="merchant-settlement-token" className="text-sm font-medium" style={{ color: "var(--color-text-secondary)" }}>
                   Settlement Token
                 </label>
                 <select
+                  id="merchant-settlement-token"
                   value={settlementToken}
                   onChange={(e) => setSettlementToken(e.target.value)}
                   className="w-full rounded-lg px-3 py-2.5 text-sm"
@@ -281,10 +285,11 @@ export function OnboardingWizard({
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium" style={{ color: "var(--color-text-secondary)" }}>
+                <label htmlFor="merchant-wallet-address" className="text-sm font-medium" style={{ color: "var(--color-text-secondary)" }}>
                   Wallet Address
                 </label>
                 <input
+                  id="merchant-wallet-address"
                   value={walletAddress}
                   onChange={(e) => setWalletAddress(e.target.value)}
                   placeholder={`Your ${CHAINS[settlementChain]?.name || ""} wallet address`}

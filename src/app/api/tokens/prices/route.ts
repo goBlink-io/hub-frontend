@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import * as oneclick from '@/lib/server/oneclick';
 import { errorResponse } from '@/lib/api-response';
 import { logger } from '@/lib/logger';
+import { isRateLimited, getClientIp } from '@/lib/rate-limit';
 
 // Cache prices for 2 minutes
 export const revalidate = 120;
@@ -20,6 +21,11 @@ function extractPricing(token: Record<string, unknown>): { assetId: string; pric
 
 export async function GET(_request: NextRequest) {
   try {
+    const ip = getClientIp(_request);
+    if (isRateLimited(`token-prices:${ip}`, { max: 30, windowMs: 60_000 })) {
+      return errorResponse('Too many requests', 429);
+    }
+
     const rawTokens = await oneclick.getTokens();
 
     // Extract just the pricing data

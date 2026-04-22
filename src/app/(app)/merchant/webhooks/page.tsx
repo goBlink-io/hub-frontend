@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
+import { getMerchantAdminClient } from "@/lib/server/merchant-client";
 import { WebhooksContent } from "@/components/merchant/WebhooksContent";
 import type { Metadata } from "next";
 
@@ -7,20 +8,21 @@ export const metadata: Metadata = { title: "Webhooks — Merchant" };
 export const dynamic = "force-dynamic";
 
 export default async function WebhooksPage() {
-  const supabase = await createClient();
+  const blink = await createClient();
 
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: { user } } = await blink.auth.getUser();
   if (!user) redirect("/login");
 
-  const { data: merchant } = await supabase
+  const merchantDb = getMerchantAdminClient();
+  const { data: merchant } = await merchantDb
     .from("merchants")
     .select("id")
     .eq("user_id", user.id)
-    .single();
+    .maybeSingle();
 
   if (!merchant) redirect("/merchant/onboarding");
 
-  const { data: webhooks } = await supabase
+  const { data: webhooks } = await merchantDb
     .from("webhook_endpoints")
     .select("id, url, events, is_active, created_at")
     .eq("merchant_id", merchant.id)

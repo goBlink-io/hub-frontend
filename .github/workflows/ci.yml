@@ -1,0 +1,58 @@
+name: CI
+
+on:
+  push:
+    branches: [develop, main]
+  pull_request:
+    branches: [develop, main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Typecheck + Lint + Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck
+        run: pnpm exec tsc --noEmit
+
+      - name: Lint
+        # Backlog cleared — lint errors fail CI. Warnings are allowed
+        # (img-element, unused imports, exhaustive-deps). Flip to
+        # `--max-warnings=0` once the remaining ~55 warnings are cleaned.
+        run: pnpm exec eslint .
+
+      - name: Build
+        env:
+          # Minimal stubs so `next build` can collect page data without
+          # contacting Supabase or the Zion prover. Never put real
+          # secrets here — these are ignored at runtime because the
+          # relevant server modules lazy-init and only fire on request.
+          NEXT_PUBLIC_APP_URL: http://localhost:3000
+          NEXT_PUBLIC_SUPABASE_URL: https://build-placeholder.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: eyJhbGciOiJIUzI1NiJ9.build.placeholder
+          SUPABASE_URL: https://build-placeholder.supabase.co
+          SUPABASE_SERVICE_ROLE_KEY: eyJhbGciOiJIUzI1NiJ9.build.placeholder
+          NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID: build-placeholder
+        run: pnpm build

@@ -1,30 +1,27 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
-import { adminSupabase } from "@/lib/server/db";
 import crypto from "crypto";
+import { getMerchantContext } from "@/lib/server/merchant-client";
 
 export const dynamic = "force-dynamic";
 
 export async function POST(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  _request: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const ctx = await getMerchantContext();
+  if (!ctx) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  // Get webhook with ownership check
-  const { data: webhook } = await adminSupabase
+  const { data: webhook } = await ctx.merchantDb
     .from("webhook_endpoints")
     .select("*, merchants!inner(user_id)")
     .eq("id", id)
-    .single();
+    .maybeSingle();
 
   if (!webhook) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   const merchant = webhook.merchants as unknown as { user_id: string };
-  if (merchant.user_id !== user.id) {
+  if (merchant.user_id !== ctx.user.id) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
@@ -73,7 +70,7 @@ export async function POST(
   }
 
   // Log the delivery
-  await adminSupabase.from("webhook_deliveries").insert({
+  await ctx.merchantDb.from("webhook_deliveries").insert({
     webhook_endpoint_id: id,
     event: "payment.confirmed",
     payload: testPayload,

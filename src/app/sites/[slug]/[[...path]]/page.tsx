@@ -2,30 +2,57 @@ import { cache } from "react";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
-import { createClient } from "@/lib/supabase/server";
-import { renderTiptapDoc, extractHeadings, TiptapContent } from "@/components/book/published/tiptap-renderer";
+import { getBookAdminClient } from "@/lib/book/book-client";
+import { renderTiptapDoc, extractHeadings } from "@/components/book/published/tiptap-renderer";
+import { TiptapContent } from "@/components/book/published/tiptap-content";
+import { PageviewTracker } from "@/components/book/published/pageview-tracker";
+import { Paywall } from "@/components/book/published/Paywall";
 import { BookOpen } from "lucide-react";
 import type { BBSpace, BBPage, TiptapDoc } from "@/types/book";
 
 export const revalidate = 300;
 
-const getSpaceAndPages = cache(async function getSpaceAndPages(slug: string) {
-  const supabase = await createClient();
+/** Cheap "is any gate configured?" check — single pair of head-count queries. */
+async function isPageGated(spaceId: string, pageId: string): Promise<boolean> {
+  const bookDb = getBookAdminClient();
+  const [rules, paid] = await Promise.all([
+    bookDb
+      .from("bb_access_rules")
+      .select("*", { count: "exact", head: true })
+      .eq("space_id", spaceId)
+      .eq("is_active", true)
+      .or(`page_id.is.null,page_id.eq.${pageId}`),
+    bookDb
+      .from("bb_paid_content")
+      .select("*", { count: "exact", head: true })
+      .eq("space_id", spaceId)
+      .eq("is_active", true)
+      .or(`page_id.is.null,page_id.eq.${pageId}`),
+  ]);
+  return (rules.count ?? 0) + (paid.count ?? 0) > 0;
+}
 
-  let { data: space } = await supabase
+const getSpaceAndPages = cache(async function getSpaceAndPages(slug: string) {
+  const bookDb = getBookAdminClient();
+
+  let { data: space } = await bookDb
     .from("bb_spaces")
     .select("*")
     .eq("slug", slug)
     .eq("is_published", true)
-    .single();
+    .maybeSingle();
 
   if (!space) {
-    const { data: domainSpace } = await supabase
+    // Custom-domain lookup requires DNS verification — prevents anyone
+    // from typing an arbitrary domain into settings and hijacking a
+    // future request to it.
+    const { data: domainSpace } = await bookDb
       .from("bb_spaces")
       .select("*")
       .eq("custom_domain", slug)
       .eq("is_published", true)
-      .single();
+      .eq("custom_domain_verified", true)
+      .maybeSingle();
     space = domainSpace;
   }
 
@@ -33,7 +60,7 @@ const getSpaceAndPages = cache(async function getSpaceAndPages(slug: string) {
 
   const typedSpace = space as BBSpace;
 
-  const { data: pages } = await supabase
+  const { data: pages } = await bookDb
     .from("bb_pages")
     .select("*")
     .eq("space_id", typedSpace.id)
@@ -61,9 +88,14 @@ export async function generateMetadata({
   const description =
     currentPage.meta_description ?? space.meta_description ?? space.description ?? `Documentation for ${space.name}`;
 
+  const shouldNoindex = Boolean(currentPage.noindex);
+
   return {
     title,
     description,
+    robots: shouldNoindex
+      ? { index: false, follow: false, nocache: true }
+      : undefined,
     openGraph: { title, description, siteName: space.name, type: "article" },
     twitter: { card: "summary_large_image", title, description },
   };
@@ -152,14 +184,17 @@ export default async function PublishedSitePage({
 
   if (!currentPage) notFound();
 
-  const html = renderTiptapDoc(currentPage.content as TiptapDoc);
-  const headings = extractHeadings(currentPage.content as TiptapDoc);
+  const gated = await isPageGated(space.id, currentPage.id);
+  const html = gated ? "" : renderTiptapDoc(currentPage.content as TiptapDoc);
+  const headings = gated
+    ? []
+    : extractHeadings(currentPage.content as TiptapDoc);
   const navTree = buildNavTree(allPages);
   const primaryColor = space.brand_primary_color ?? "#3B82F6";
   const logoUrl = space.brand_logo_url ?? space.logo_url;
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: "var(--color-bg-primary)", color: "var(--color-text-primary)" }}>
+    <div className="min-h-dvh" style={{ backgroundColor: "var(--color-bg-primary)", color: "var(--color-text-primary)" }}>
       {/* Header */}
       <header
         className="sticky top-0 z-30 backdrop-blur-lg"
@@ -215,7 +250,16 @@ export default async function PublishedSitePage({
             >
               {currentPage.title}
             </h1>
-            <TiptapContent html={html} />
+            {gated ? (
+              <Paywall
+                spaceSlug={slug}
+                pageSlug={currentPage.slug}
+                spaceId={space.id}
+              />
+            ) : (
+              <TiptapContent html={html} />
+            )}
+            <PageviewTracker spaceSlug={slug} pageId={currentPage.id} />
           </div>
         </main>
 
@@ -257,9 +301,9 @@ export default async function PublishedSitePage({
         >
           <p className="text-xs" style={{ color: "var(--color-text-tertiary)" }}>
             Built with{" "}
-            <a href="/" className="transition" style={{ color: "var(--color-text-secondary)" }}>
+            <Link href="/" className="transition" style={{ color: "var(--color-text-secondary)" }}>
               BlinkBook
-            </a>
+            </Link>
           </p>
         </footer>
       )}

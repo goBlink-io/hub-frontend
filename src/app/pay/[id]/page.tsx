@@ -3,7 +3,7 @@
 import { useParams } from 'next/navigation';
 import { useMemo, useState } from 'react';
 import { decodePaymentRequest } from '@/lib/payment-requests';
-import { CreditCard, ArrowRight, AlertTriangle, ExternalLink } from 'lucide-react';
+import { CreditCard, ArrowRight, AlertTriangle } from 'lucide-react';
 
 export default function PublicPayPage() {
   const params = useParams();
@@ -14,7 +14,7 @@ export default function PublicPayPage() {
 
   if (!paymentRequest) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4" style={{ background: 'var(--color-bg-primary)' }}>
+      <div className="min-h-dvh flex items-center justify-center p-4" style={{ background: 'var(--color-bg-primary)' }}>
         <div className="card p-8 text-center max-w-sm">
           <AlertTriangle className="h-12 w-12 mx-auto mb-4" style={{ color: 'var(--color-warning)' }} />
           <h1 className="text-h3 mb-2">Invalid Payment Link</h1>
@@ -36,7 +36,7 @@ export default function PublicPayPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4" style={{ background: 'var(--color-bg-primary)' }}>
+    <div className="min-h-dvh flex items-center justify-center p-4" style={{ background: 'var(--color-bg-primary)' }}>
       <div className="card p-6 sm:p-8 max-w-sm w-full">
         {/* Header */}
         <div className="flex items-center gap-3 mb-6">

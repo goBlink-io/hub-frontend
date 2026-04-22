@@ -3,39 +3,25 @@
 import { useState, useEffect, useRef } from 'react';
 import { SwapStatus } from '@/lib/shared';
 import { Check, X, Clock } from 'lucide-react';
+import Link from 'next/link';
 
 interface StatusTrackerProps {
   depositAddress: string;
   onReset: () => void;
 }
 
-// Cycling reassurance messages for each status phase
-const REASSURANCE_MESSAGES: Record<string, string[]> = {
-  PENDING_DEPOSIT: [
-    'Waiting for your deposit to arrive...',
-    'Monitoring the source chain for your transaction...',
-    'Your deposit address is ready — funds will be detected automatically.',
-  ],
-  PENDING_QUOTE: [
-    'Preparing the best route for your transfer...',
-    'Calculating optimal execution path...',
-    'Finding the best price across protocols...',
-  ],
-  PROCESSING: [
-    'Executing your transfer...',
-    'Bridging assets to the destination chain...',
-    'Almost there — finalizing on the destination chain...',
-    'Confirming the transaction on-chain...',
-    'Your tokens are on the way...',
-  ],
+const STATUS_MESSAGES: Record<string, string> = {
+  PENDING_DEPOSIT: 'Waiting for your deposit...',
+  PENDING_QUOTE: 'Preparing your transfer...',
+  PROCESSING: 'Bridging to the destination chain...',
 };
 
 export default function StatusTracker({ depositAddress, onReset }: StatusTrackerProps) {
   const [status, setStatus] = useState<SwapStatus>('PENDING_DEPOSIT');
-  const [_loading, setLoading] = useState(false); // eslint-disable-line @typescript-eslint/no-unused-vars
+  const [, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [reassuranceIdx, setReassuranceIdx] = useState(0);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  const [dismissedCloseMsg, setDismissedCloseMsg] = useState(false);
   const startTime = useRef(Date.now());
 
   // Elapsed time counter
@@ -45,20 +31,6 @@ export default function StatusTracker({ depositAddress, onReset }: StatusTracker
     }, 1000);
     return () => clearInterval(timer);
   }, []);
-
-  // Cycle reassurance messages every 6 seconds
-  useEffect(() => {
-    const messages = REASSURANCE_MESSAGES[status];
-    if (!messages) return;
-
-    const interval = setInterval(() => {
-      setReassuranceIdx((prev) => (prev + 1) % messages.length);
-    }, 6000);
-
-    // Reset index when status changes
-    setReassuranceIdx(0);
-    return () => clearInterval(interval);
-  }, [status]);
 
   useEffect(() => {
     if (!depositAddress) return;
@@ -85,17 +57,16 @@ export default function StatusTracker({ depositAddress, onReset }: StatusTracker
       const data = await response.json();
       setStatus(data.status);
       setError(null);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Status fetch error:', err);
-      setError(err.message || 'Connection issue — still tracking your transfer.');
+      const message = err instanceof Error ? err.message : null;
+      setError(message || 'Connection issue — still tracking your transfer.');
     } finally {
       setLoading(false);
     }
   };
 
   const isTerminal = status === 'SUCCESS' || status === 'FAILED' || status === 'REFUNDED';
-  const reassuranceMessages = REASSURANCE_MESSAGES[status];
-  const currentReassurance = reassuranceMessages ? reassuranceMessages[reassuranceIdx] : null;
 
   // Timeline step definitions
   const steps = [
@@ -191,38 +162,57 @@ export default function StatusTracker({ depositAddress, onReset }: StatusTracker
           {!['SUCCESS', 'FAILED', 'REFUNDED', 'PROCESSING', 'PENDING_DEPOSIT', 'PENDING_QUOTE', 'INCOMPLETE_DEPOSIT'].includes(status) && 'Tracking Transfer'}
         </h4>
 
-        {/* Cycling reassurance text */}
-        {currentReassurance && (
-          <p
-            className="text-body-sm text-center transition-opacity duration-500"
-            style={{ color: 'var(--color-text-secondary)' }}
-          >
-            {currentReassurance}
+        {STATUS_MESSAGES[status] && (
+          <p className="text-body-sm text-center" style={{ color: 'var(--color-text-secondary)' }}>
+            {STATUS_MESSAGES[status]}
           </p>
         )}
 
         {/* Elapsed time badge */}
         {!isTerminal && (
           <div
-            className="mt-3 flex items-center gap-1.5 px-3 py-1 rounded-full text-tiny font-medium"
+            className="mt-3 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium"
             style={{ background: 'var(--color-bg-tertiary)', color: 'var(--color-text-muted)' }}
           >
             <Clock className="h-3.5 w-3.5" />
-            {formatElapsed(elapsedSeconds)}
+            <span className="font-mono tabular-nums">{formatElapsed(elapsedSeconds)}</span>
           </div>
         )}
       </div>
+
+      {/* Safe to close message */}
+      {elapsedSeconds >= 30 && !isTerminal && !dismissedCloseMsg && (
+        <div
+          className="p-3 rounded-xl mb-4 flex items-center justify-between"
+          style={{ background: 'var(--info-bg)', border: '1px solid rgba(59,130,246,0.15)' }}
+        >
+          <p className="text-body-sm" style={{ color: 'var(--info-text)' }}>
+            You can safely close this page — we&apos;ll complete your transfer in the background.
+            Check your <Link href="/history" style={{ color: 'var(--color-primary)', textDecoration: 'underline' }}>transfer history</Link> anytime.
+          </p>
+          <button
+            onClick={() => setDismissedCloseMsg(true)}
+            className="ml-3 flex-shrink-0"
+            style={{ color: 'var(--color-text-muted)' }}
+            aria-label="Dismiss"
+          >
+            <X size={14} />
+          </button>
+        </div>
+      )}
 
       {/* Timeline Stepper */}
       <div className="space-y-0 mb-6">
         {steps.map((step, idx) => {
           const state = getStepState(step.key);
           return (
-            <div key={step.key} className="flex items-start gap-3">
+            <div key={step.key} className="flex items-start gap-3" {...(state === 'active' ? { 'aria-current': 'step' as const } : {})}>
               {/* Vertical connector + dot */}
               <div className="flex flex-col items-center">
                 <div
                   className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0"
+                  role="img"
+                  aria-label={`${step.label}: ${state === 'done' ? 'Complete' : state === 'active' ? 'In progress' : 'Pending'}`}
                   style={{
                     background: state === 'done'
                       ? 'var(--color-success)'

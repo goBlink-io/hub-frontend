@@ -110,7 +110,7 @@ function TokenCard({ token, onClick }: TokenRowProps) {
     <button
       type="button"
       onClick={onClick}
-      className="w-full text-left p-4 rounded-xl transition-colors"
+      className="w-full text-left p-4 rounded-xl transition-colors cursor-pointer"
       style={{ background: 'var(--color-bg-tertiary)', minHeight: '44px' }}
     >
       <div className="flex items-center gap-3">

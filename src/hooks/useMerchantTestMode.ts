@@ -1,25 +1,34 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useCallback, useSyncExternalStore } from "react";
 
 const STORAGE_KEY = "goblink-merchant-test-mode";
 
-export function useMerchantTestMode() {
-  const [isTestMode, setIsTestMode] = useState(false);
+function subscribe(callback: () => void) {
+  window.addEventListener("storage", callback);
+  return () => window.removeEventListener("storage", callback);
+}
 
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored === "true") setIsTestMode(true);
-    } catch {
-      // SSR or localStorage unavailable
-    }
-  }, []);
+function getSnapshot() {
+  try {
+    return localStorage.getItem(STORAGE_KEY) === "true";
+  } catch {
+    return false;
+  }
+}
+
+function getServerSnapshot() {
+  return false;
+}
+
+export function useMerchantTestMode() {
+  const isTestMode = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 
   const setTestMode = useCallback((value: boolean) => {
-    setIsTestMode(value);
     try {
       localStorage.setItem(STORAGE_KEY, String(value));
+      // storage event only fires in *other* tabs — dispatch locally so this tab re-reads.
+      window.dispatchEvent(new StorageEvent("storage", { key: STORAGE_KEY }));
     } catch {
       // ignore
     }

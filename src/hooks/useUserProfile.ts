@@ -74,7 +74,9 @@ export function useUserProfile() {
       loaded.createdAt = Date.now();
       saveProfile(loaded);
     }
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setProfile(loaded);
+     
     setHydrated(true);
   }, []);
 

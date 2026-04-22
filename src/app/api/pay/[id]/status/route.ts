@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { anonSupabase as supabase } from '@/lib/server/db';
 import { decodePaymentRequest } from '@/lib/payment-requests';
 import * as oneclick from '@/lib/server/oneclick';
+import { isRateLimited, getClientIp } from '@/lib/rate-limit';
 
 const LINK_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 
@@ -12,6 +13,11 @@ export async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const ip = getClientIp(_request);
+  if (isRateLimited(`pay-status:${ip}`, { max: 60, windowMs: 60_000 })) {
+    return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+  }
+
   const { id } = await params;
 
   // Decode to check expiry (no DB hit needed)

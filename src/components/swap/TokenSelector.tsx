@@ -105,7 +105,7 @@ export default function TokenSelector({
           <div className="flex items-center gap-2.5 flex-1 min-w-0">
             {selected.icon ? (
               <img src={selected.icon} alt="" className="w-7 h-7 rounded-full flex-shrink-0"
-                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                width={28} height={28} loading="lazy" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
             ) : (
               <div className="w-7 h-7 rounded-full flex items-center justify-center text-white font-bold text-xs flex-shrink-0" style={{ background: 'var(--color-primary)' }}>
                 {cleanSymbol(selected.symbol)[0]}
@@ -194,7 +194,7 @@ export default function TokenSelector({
                       style={{ background: isSel ? 'var(--color-bg-tertiary)' : 'transparent' }}>
                       {token.icon ? (
                         <img src={token.icon} alt="" className="w-10 h-10 rounded-full flex-shrink-0"
-                          onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                          width={40} height={40} loading="lazy" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
                       ) : (
                         <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0" style={{ background: 'var(--color-primary)' }}>
                           {cleanSymbol(token.symbol)[0]}

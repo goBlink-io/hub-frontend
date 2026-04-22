@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import { errorResponse, successResponse } from '@/lib/api-response';
 import { isValidSolanaAddress } from '@/lib/validators';
 import { logger } from '@/lib/logger';
+import { isRateLimited, getClientIp } from '@/lib/rate-limit';
 
 const SOLANA_RPC_URL = process.env.SOLANA_RPC_URL || 'https://api.mainnet-beta.solana.com';
 
@@ -10,6 +11,11 @@ export async function GET(
   { params }: { params: Promise<{ address: string }> }
 ) {
   try {
+    const ip = getClientIp(_request);
+    if (isRateLimited(`bal-sol:${ip}`, { max: 30, windowMs: 60_000 })) {
+      return errorResponse('Too many requests', 429);
+    }
+
     const { address } = await params;
     if (!isValidSolanaAddress(address)) {
       return errorResponse('Invalid Solana address format', 400);

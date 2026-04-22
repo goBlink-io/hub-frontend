@@ -5,11 +5,11 @@ import Link from 'next/link';
 import { ArrowLeftRight, CreditCard, Store, BookOpen, PieChart } from 'lucide-react';
 
 const PRODUCTS = [
-  { id: 'swap', icon: ArrowLeftRight, title: 'Swap', desc: 'Transfer tokens across 26+ chains in seconds', href: '/swap' },
-  { id: 'pay', icon: CreditCard, title: 'Pay', desc: 'Create and share payment links instantly', href: '/pay' },
-  { id: 'merchant', icon: Store, title: 'Merchant', desc: 'Accept crypto payments for your business', href: '/merchant' },
-  { id: 'book', icon: BookOpen, title: 'BlinkBook', desc: 'Build and publish knowledge bases', href: '/book' },
-  { id: 'portfolio', icon: PieChart, title: 'Portfolio', desc: 'Track your cross-chain balances', href: '/portfolio' },
+  { id: 'swap', icon: ArrowLeftRight, title: 'Swap', desc: 'Cross-chain token transfers', href: '/swap', affinity: ['pay', 'portfolio'] },
+  { id: 'pay', icon: CreditCard, title: 'Pay', desc: 'Crypto payment links', href: '/pay', affinity: ['swap', 'merchant'] },
+  { id: 'merchant', icon: Store, title: 'Merchant', desc: 'Merchant payment tools', href: '/merchant', affinity: ['pay'] },
+  { id: 'book', icon: BookOpen, title: 'BlinkBook', desc: 'Documentation platform', href: '/book', affinity: [] as string[] },
+  { id: 'portfolio', icon: PieChart, title: 'Portfolio', desc: 'Portfolio tracker', href: '/portfolio', affinity: ['swap', 'history'] },
 ] as const;
 
 interface ProductSuggestionProps {
@@ -19,15 +19,25 @@ interface ProductSuggestionProps {
 export function ProductSuggestion({ exclude }: ProductSuggestionProps) {
   const suggestions = useMemo(() => {
     const available = PRODUCTS.filter((p) => p.id !== exclude);
-    // Shuffle and pick 2
-    const shuffled = [...available].sort(() => Math.random() - 0.5);
-    return shuffled.slice(0, 2);
+
+    // Score products by affinity to current page
+    const current = PRODUCTS.find(p => p.id === exclude);
+    if (current) {
+      const scored = available.map(p => ({
+        ...p,
+        score: (current.affinity as readonly string[]).includes(p.id) ? 2 : (p.affinity as readonly string[]).includes(exclude) ? 1 : 0,
+      }));
+      scored.sort((a, b) => b.score - a.score);
+      return scored.slice(0, 2);
+    }
+
+    return available.slice(0, 2);
   }, [exclude]);
 
   return (
-    <div className="mt-8">
+    <div className="mt-8 pt-6 border-t" style={{ borderColor: 'rgba(255, 255, 255, 0.05)' }}>
       <h3 className="text-caption font-semibold mb-3" style={{ color: 'var(--color-text-secondary)' }}>
-        Explore more
+        Also on goBlink
       </h3>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {suggestions.map((product) => (

@@ -1,15 +1,16 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { getBookAdminClient } from "@/lib/book/book-client";
 import { Plus, ExternalLink, Settings, FileText } from "lucide-react";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = { title: "BlinkBook — My Sites" };
 
 export default async function BookPage() {
-  const supabase = await createClient();
+  const blink = await createClient();
   const {
     data: { user },
-  } = await supabase.auth.getUser();
+  } = await blink.auth.getUser();
 
   let spaces: Array<{
     id: string;
@@ -22,7 +23,8 @@ export default async function BookPage() {
   }> = [];
 
   if (user) {
-    const { data } = await supabase
+    const bookDb = getBookAdminClient();
+    const { data } = await bookDb
       .from("bb_spaces")
       .select("id, name, slug, description, is_published, updated_at")
       .eq("user_id", user.id)
@@ -31,7 +33,7 @@ export default async function BookPage() {
     if (data) {
       const spacesWithCounts = await Promise.all(
         data.map(async (space) => {
-          const { count } = await supabase
+          const { count } = await bookDb
             .from("bb_pages")
             .select("*", { count: "exact", head: true })
             .eq("space_id", space.id);

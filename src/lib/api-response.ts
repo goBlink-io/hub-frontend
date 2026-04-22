@@ -7,10 +7,10 @@ import { NextResponse } from 'next/server';
 export interface ApiError {
   error: string;
   code?: string;
-  details?: any;
+  details?: unknown;
 }
 
-export interface ApiSuccess<T = any> {
+export interface ApiSuccess<T = unknown> {
   success: true;
   data: T;
 }
@@ -23,8 +23,8 @@ export function errorResponse(
   statusCode: number = 500,
   options?: {
     code?: string;
-    details?: any;
-  }
+    details?: unknown;
+  },
 ): NextResponse<ApiError> {
   return NextResponse.json(
     {
@@ -32,7 +32,7 @@ export function errorResponse(
       code: options?.code,
       details: options?.details,
     },
-    { status: statusCode }
+    { status: statusCode },
   );
 }
 
@@ -41,13 +41,13 @@ export function errorResponse(
  */
 export function successResponse<T>(
   data: T,
-  statusCode: number = 200
+  statusCode: number = 200,
 ): NextResponse<ApiSuccess<T>> {
   return NextResponse.json(
     {
       success: true,
       data,
     },
-    { status: statusCode }
+    { status: statusCode },
   );
 }

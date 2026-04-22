@@ -72,7 +72,7 @@ export function isValidAmount(amount: string | number, decimals: number = 18): {
     }
     
     return { valid: true, value: amountBigInt };
-  } catch (error) {
+  } catch {
     return { valid: false, error: 'Invalid amount format (must be a valid integer)' };
   }
 }
@@ -141,7 +141,7 @@ export function isValidDeadline(deadline: string | Date): {
     }
     
     return { valid: true, date: deadlineDate };
-  } catch (error) {
+  } catch {
     return { valid: false, error: 'Invalid deadline' };
   }
 }

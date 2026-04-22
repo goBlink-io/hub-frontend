@@ -12,6 +12,7 @@ import {
   BookOpen,
   Settings,
   Clock,
+  Shield,
   X,
 } from "lucide-react";
 import type { ReactNode } from "react";
@@ -26,12 +27,13 @@ const mainItems: NavItem[] = [
   { href: "/swap", label: "Swap", icon: <ArrowLeftRight size={20} /> },
   { href: "/portfolio", label: "Portfolio", icon: <PieChart size={20} /> },
   { href: "/pay", label: "Pay", icon: <CreditCard size={20} /> },
+  { href: "/history", label: "History", icon: <Clock size={20} /> },
 ];
 
 const moreItems: NavItem[] = [
-  { href: "/history", label: "History", icon: <Clock size={20} /> },
   { href: "/merchant", label: "Merchant", icon: <Store size={20} /> },
   { href: "/book", label: "BlinkBook", icon: <BookOpen size={20} /> },
+  { href: "/audit", label: "Audit", icon: <Shield size={20} /> },
   { href: "/settings", label: "Settings", icon: <Settings size={20} /> },
 ];
 

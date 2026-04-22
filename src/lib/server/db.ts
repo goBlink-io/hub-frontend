@@ -16,7 +16,7 @@ export const adminSupabase: SupabaseClient = new Proxy({} as SupabaseClient, {
         process.env.SUPABASE_SERVICE_ROLE_KEY!,
       );
     }
-    return (_adminSupabase as any)[prop];
+    return (_adminSupabase as unknown as Record<string | symbol, unknown>)[prop];
   },
 });
 
@@ -35,7 +35,7 @@ export const anonSupabase: SupabaseClient = new Proxy({} as SupabaseClient, {
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
       );
     }
-    return (_anonSupabase as any)[prop];
+    return (_anonSupabase as unknown as Record<string | symbol, unknown>)[prop];
   },
 });
 

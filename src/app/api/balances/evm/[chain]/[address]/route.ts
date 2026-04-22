@@ -1,11 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getNativeBalance, getSupportedChains, type SupportedChain } from '@/lib/server/evm';
+import { isRateLimited, getClientIp } from '@/lib/rate-limit';
 
 export async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ chain: string; address: string }> }
 ) {
   try {
+    const ip = getClientIp(_request);
+    if (isRateLimited(`bal-evm:${ip}`, { max: 30, windowMs: 60_000 })) {
+      return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+    }
+
     const { chain, address } = await params;
     const supportedChains = getSupportedChains();
     if (!supportedChains.includes(chain)) {

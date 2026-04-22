@@ -123,6 +123,7 @@ export function OverviewContent({ data }: { data: OverviewData }) {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true);
     fetch(`/api/merchant/overview?is_test=${isTestMode}`)
       .then((res) => (res.ok ? res.json() : null))
@@ -294,7 +295,7 @@ export function OverviewContent({ data }: { data: OverviewData }) {
                   <div className="flex items-center gap-3">
                     {payment.is_test && (
                       <span
-                        className="text-[10px] font-medium px-1.5 py-0 rounded"
+                        className="text-[11px] font-medium px-1.5 py-0 rounded"
                         style={{
                           backgroundColor: "rgba(245, 158, 11, 0.1)",
                           color: "var(--color-warning)",

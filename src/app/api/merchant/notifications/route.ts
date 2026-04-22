@@ -1,25 +1,25 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
-import { adminSupabase } from "@/lib/server/db";
+import { getMerchantContext } from "@/lib/server/merchant-client";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const ctx = await getMerchantContext();
+  if (!ctx) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { data: merchant } = await supabase
+  const { data: merchant } = await ctx.merchantDb
     .from("merchants")
     .select("id")
-    .eq("user_id", user.id)
-    .single();
+    .eq("user_id", ctx.user.id)
+    .maybeSingle();
 
   if (!merchant) return NextResponse.json({ notifications: [] });
 
-  const { data: notifications } = await adminSupabase
-    .from("merchant_notifications")
-    .select("id, type, title, message, link, read_at, created_at")
+  // Schema table is `notifications` (see Merchant schema). An older
+  // draft used `merchant_notifications`; kept the current column list.
+  const { data: notifications } = await ctx.merchantDb
+    .from("notifications")
+    .select("id, type, title, body, link, read_at, created_at")
     .eq("merchant_id", merchant.id)
     .order("created_at", { ascending: false })
     .limit(20);

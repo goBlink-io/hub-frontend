@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
+import { getMerchantAdminClient } from "@/lib/server/merchant-client";
 import { OverviewContent } from "@/components/merchant/OverviewContent";
 import { getExchangeRate } from "@/lib/merchant/forex";
 import type { Metadata } from "next";
@@ -8,16 +9,16 @@ export const metadata: Metadata = { title: "Merchant Dashboard" };
 export const dynamic = "force-dynamic";
 
 export default async function MerchantDashboardPage() {
-  const supabase = await createClient();
-
-  const { data: { user } } = await supabase.auth.getUser();
+  const blink = await createClient();
+  const { data: { user } } = await blink.auth.getUser();
   if (!user) redirect("/login");
 
-  const { data: merchant } = await supabase
+  const merchantDb = getMerchantAdminClient();
+  const { data: merchant } = await merchantDb
     .from("merchants")
     .select("*")
     .eq("user_id", user.id)
-    .single();
+    .maybeSingle();
 
   if (!merchant) redirect("/merchant/onboarding");
   if (!merchant.onboarding_completed) redirect("/merchant/onboarding");
@@ -26,7 +27,7 @@ export default async function MerchantDashboardPage() {
   const todayStart = new Date();
   todayStart.setUTCHours(0, 0, 0, 0);
 
-  const { data: recentPayments } = await supabase
+  const { data: recentPayments } = await merchantDb
     .from("payments")
     .select("id, external_order_id, amount, currency, status, created_at, is_test")
     .eq("merchant_id", merchant.id)
@@ -34,7 +35,7 @@ export default async function MerchantDashboardPage() {
     .order("created_at", { ascending: false })
     .limit(10);
 
-  const { data: todayPayments } = await supabase
+  const { data: todayPayments } = await merchantDb
     .from("payments")
     .select("net_amount")
     .eq("merchant_id", merchant.id)
@@ -42,14 +43,14 @@ export default async function MerchantDashboardPage() {
     .eq("is_test", false)
     .gte("confirmed_at", todayStart.toISOString());
 
-  const { count: pendingCount } = await supabase
+  const { count: pendingCount } = await merchantDb
     .from("payments")
     .select("*", { count: "exact", head: true })
     .eq("merchant_id", merchant.id)
     .eq("is_test", false)
     .in("status", ["pending", "processing"]);
 
-  const { data: allConfirmed } = await supabase
+  const { data: allConfirmed } = await merchantDb
     .from("payments")
     .select("net_amount")
     .eq("merchant_id", merchant.id)
@@ -70,6 +71,8 @@ export default async function MerchantDashboardPage() {
   const exchangeRate = await getExchangeRate(displayCurrency);
 
   return (
+    <>
+    <h1 className="sr-only">Merchant Dashboard</h1>
     <OverviewContent
       data={{
         totalBalance,
@@ -88,5 +91,6 @@ export default async function MerchantDashboardPage() {
         merchantId: merchant.id,
       }}
     />
+    </>
   );
 }

@@ -2,13 +2,11 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { CopyButton } from "@/components/merchant/CopyButton";
 import {
   Webhook,
   Plus,
   Trash2,
   Loader2,
-  Search,
   ChevronLeft,
   ChevronRight,
   Send,
@@ -220,7 +218,7 @@ function EndpointsSection({
                       {wh.events.map((event) => (
                         <span
                           key={event}
-                          className="text-[10px] font-medium px-1.5 py-0.5 rounded"
+                          className="text-[11px] font-medium px-1.5 py-0.5 rounded"
                           style={{
                             backgroundColor: "rgba(99,102,241,0.1)",
                             color: "var(--color-primary)",
@@ -308,10 +306,11 @@ function EndpointsSection({
             </p>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium" style={{ color: "var(--color-text-secondary)" }}>
+              <label htmlFor="webhook-endpoint-url" className="text-sm font-medium" style={{ color: "var(--color-text-secondary)" }}>
                 Endpoint URL
               </label>
               <input
+                id="webhook-endpoint-url"
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
                 placeholder="https://example.com/webhooks/goblink"

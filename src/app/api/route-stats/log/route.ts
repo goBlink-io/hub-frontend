@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/server/db';
-import { createHmac } from 'crypto';
 import { EVM_CHAIN_NAMES } from '@/lib/shared';
+import { isRateLimited, getClientIp } from '@/lib/rate-limit';
+
 const ALL_CHAIN_NAMES = [...EVM_CHAIN_NAMES, 'near', 'solana', 'sui', 'aptos', 'starknet', 'ton', 'tron', 'bitcoin', 'litecoin', 'dogecoin', 'bitcoincash', 'stellar', 'xrp', 'cardano', 'aleo'];
 
 export const dynamic = 'force-dynamic';
@@ -12,16 +13,6 @@ const VALID_CHAINS = new Set(ALL_CHAIN_NAMES);
 let lastRefreshAt = 0;
 const REFRESH_DEBOUNCE_MS = 60_000; // 1 minute
 
-function verifySignature(body: unknown, signature: string | null): boolean {
-  const secret = process.env.STATS_SECRET;
-  if (!secret) return false;
-  if (!signature) return false;
-  const expected = createHmac('sha256', secret)
-    .update(JSON.stringify(body))
-    .digest('hex');
-  return signature === expected;
-}
-
 /**
  * POST /api/route-stats/log
  * Log a completed swap for route confidence aggregation.
@@ -29,18 +20,17 @@ function verifySignature(body: unknown, signature: string | null): boolean {
  */
 export async function POST(request: NextRequest) {
   try {
+    const ip = getClientIp(request);
+    if (isRateLimited(`route-stats:${ip}`, { max: 30, windowMs: 60_000 })) {
+      return NextResponse.json({ error: 'Rate limited' }, { status: 429 });
+    }
+
     const body = await request.json();
     const { fromChain, toChain, fromToken, toToken, success, durationSecs, amountUsd } = body;
 
     // Validate required fields
     if (!fromChain || !toChain || !fromToken || !toToken || typeof success !== 'boolean') {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
-    }
-
-    // Validate HMAC signature
-    const signature = request.headers.get('x-stats-signature');
-    if (!verifySignature(body, signature)) {
-      return NextResponse.json({ error: 'Invalid signature' }, { status: 403 });
     }
 
     // Validate chain IDs

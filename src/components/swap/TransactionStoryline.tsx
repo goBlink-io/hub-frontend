@@ -3,8 +3,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Check, Loader2, AlertTriangle, ExternalLink, ArrowRight, Undo2 } from 'lucide-react';
 
-// ── Types ──────────────────────────────────────────────────────────────────────
-
 interface StoryPhase {
   id: string;
   label: string;
@@ -31,9 +29,7 @@ interface TransactionStorylineProps {
   startedAt: number;               // Date.now() when tracking began
 }
 
-// ── Phase definitions ──────────────────────────────────────────────────────────
-
-function getPhases(fromChain: string, toChain: string, fromToken: string, toToken: string): StoryPhase[] {
+function getPhases(fromChain: string, toChain: string, _fromToken: string, _toToken: string): StoryPhase[] {
   const fromName = fromChain.charAt(0).toUpperCase() + fromChain.slice(1);
   const toName = toChain.charAt(0).toUpperCase() + toChain.slice(1);
 
@@ -41,31 +37,31 @@ function getPhases(fromChain: string, toChain: string, fromToken: string, toToke
     {
       id: 'signed',
       label: 'Transfer approved',
-      detail: `Sending ${fromToken} from your ${fromName} wallet`,
+      detail: `Sending from ${fromName}`,
       icon: <Check className="h-4 w-4" />,
     },
     {
       id: 'confirmed',
       label: `Sent from ${fromName}`,
-      detail: 'Your tokens are on the way',
+      detail: 'Deposit confirmed',
       icon: <Check className="h-4 w-4" />,
     },
     {
       id: 'routing',
       label: 'Finding the best route',
-      detail: 'Smart routing is matching you with the best available rate',
+      detail: 'Finding the best route',
       icon: <Loader2 className="h-4 w-4 animate-spin" />,
     },
     {
       id: 'arriving',
       label: `Arriving on ${toName}`,
-      detail: `${toToken} is being delivered to your wallet`,
+      detail: `Delivering to ${toName}`,
       icon: <Loader2 className="h-4 w-4 animate-spin" />,
     },
     {
       id: 'complete',
       label: 'Transfer complete!',
-      detail: `${toToken} is in your wallet on ${toName}`,
+      detail: `Arrived on ${toName}`,
       icon: <Check className="h-4 w-4" />,
     },
   ];
@@ -97,8 +93,6 @@ function isFailed(status: string | null): boolean {
   const s = status.toUpperCase();
   return ['FAILED', 'REFUNDED'].includes(s);
 }
-
-// ── Component ──────────────────────────────────────────────────────────────────
 
 export default function TransactionStoryline({
   status,
@@ -151,7 +145,7 @@ export default function TransactionStoryline({
         <div className="flex items-center gap-2">
           {(fromTokenIcon || fromLogo) && (
             <img src={fromTokenIcon || fromLogo!.icon} alt={fromToken} className="w-6 h-6 rounded-full"
-              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+              width={24} height={24} loading="lazy" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
           )}
           <span className="font-semibold text-sm" style={{ color: 'var(--color-text-primary)' }}>{amountIn} {fromToken}</span>
         </div>
@@ -162,7 +156,7 @@ export default function TransactionStoryline({
           </span>
           {(toTokenIcon || toLogo) && (
             <img src={toTokenIcon || toLogo!.icon} alt={toToken} className="w-6 h-6 rounded-full"
-              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+              width={24} height={24} loading="lazy" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
           )}
         </div>
       </div>
