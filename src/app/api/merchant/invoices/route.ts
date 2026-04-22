@@ -1,23 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
-import { adminSupabase } from "@/lib/server/db";
+import { createRateLimiter } from "@/lib/server/rate-limit";
+import { getMerchantContext } from "@/lib/server/merchant-client";
 
 export const dynamic = "force-dynamic";
 
-export async function GET() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+const createLimiter = createRateLimiter({ windowMs: 60 * 60_000, max: 100 });
 
-  const { data: merchant } = await supabase
+export async function GET() {
+  const ctx = await getMerchantContext();
+  if (!ctx) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const { data: merchant } = await ctx.merchantDb
     .from("merchants")
     .select("id")
-    .eq("user_id", user.id)
-    .single();
+    .eq("user_id", ctx.user.id)
+    .maybeSingle();
 
   if (!merchant) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  const { data: invoices } = await adminSupabase
+  const { data: invoices } = await ctx.merchantDb
     .from("invoices")
     .select("*")
     .eq("merchant_id", merchant.id)
@@ -27,21 +28,28 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const ctx = await getMerchantContext();
+  if (!ctx) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { data: merchant } = await supabase
+  const limit = createLimiter.check(ctx.user.id);
+  if (limit.limited) {
+    return NextResponse.json(
+      { error: "Too many invoice creations" },
+      { status: 429, headers: { "Retry-After": String(limit.retryAfterSec) } },
+    );
+  }
+
+  const { data: merchant } = await ctx.merchantDb
     .from("merchants")
     .select("id")
-    .eq("user_id", user.id)
-    .single();
+    .eq("user_id", ctx.user.id)
+    .maybeSingle();
 
   if (!merchant) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   const body = await request.json();
 
-  const { data: invoice, error } = await adminSupabase
+  const { data: invoice, error } = await ctx.merchantDb
     .from("invoices")
     .insert({
       merchant_id: merchant.id,
@@ -52,7 +60,8 @@ export async function POST(request: NextRequest) {
     .single();
 
   if (error) {
-    console.error("[merchant-invoices]", error); return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    console.error("[merchant-invoices]", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 
   return NextResponse.json(invoice);

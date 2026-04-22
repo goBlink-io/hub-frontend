@@ -1,21 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
-import { adminSupabase } from "@/lib/server/db";
 import crypto from "crypto";
+import { getMerchantContext } from "@/lib/server/merchant-client";
 
 export const dynamic = "force-dynamic";
 
 export async function POST(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  _request: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const ctx = await getMerchantContext();
+  if (!ctx) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  // Get delivery with ownership verification
-  const { data: delivery } = await adminSupabase
+  const { data: delivery } = await ctx.merchantDb
     .from("webhook_deliveries")
     .select("*, webhook_endpoints!inner(id, url, signing_secret, merchant_id, merchants!inner(user_id))")
     .eq("id", id)
@@ -31,7 +28,7 @@ export async function POST(
     merchants: { user_id: string };
   };
 
-  if (endpoint.merchants.user_id !== user.id) {
+  if (endpoint.merchants.user_id !== ctx.user.id) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
@@ -67,7 +64,7 @@ export async function POST(
   }
 
   // Log retry as new delivery
-  await adminSupabase.from("webhook_deliveries").insert({
+  await ctx.merchantDb.from("webhook_deliveries").insert({
     webhook_endpoint_id: endpoint.id,
     event: delivery.event,
     payload: delivery.payload,

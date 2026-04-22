@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { getMerchantContext } from "@/lib/server/merchant-client";
 
 export const dynamic = "force-dynamic";
 
@@ -14,15 +14,14 @@ function csvSafe(value: string): string {
 }
 
 export async function GET(request: NextRequest) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const ctx = await getMerchantContext();
+  if (!ctx) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { data: merchant } = await supabase
+  const { data: merchant } = await ctx.merchantDb
     .from("merchants")
     .select("id")
-    .eq("user_id", user.id)
-    .single();
+    .eq("user_id", ctx.user.id)
+    .maybeSingle();
 
   if (!merchant) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
@@ -31,7 +30,7 @@ export async function GET(request: NextRequest) {
   const endDate = params.get("end");
   const isTest = params.get("is_test") === "true";
 
-  let query = supabase
+  let query = ctx.merchantDb
     .from("payments")
     .select("id, external_order_id, amount, net_amount, fee_amount, currency, crypto_amount, crypto_token, crypto_chain, status, customer_wallet, created_at, confirmed_at, settlement_status, settled_at")
     .eq("merchant_id", merchant.id)

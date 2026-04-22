@@ -1,4 +1,4 @@
-import { adminSupabase } from "@/lib/server/db";
+import { getMerchantAdminClient } from "@/lib/server/merchant-client";
 
 interface AuditParams {
   merchantId: string;
@@ -11,26 +11,31 @@ interface AuditParams {
 }
 
 /**
- * Log an audit event. Never throws — audit failures are logged but do not break the main flow.
+ * Log a merchant-scoped audit event. Writes to the Merchant project's
+ * `audit_logs` table. Never throws — audit failures are logged but do
+ * not break the main flow.
  */
 export async function logAudit(params: AuditParams): Promise<void> {
   try {
-    const { error } = await adminSupabase
-      .from("audit_logs")
-      .insert({
-        merchant_id: params.merchantId,
-        actor: params.actor,
-        action: params.action,
-        resource_type: params.resourceType ?? null,
-        resource_id: params.resourceId ?? null,
-        metadata: params.metadata ?? {},
-        ip_address: params.ipAddress ?? null,
-      });
+    const merchantDb = getMerchantAdminClient();
+    const { error } = await merchantDb.from("audit_logs").insert({
+      merchant_id: params.merchantId,
+      actor: params.actor,
+      action: params.action,
+      resource_type: params.resourceType ?? null,
+      resource_id: params.resourceId ?? null,
+      metadata: params.metadata ?? {},
+      ip_address: params.ipAddress ?? null,
+    });
 
     if (error) {
-      console.error("[audit] Failed to log:", error.message, params.action);
+      console.error("[merchant-audit] Failed to log:", error.message, params.action);
     }
   } catch (err) {
-    console.error("[audit] Unexpected error:", err instanceof Error ? err.message : err, params.action);
+    console.error(
+      "[merchant-audit] Unexpected error:",
+      err instanceof Error ? err.message : err,
+      params.action,
+    );
   }
 }

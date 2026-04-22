@@ -1,4 +1,4 @@
-import { adminSupabase } from "@/lib/server/db";
+import { getMerchantAdminClient } from "@/lib/server/merchant-client";
 
 // NOTE: bcryptjs is a peer dependency for API key validation.
 // For Hub internal routes, use Supabase auth instead.
@@ -54,7 +54,7 @@ export async function validateApiKey(
   }
 
   const prefix = apiKey.slice(0, apiKey.indexOf("_", 3) + 1 + 8);
-  const { data: keys, error } = await adminSupabase
+  const { data: keys, error } = await getMerchantAdminClient()
     .from("api_keys")
     .select("id, merchant_id, key_hash, is_test, allowed_ips, merchants!inner(suspended_at)")
     .eq("key_prefix", prefix);
@@ -79,7 +79,7 @@ export async function validateApiKey(
         }
       }
 
-      await adminSupabase
+      await getMerchantAdminClient()
         .from("api_keys")
         .update({ last_used_at: new Date().toISOString() })
         .eq("id", key.id);
@@ -113,7 +113,7 @@ export async function generateApiKey(
   const keyHash = await bcryptHash(apiKey, 10);
   const keyPrefix = apiKey.slice(0, prefix.length + 8);
 
-  const { data, error } = await adminSupabase
+  const { data, error } = await getMerchantAdminClient()
     .from("api_keys")
     .insert({
       merchant_id: merchantId,

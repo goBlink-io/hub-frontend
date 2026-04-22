@@ -1,14 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
-import { adminSupabase } from "@/lib/server/db";
+import { getMerchantContext } from "@/lib/server/merchant-client";
 import { logAudit } from "@/lib/merchant/audit";
 
 export const dynamic = "force-dynamic";
 
 export async function POST(request: NextRequest) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const ctx = await getMerchantContext();
+  if (!ctx) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const body = await request.json();
   const {
@@ -28,12 +26,12 @@ export async function POST(request: NextRequest) {
   }
 
   // Verify ownership
-  const { data: merchant } = await supabase
+  const { data: merchant } = await ctx.merchantDb
     .from("merchants")
     .select("id")
     .eq("id", merchantId)
-    .eq("user_id", user.id)
-    .single();
+    .eq("user_id", ctx.user.id)
+    .maybeSingle();
 
   if (!merchant) {
     return NextResponse.json(
@@ -42,7 +40,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const { error } = await adminSupabase
+  const { error } = await ctx.merchantDb
     .from("merchants")
     .update({
       business_name: businessName.trim(),
@@ -73,7 +71,7 @@ export async function POST(request: NextRequest) {
 
   await logAudit({
     merchantId,
-    actor: user.id,
+    actor: ctx.user.id,
     action: "onboarding.completed",
     metadata: {
       businessName,

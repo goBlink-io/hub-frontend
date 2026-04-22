@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
+import { getMerchantAdminClient } from "@/lib/server/merchant-client";
 import { PaymentsList } from "@/components/merchant/PaymentsList";
 import { getExchangeRate } from "@/lib/merchant/forex";
 import { Download } from "lucide-react";
@@ -19,17 +20,18 @@ export default async function PaymentsPage({
 }: {
   searchParams: Promise<{ status?: string; search?: string; page?: string; is_test?: string }>;
 }) {
-  const supabase = await createClient();
+  const blink = await createClient();
   const params = await searchParams;
 
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: { user } } = await blink.auth.getUser();
   if (!user) redirect("/login");
 
-  const { data: merchant } = await supabase
+  const merchantDb = getMerchantAdminClient();
+  const { data: merchant } = await merchantDb
     .from("merchants")
     .select("id, currency, display_currency")
     .eq("user_id", user.id)
-    .single();
+    .maybeSingle();
 
   if (!merchant) redirect("/merchant/onboarding");
 
@@ -39,7 +41,7 @@ export default async function PaymentsPage({
   const offset = (page - 1) * perPage;
   const isTest = params.is_test === "true";
 
-  let query = supabase
+  let query = merchantDb
     .from("payments")
     .select("*", { count: "exact" })
     .eq("merchant_id", merchant.id)

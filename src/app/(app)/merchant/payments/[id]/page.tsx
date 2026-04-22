@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect, notFound } from "next/navigation";
+import { getMerchantAdminClient } from "@/lib/server/merchant-client";
 import { formatCurrency, formatDate, getStatusColor, truncateAddress } from "@/lib/merchant/utils";
 import { getExplorerTxUrl } from "@/lib/merchant/explorer";
 import { getExchangeRate } from "@/lib/merchant/forex";
@@ -32,25 +33,26 @@ export default async function PaymentDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const supabase = await createClient();
+  const blink = await createClient();
 
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: { user } } = await blink.auth.getUser();
   if (!user) redirect("/login");
 
-  const { data: merchant } = await supabase
+  const merchantDb = getMerchantAdminClient();
+  const { data: merchant } = await merchantDb
     .from("merchants")
     .select("id, display_currency")
     .eq("user_id", user.id)
-    .single();
+    .maybeSingle();
 
   if (!merchant) redirect("/merchant/onboarding");
 
-  const { data: payment } = await supabase
+  const { data: payment } = await merchantDb
     .from("payments")
     .select("*")
     .eq("id", id)
     .eq("merchant_id", merchant.id)
-    .single();
+    .maybeSingle();
 
   if (!payment) notFound();
 
@@ -68,7 +70,7 @@ export default async function PaymentDetailPage({
     return formatCurrency(amountUsd, "USD");
   }
 
-  const { data: refunds } = await supabase
+  const { data: refunds } = await merchantDb
     .from("refunds")
     .select("*")
     .eq("payment_id", payment.id)

@@ -1,29 +1,31 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { getMerchantAdminClient } from "@/lib/server/merchant-client";
 import { OnboardingWizard } from "@/components/merchant/OnboardingWizard";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = { title: "Onboarding — Merchant" };
 
 export default async function OnboardingPage() {
-  const supabase = await createClient();
+  const blink = await createClient();
   const {
     data: { user },
-  } = await supabase.auth.getUser();
+  } = await blink.auth.getUser();
 
   if (!user) {
     redirect("/login");
   }
 
-  const { data: merchant } = await supabase
+  const merchantDb = getMerchantAdminClient();
+  const { data: merchant } = await merchantDb
     .from("merchants")
     .select("id, business_name, currency, timezone, onboarding_completed")
     .eq("user_id", user.id)
-    .single();
+    .maybeSingle();
 
   // If no merchant record exists, create one
   if (!merchant) {
-    const { data: newMerchant, error } = await supabase
+    const { data: newMerchant, error } = await merchantDb
       .from("merchants")
       .insert({
         user_id: user.id,
