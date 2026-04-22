@@ -4,6 +4,7 @@ import { z } from "zod";
 import { enforceLimit, getRequiredPlan } from "@/lib/book/check-plan";
 import { verifySpaceAccess } from "@/lib/book/verify-space-access";
 import { getBookContext } from "@/lib/book/book-client";
+import { sendEmail, renderTeamInviteEmail } from "@/lib/email";
 
 /**
  * Team management for a space.
@@ -78,10 +79,11 @@ export async function POST(
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  // Find the space's owner for the plan check (owner pays for team size).
+  // Find the space's owner for the plan check (owner pays for team size)
+  // and the space name for the invite email.
   const { data: space } = await ctx.bookDb
     .from("bb_spaces")
-    .select("user_id")
+    .select("user_id, name")
     .eq("id", id)
     .maybeSingle();
   if (!space) return NextResponse.json({ error: "Not found" }, { status: 404 });
@@ -134,5 +136,48 @@ export async function POST(
     console.error("[team-post]", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
-  return NextResponse.json(data, { status: 201 });
+
+  // Build the acceptance link the invitee follows. Frontend is at
+  // /book/invitations/[token] and matches the API at the same path.
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? new URL(request.url).origin;
+  const acceptUrl = `${appUrl.replace(/\/$/, "")}/book/invitations/${inviteToken}`;
+
+  // Fire-and-forget email. If the email provider isn't configured or
+  // fails, the inviter can still copy the link from the response — we
+  // always return invite_token so the flow stays functional.
+  const inviterDisplay =
+    (ctx.user.user_metadata?.display_name as string | undefined) ??
+    ctx.user.email ??
+    undefined;
+  const { subject, html, text } = renderTeamInviteEmail({
+    spaceName: space.name ?? "a BlinkBook space",
+    inviterName: inviterDisplay,
+    role: parsed.data.role,
+    acceptUrl,
+  });
+
+  let emailDelivered = false;
+  let emailReason: string | undefined;
+  const emailResult = await sendEmail({
+    to: email,
+    subject,
+    html,
+    text,
+  });
+  if (emailResult.ok) {
+    emailDelivered = true;
+  } else {
+    emailReason = emailResult.reason;
+    console.warn("[team-post] invite email not delivered:", emailReason);
+  }
+
+  return NextResponse.json(
+    {
+      ...data,
+      accept_url: acceptUrl,
+      email_delivered: emailDelivered,
+      ...(emailReason ? { email_reason: emailReason } : {}),
+    },
+    { status: 201 },
+  );
 }

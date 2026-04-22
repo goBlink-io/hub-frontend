@@ -13,6 +13,7 @@
 
 import { adminSupabase } from "@/lib/server/db";
 import { logger } from "@/lib/logger";
+import { sendEmail, renderAuditCompleteEmail } from "@/lib/email";
 import type {
   AuditResponse,
   AuditSourceMeta,
@@ -72,6 +73,8 @@ export async function insertAudit(input: AuditInsertInput): Promise<void> {
 /**
  * Mirror a job status poll into the DB row. Idempotent.
  * On `completed`, denormalises score/grade/chain/language and stores the full result.
+ * On the terminal transition (queued|running → completed|failed) sends a notification
+ * email to the audit owner if email delivery is configured.
  */
 export async function updateJobStatus(jobId: string, status: JobStatus): Promise<void> {
   const patch: Record<string, unknown> = { status: status.status };
@@ -91,6 +94,14 @@ export async function updateJobStatus(jobId: string, status: JobStatus): Promise
     patch.completed_at = status.completedAt ?? new Date().toISOString();
   }
 
+  // Fetch the prior row so we can detect the terminal transition and
+  // avoid re-emailing on every subsequent poll.
+  const { data: prior } = await adminSupabase
+    .from("zion_audits")
+    .select("user_id, status, completed_at, source_meta")
+    .eq("job_id", jobId)
+    .maybeSingle();
+
   const { error } = await adminSupabase
     .from("zion_audits")
     .update(patch)
@@ -98,7 +109,59 @@ export async function updateJobStatus(jobId: string, status: JobStatus): Promise
 
   if (error) {
     logger.warn("[zion-db] updateJobStatus failed", { jobId, code: error.code, message: error.message });
+    return;
   }
+
+  const isTerminal = status.status === "completed" || status.status === "failed";
+  const wasTerminal =
+    prior?.status === "completed" || prior?.status === "failed";
+  if (prior && isTerminal && !wasTerminal && (status.status === "completed" || status.status === "failed")) {
+    // Fire-and-forget. Notification failures must not break polling.
+    void notifyAuditComplete(prior.user_id, jobId, status, prior.source_meta as AuditSourceMeta).catch((err) => {
+      logger.warn("[zion-db] notifyAuditComplete failed", {
+        jobId,
+        message: err instanceof Error ? err.message : String(err),
+      });
+    });
+  }
+}
+
+type TerminalJobStatus = Extract<JobStatus, { status: "completed" | "failed" }>;
+
+async function notifyAuditComplete(
+  userId: string,
+  jobId: string,
+  status: TerminalJobStatus,
+  sourceMeta: AuditSourceMeta,
+): Promise<void> {
+  // Resolve email via Supabase admin (service role — bypasses RLS).
+  const { data, error } = await adminSupabase.auth.admin.getUserById(userId);
+  if (error || !data.user?.email) return;
+
+  const appUrl = (process.env.NEXT_PUBLIC_APP_URL ?? "").replace(/\/$/, "");
+  if (!appUrl) return;
+
+  const auditLabel =
+    ("repoUrl" in sourceMeta && sourceMeta.repoUrl) ||
+    ("filename" in sourceMeta && sourceMeta.filename) ||
+    `Job ${jobId.slice(0, 8)}`;
+
+  const { subject, html, text } = renderAuditCompleteEmail({
+    auditLabel: String(auditLabel),
+    status: status.status,
+    grade:
+      status.status === "completed"
+        ? status.result.securityScore?.grade ?? null
+        : null,
+    score:
+      status.status === "completed"
+        ? status.result.securityScore?.overall ?? null
+        : null,
+    errorMessage: status.status === "failed" ? status.error.message : null,
+    detailUrl: `${appUrl}/audit/results?jobId=${encodeURIComponent(jobId)}`,
+  });
+
+  await sendEmail({ to: data.user.email, subject, html, text });
 }
 
 /** Returns true if the caller owns the audit row. Used to authorise resubmits/report downloads. */
