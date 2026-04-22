@@ -22,11 +22,11 @@ export default function AddressInput({
   placeholder,
   autoFilled,
   chainName,
-  onOpenAddressBook,
+  onOpenAddressBook: _onOpenAddressBook,
   readOnly,
   locked,
   inputRef,
-  showSavedButton,
+  showSavedButton: _showSavedButton,
   id,
 }: AddressInputProps) {
   if (locked) {

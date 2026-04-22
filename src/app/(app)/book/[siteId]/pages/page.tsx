@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Plus, FileText, Clock, CheckCircle, Loader2, ThumbsUp } from "lucide-react";
+import { Plus, FileText, Loader2, ThumbsUp } from "lucide-react";
 import type { BBPage, BBPageFeedbackSummary } from "@/types/book";
 
 export default function PagesListPage() {

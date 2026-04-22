@@ -3,7 +3,7 @@
 import { useParams } from 'next/navigation';
 import { useMemo, useState } from 'react';
 import { decodePaymentRequest } from '@/lib/payment-requests';
-import { CreditCard, ArrowRight, AlertTriangle, ExternalLink } from 'lucide-react';
+import { CreditCard, ArrowRight, AlertTriangle } from 'lucide-react';
 
 export default function PublicPayPage() {
   const params = useParams();

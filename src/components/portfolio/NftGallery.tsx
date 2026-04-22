@@ -1,6 +1,6 @@
 'use client';
 
-import { Image, Sparkles } from 'lucide-react';
+import { Image as ImageIcon, Sparkles } from 'lucide-react';
 
 interface NftGalleryProps {
   connectedChains: string[];
@@ -13,7 +13,7 @@ export function NftGallery({ connectedChains }: NftGalleryProps) {
     <div className="card p-5">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-h5 flex items-center gap-2">
-          <Image className="h-4 w-4" style={{ color: 'var(--color-primary)' }} />
+          <ImageIcon className="h-4 w-4" style={{ color: 'var(--color-primary)' }} />
           NFTs
         </h2>
         <span
@@ -44,7 +44,7 @@ export function NftGallery({ connectedChains }: NftGalleryProps) {
         </div>
       ) : (
         <div className="flex flex-col items-center py-8">
-          <Image className="h-10 w-10 mb-3 opacity-20" style={{ color: 'var(--color-text-muted)' }} />
+          <ImageIcon className="h-10 w-10 mb-3 opacity-20" style={{ color: 'var(--color-text-muted)' }} />
           <p className="text-body-sm" style={{ color: 'var(--color-text-muted)' }}>
             NFT gallery coming soon
           </p>

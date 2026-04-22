@@ -38,13 +38,10 @@ jobs:
         run: pnpm exec tsc --noEmit
 
       - name: Lint
-        # Lint must pass on ours work. Existing pre-fork debt on the main
-        # app (approx 60 errors at time of writing) is tracked separately.
-        # Until that backlog is cleared, lint runs but does NOT fail the
-        # build so unrelated drift doesn't block merges. Flip to
-        # `pnpm exec eslint --max-warnings=0` once the backlog is zero.
-        run: pnpm exec eslint . || true
-        continue-on-error: true
+        # Backlog cleared — lint errors fail CI. Warnings are allowed
+        # (img-element, unused imports, exhaustive-deps). Flip to
+        # `--max-warnings=0` once the remaining ~55 warnings are cleaned.
+        run: pnpm exec eslint .
 
       - name: Build
         env:

@@ -3,7 +3,7 @@ import { getMerchantAdminClient } from "@/lib/server/merchant-client";
 // NOTE: bcryptjs is a peer dependency for API key validation.
 // For Hub internal routes, use Supabase auth instead.
 // This module is only needed if the Hub exposes the public merchant API (v1/).
-// eslint-disable-next-line @typescript-eslint/no-require-imports
+ 
 const bcryptCompare = async (plain: string, hash: string): Promise<boolean> => {
   try {
     const bcrypt = await import("bcryptjs");

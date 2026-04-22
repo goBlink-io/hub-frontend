@@ -20,6 +20,7 @@ export default function VersionsPage() {
     setLoading(false);
   }, [siteId]);
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { loadVersions(); }, [loadVersions]);
 
   const handleCreate = async () => {

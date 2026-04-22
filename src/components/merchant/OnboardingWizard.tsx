@@ -53,7 +53,7 @@ export function OnboardingWizard({
   merchantId,
   businessName: initialName,
   currentCurrency,
-  currentTimezone,
+  currentTimezone: _currentTimezone,
   alreadyCompleted,
 }: OnboardingWizardProps) {
   const router = useRouter();

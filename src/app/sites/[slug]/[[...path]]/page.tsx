@@ -297,9 +297,9 @@ export default async function PublishedSitePage({
         >
           <p className="text-xs" style={{ color: "var(--color-text-tertiary)" }}>
             Built with{" "}
-            <a href="/" className="transition" style={{ color: "var(--color-text-secondary)" }}>
+            <Link href="/" className="transition" style={{ color: "var(--color-text-secondary)" }}>
               BlinkBook
-            </a>
+            </Link>
           </p>
         </footer>
       )}

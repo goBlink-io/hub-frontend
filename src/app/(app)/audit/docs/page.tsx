@@ -1,12 +1,12 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import {
   BookOpen,
   Key,
   Server,
   Code2,
-  Shield,
   Clock,
   ChevronDown,
   ChevronRight,
@@ -196,7 +196,6 @@ function EndpointCard({ method, path, description, children }: {
   description: string;
   children?: React.ReactNode;
 }) {
-  const methodColor = method === 'POST' ? 'var(--color-warning)' : 'var(--color-success)';
   return (
     <Collapsible title={`${method} ${path}`}>
       <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
@@ -478,7 +477,7 @@ function PricingSection() {
         <TierCard name="Deep Audit" price="$499" features={['AI spec generation', 'Cross-module analysis', 'Priority processing']} />
       </div>
       <p className="text-xs text-center" style={{ color: 'var(--color-text-muted)' }}>
-        Visit <a href="/audit" style={{ color: 'var(--color-primary)', textDecoration: 'none' }}>hub.goblink.io/audit</a> to purchase.
+        Visit <Link href="/audit" style={{ color: 'var(--color-primary)', textDecoration: 'none' }}>hub.goblink.io/audit</Link> to purchase.
       </p>
     </Section>
   );

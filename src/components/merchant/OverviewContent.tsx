@@ -123,6 +123,7 @@ export function OverviewContent({ data }: { data: OverviewData }) {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true);
     fetch(`/api/merchant/overview?is_test=${isTestMode}`)
       .then((res) => (res.ok ? res.json() : null))

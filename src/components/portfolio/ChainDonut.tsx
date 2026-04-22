@@ -40,7 +40,7 @@ export function ChainDonut({ breakdown, totalValueUsd }: ChainDonutProps) {
   }, [breakdown]);
 
   // Calculate label positions for segments > 8%
-  const labelPositions = useMemo(() => {
+  const _labelPositions = useMemo(() => {
     if (breakdown.length === 0) return [];
 
     const SIZE = 100;

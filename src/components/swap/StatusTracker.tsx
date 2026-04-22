@@ -18,7 +18,7 @@ const STATUS_MESSAGES: Record<string, string> = {
 
 export default function StatusTracker({ depositAddress, onReset }: StatusTrackerProps) {
   const [status, setStatus] = useState<SwapStatus>('PENDING_DEPOSIT');
-  const [_loading, setLoading] = useState(false); // eslint-disable-line @typescript-eslint/no-unused-vars
+  const [, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [dismissedCloseMsg, setDismissedCloseMsg] = useState(false);
@@ -57,9 +57,10 @@ export default function StatusTracker({ depositAddress, onReset }: StatusTracker
       const data = await response.json();
       setStatus(data.status);
       setError(null);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Status fetch error:', err);
-      setError(err.message || 'Connection issue — still tracking your transfer.');
+      const message = err instanceof Error ? err.message : null;
+      setError(message || 'Connection issue — still tracking your transfer.');
     } finally {
       setLoading(false);
     }

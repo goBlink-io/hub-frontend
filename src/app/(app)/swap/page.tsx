@@ -41,12 +41,18 @@ export default function SwapPage() {
     setView('modal');
   }, []);
 
-  const handleSwapInitiated = useCallback((depAddr: string, txHash?: string) => {
+  const handleSwapInitiated = useCallback((depAddr: string, _txHash?: string) => {
     setDepositAddress(depAddr);
     setView('tracking');
 
     if (quote) {
-      const q = quote as Record<string, any>;
+      const q = quote as {
+        fromChain?: string;
+        toChain?: string;
+        originTokenMetadata?: { symbol?: string };
+        destinationTokenMetadata?: { symbol?: string };
+        quote?: { amountInFormatted?: string };
+      };
       addEntry({
         fromChain: q.fromChain || '',
         toChain: q.toChain || '',

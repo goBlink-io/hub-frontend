@@ -4,7 +4,7 @@ import { useState, useCallback, useRef } from 'react';
 import { useWallet } from '@goblink/connect/react';
 import { useToast } from '@/contexts/ToastContext';
 import { generatePaymentUrl, type PaymentRequestData } from '@/lib/payment-requests';
-import { CreditCard, Copy, Check, ExternalLink, QrCode, Share2, Plus, Trash2 } from 'lucide-react';
+import { CreditCard, Copy, Check, ExternalLink, Share2, Plus, Trash2 } from 'lucide-react';
 
 
 const SUPPORTED_CHAINS = [

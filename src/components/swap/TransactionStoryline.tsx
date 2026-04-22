@@ -29,7 +29,7 @@ interface TransactionStorylineProps {
   startedAt: number;               // Date.now() when tracking began
 }
 
-function getPhases(fromChain: string, toChain: string, fromToken: string, toToken: string): StoryPhase[] {
+function getPhases(fromChain: string, toChain: string, _fromToken: string, _toToken: string): StoryPhase[] {
   const fromName = fromChain.charAt(0).toUpperCase() + fromChain.slice(1);
   const toName = toChain.charAt(0).toUpperCase() + toChain.slice(1);
 

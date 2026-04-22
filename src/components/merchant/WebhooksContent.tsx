@@ -2,13 +2,11 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { CopyButton } from "@/components/merchant/CopyButton";
 import {
   Webhook,
   Plus,
   Trash2,
   Loader2,
-  Search,
   ChevronLeft,
   ChevronRight,
   Send,

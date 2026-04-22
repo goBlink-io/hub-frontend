@@ -11,8 +11,10 @@ const API_URL = '';
  * Others return flat:                      { balance: "..." }
  * This handles both shapes safely.
  */
-function extractBal(data: any): string {
-  return data?.data?.balance ?? data?.balance ?? '0.00';
+function extractBal(data: unknown): string {
+  if (typeof data !== 'object' || data === null) return '0.00';
+  const d = data as { data?: { balance?: string }; balance?: string };
+  return d.data?.balance ?? d.balance ?? '0.00';
 }
 
 /**

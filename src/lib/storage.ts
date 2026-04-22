@@ -120,14 +120,14 @@ function getEncryptionPassword(): string {
  * No plaintext fallback — encryption failure throws.
  */
 export const secureStorage = {
-  async setItem(key: string, value: any): Promise<void> {
+  async setItem(key: string, value: unknown): Promise<void> {
     const password = getEncryptionPassword();
     const serialized = JSON.stringify(value);
     const encrypted = await encrypt(serialized, password);
     localStorage.setItem(key, encrypted);
   },
 
-  async getItem<T = any>(key: string): Promise<T | null> {
+  async getItem<T = unknown>(key: string): Promise<T | null> {
     try {
       const stored = localStorage.getItem(key);
       if (!stored) return null;
@@ -167,17 +167,17 @@ export const secureStorage = {
  * Retained for backward compatibility with non-sensitive preferences.
  */
 export const obfuscatedStorage = {
-  setItem(key: string, value: any): void {
+  setItem(key: string, value: unknown): void {
     try {
       const serialized = JSON.stringify(value);
       const encoded = btoa(serialized);
       localStorage.setItem(key, encoded);
-    } catch (error) {
+    } catch {
       localStorage.setItem(key, JSON.stringify(value));
     }
   },
 
-  getItem<T = any>(key: string): T | null {
+  getItem<T = unknown>(key: string): T | null {
     try {
       const encoded = localStorage.getItem(key);
       if (!encoded) return null;
@@ -189,7 +189,7 @@ export const obfuscatedStorage = {
         // Fallback to direct parse if not encoded
         return JSON.parse(encoded);
       }
-    } catch (error) {
+    } catch {
       return null;
     }
   },

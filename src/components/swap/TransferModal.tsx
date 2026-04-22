@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useWallet } from '@goblink/connect/react';
-import { sendNearTransaction, sendSuiTransaction } from '@/lib/transactions';
-import { isEvmChain, isNativeToken, EVM_CHAINS, getExplorerTxUrl } from '@/lib/shared';
+import { sendNearTransaction } from '@/lib/transactions';
+import { getExplorerTxUrl } from '@/lib/shared';
 import { getChainLogo } from '@/lib/chain-logos';
 import { formatTokenAmount } from '@/lib/format';
 import { X, ArrowDown, Check, Loader2, AlertTriangle, Copy, Shield } from 'lucide-react';
@@ -31,7 +31,42 @@ interface TransactionData {
 }
 
 export default function TransferModal({ quote, onClose, onComplete, onOutcome }: TransferModalProps) {
-  const { quote: quoteData, quoteRequest, originTokenMetadata, destinationTokenMetadata, fromChain, toChain, feeInfo, source, paymentRequestId } = quote as Record<string, any>;
+  const {
+    quote: quoteData,
+    quoteRequest,
+    originTokenMetadata,
+    destinationTokenMetadata,
+    fromChain,
+    toChain,
+    feeInfo,
+    source,
+    paymentRequestId,
+  } = quote as unknown as {
+    quote: {
+      amountInFormatted: string;
+      amountInUsd?: string;
+      amountOutFormatted?: string;
+      amountOutUsd?: string;
+      minAmountOut: string;
+      timeEstimate?: number | string;
+    };
+    quoteRequest: {
+      originAsset: string;
+      destinationAsset: string;
+      recipient: string;
+      refundTo?: string;
+      amount: string;
+      swapType?: string;
+      slippageTolerance?: number;
+    };
+    originTokenMetadata?: { symbol?: string; decimals: number; icon?: string };
+    destinationTokenMetadata?: { symbol?: string; decimals: number; icon?: string };
+    fromChain: string;
+    toChain: string;
+    feeInfo?: { bps?: number | string; estimatedUsd?: string; percent?: string };
+    source?: string;
+    paymentRequestId?: string;
+  };
   const { getAddress } = useWallet();
 
   const [closing, setClosing] = useState(false);
@@ -446,7 +481,7 @@ export default function TransferModal({ quote, onClose, onComplete, onOutcome }:
                   fromToken={originTokenMetadata?.symbol || '?'} toToken={destinationTokenMetadata?.symbol || '?'}
                   amountIn={quoteData.amountInFormatted}
                   amountOut={transaction?.amountOut && destinationTokenMetadata?.decimals ? formatAtomicAmount(transaction.amountOut, destinationTokenMetadata.decimals) : (quoteData.amountOutFormatted || null)}
-                  timeEstimate={Math.max(60, quoteData.timeEstimate ? parseInt(quoteData.timeEstimate, 10) : 60)}
+                  timeEstimate={Math.max(60, quoteData.timeEstimate ? parseInt(String(quoteData.timeEstimate), 10) : 60)}
                   depositTxHash={transaction?.depositTxHash || null}
                   fulfillmentTxHash={transaction?.fulfillmentTxHash || null}
                   fromLogo={fromLogo} toLogo={toLogo}

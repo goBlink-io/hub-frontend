@@ -3,8 +3,7 @@
 import { useState, useMemo } from 'react';
 import { useWallet } from '@goblink/connect/react';
 import {
-  PieChart, Wallet, RefreshCw, Search, SlidersHorizontal,
-  ArrowUpDown, TrendingUp, TrendingDown,
+  PieChart, Wallet, RefreshCw, Search,
 } from 'lucide-react';
 import { usePortfolio, formatUsd } from '@/hooks/usePortfolio';
 import { ChainDonut } from '@/components/portfolio/ChainDonut';
@@ -21,7 +20,7 @@ import { ErrorBoundary } from '@/components/shared/ErrorBoundary';
 type SortKey = 'value' | 'name' | 'chain' | 'change';
 
 export default function PortfolioPage() {
-  const { getAddress, isConnected } = useWallet();
+  const { getAddress } = useWallet();
   const {
     totalValueUsd, tokens, chainBreakdown,
     loading, error, refresh, connectedChains,

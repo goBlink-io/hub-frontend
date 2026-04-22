@@ -39,6 +39,7 @@ export function PublishedSearch({ spaceSlug }: { spaceSlug: string }) {
 
   useEffect(() => {
     if (open) setTimeout(() => inputRef.current?.focus(), 50);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     else { setQuery(""); setResults([]); setActiveIdx(0); }
   }, [open]);
 

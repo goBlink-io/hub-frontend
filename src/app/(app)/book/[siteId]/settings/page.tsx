@@ -9,7 +9,7 @@ type Tab = "general" | "branding" | "domain" | "seo" | "danger";
 
 export default function SpaceSettingsPage() {
   const { siteId } = useParams<{ siteId: string }>();
-  const [space, setSpace] = useState<BBSpace | null>(null);
+  const [, setSpace] = useState<BBSpace | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [tab, setTab] = useState<Tab>("general");

@@ -4,7 +4,6 @@ import { useState, useEffect, useRef } from 'react';
 import { Share2, Check, Link as LinkIcon, Bookmark, X } from 'lucide-react';
 import { generateTransferUrl } from '@/lib/transfer-links';
 import { useUserProfile } from '@/hooks/useUserProfile';
-import { formatElapsed } from '@/lib/transfer-links';
 
 interface TransferSuccessProps {
   amountOut: string;
@@ -59,6 +58,7 @@ export default function TransferSuccess({
     if (typeof window === 'undefined') return;
     const already = localStorage.getItem('goblink_first_swap_completed');
     if (!already) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsFirstSwap(true);
       localStorage.setItem('goblink_first_swap_completed', 'true');
     }
@@ -71,6 +71,7 @@ export default function TransferSuccess({
 
   useEffect(() => {
     const burstColors = ['#3b82f6', '#8b5cf6', '#22c55e', '#f59e0b', '#ef4444', '#ec4899', '#06b6d4'];
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setConfettiBurst(
       Array.from({ length: 15 }, (_, i) => ({
         id: i,
@@ -90,6 +91,7 @@ export default function TransferSuccess({
 
   useEffect(() => {
     const colors = ['#2563EB', '#7C3AED', '#22C55E', '#EAB308', '#F97316', '#EC4899'];
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setParticles(
       Array.from({ length: 8 }, (_, i) => ({
         id: i,
