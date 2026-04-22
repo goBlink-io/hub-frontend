@@ -43,11 +43,15 @@ const getSpaceAndPages = cache(async function getSpaceAndPages(slug: string) {
     .maybeSingle();
 
   if (!space) {
+    // Custom-domain lookup requires DNS verification — prevents anyone
+    // from typing an arbitrary domain into settings and hijacking a
+    // future request to it.
     const { data: domainSpace } = await bookDb
       .from("bb_spaces")
       .select("*")
       .eq("custom_domain", slug)
       .eq("is_published", true)
+      .eq("custom_domain_verified", true)
       .maybeSingle();
     space = domainSpace;
   }

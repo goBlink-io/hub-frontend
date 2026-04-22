@@ -79,7 +79,7 @@ export function getSupportedChains(): string[] {
   return Object.keys(CHAIN_CONFIGS);
 }
 
-function getPublicClient(chainName: SupportedChain): PublicClient {
+export function getPublicClient(chainName: SupportedChain): PublicClient {
   if (clientCache.has(chainName)) return clientCache.get(chainName)!;
   const config = CHAIN_CONFIGS[chainName];
   if (!config) throw new Error(`Unsupported chain: ${chainName}`);

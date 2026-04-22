@@ -38,7 +38,7 @@ export async function GET(
 
   const { data } = await ctx.bookDb
     .from("bb_spaces")
-    .select("custom_domain, slug")
+    .select("custom_domain, slug, custom_domain_verified, custom_domain_verified_at")
     .eq("id", id)
     .maybeSingle();
 
@@ -48,12 +48,14 @@ export async function GET(
   return NextResponse.json({
     domain: data?.custom_domain ?? null,
     slug: data?.slug ?? null,
+    verified: data?.custom_domain_verified ?? false,
+    verifiedAt: data?.custom_domain_verified_at ?? null,
     instructions: data?.custom_domain
       ? {
           type: "CNAME",
           name: data.custom_domain,
           target,
-          note: "Point your domain at this CNAME target, then redeploy or wait for propagation.",
+          note: "Point your domain at this CNAME target, then click Verify.",
         }
       : null,
   });

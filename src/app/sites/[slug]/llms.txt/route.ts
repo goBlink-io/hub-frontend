@@ -39,6 +39,7 @@ export async function GET(
       .from("bb_spaces")
       .select("id, name, description, is_published, llms_txt_enabled")
       .eq("custom_domain", slug)
+      .eq("custom_domain_verified", true)
       .maybeSingle();
     space = byDomain;
   }

@@ -51,6 +51,7 @@ export async function POST(
       .from("bb_spaces")
       .select("id, is_published")
       .eq("custom_domain", slug)
+      .eq("custom_domain_verified", true)
       .maybeSingle();
     space = byDomain;
   }

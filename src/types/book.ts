@@ -39,6 +39,8 @@ export interface BBSpace {
   theme: SpaceTheme;
   logo_url: string | null;
   custom_domain: string | null;
+  custom_domain_verified: boolean;
+  custom_domain_verified_at: string | null;
   is_published: boolean;
   brand_logo_url: string | null;
   brand_primary_color: string;
